@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Non-Conformities Listing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+        /* Popover base styles */
+        .popover {
+            display: none; position: absolute; z-index: 50; background-color: white;
+            border: 1px solid #e5e7eb; border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            padding: 0.75rem;
+        }
+        .popover.active { display: block; }
+
+        /* Custom Tooltip */
+        #customTooltip {
+            position: absolute; display: none; background-color: #1f2937; color: white;
+            padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;
+            z-index: 100; pointer-events: none;
+        }
+
+        /* Status badges */
+        .status-badge {
+            display: inline-flex; align-items: center; padding: 0.25em 0.6em; font-size: 0.8rem;
+            font-weight: 500; border-radius: 9999px;
+        }
+        .status-open { background-color: #dbeafe; color: #1e40af; }
+        .status-closed { background-color: #d1fae5; color: #065f46; }
+        .status-cancelled { background-color: #fee2e2; color: #991b1b; }
+        .status-draft { background-color: #e5e7eb; color: #4b5563; }
+        .status-dispute-accept { background-color: #fef3c7; color: #92400e; }
+        .status-capa-closed { background-color: #e0e7ff; color: #3730a3; }
+        
+        /* Table sort icon */
+        .sort-icon { opacity: 0.4; transition: opacity 0.15s ease-in-out; }
+        th:hover .sort-icon { opacity: 1; }
+        .sort-icon.active { opacity: 1; color: #2563eb; }
+        
+        /* Truncate text with ellipsis */
+        .truncate-cell { max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* Horizontal scroll indicator */
+        .table-container { position: relative; }
+        .table-container::after {
+            content: ''; position: absolute; top: 0; right: 0; bottom: 0;
+            width: 30px; pointer-events: none;
+            background: linear-gradient(to left, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+            transition: opacity 0.2s; opacity: 0;
+        }
+        .table-container.is-scrolling-right::after { opacity: 1; }
+
+        /* Drag and drop styles */
+        .drag-handle { cursor: move; color: #9ca3af; }
+        .dragging { opacity: 0.5; background: #e0e7ff; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800">
+
+    <div id="app-container" class="p-4 md:p-6 lg:p-8">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+            <h1 class="text-2xl font-semibold text-gray-900">Non-Conformities</h1>
+            <div class="flex items-center space-x-2 mt-4 md:mt-0">
+                <button class="bg-blue-600 text-white px-4 py-2 rounded-md shadow-sm hover:bg-blue-700 transition duration-150 text-sm font-medium flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                    New NC
+                </button>
+                <div class="flex items-center border border-gray-300 rounded-md">
+                    <button class="px-3 py-2 text-sm border-r border-gray-300 hover:bg-gray-100 rounded-l-md">Attributes</button>
+                    <button class="px-3 py-2 text-sm border-r border-gray-300 bg-blue-50 text-blue-700 font-semibold">Supplier</button>
+                    <button class="px-3 py-2 text-sm hover:bg-gray-100 rounded-r-md">Internal</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="border-b border-gray-200 mb-4">
+            <nav id="tabs-container" class="-mb-px flex space-x-6" aria-label="Tabs">
+                <a href="#" class="tab-item active shrink-0 border-b-2 border-blue-600 px-1 py-3 text-sm font-semibold text-blue-600" aria-current="page" data-tab="my">My Non Conformities</a>
+                <a href="#" class="tab-item shrink-0 border-b-2 border-transparent px-1 py-3 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700" data-tab="all">All Non Conformities</a>
+            </nav>
+        </div>
+
+        <div class="space-y-3 mb-4 p-4 bg-white rounded-lg border border-gray-200">
+            <div class="flex flex-wrap gap-4 items-center">
+                 <div class="relative flex-grow min-w-[200px]">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" /></svg>
+                    </div>
+                    <input type="text" id="globalSearch" class="block w-full rounded-md border-0 py-2 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm" placeholder="Search by Name, Part #, Supplier...">
+                </div>
+                
+                <div class="relative">
+                    <select id="timeRangeFilter" class="appearance-none block w-full rounded-md border-0 py-2 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm">
+                        <option value="">Time Range</option>
+                        <option value="7d">Last 7 days</option>
+                        <option value="1m">1 month</option>
+                        <option value="3m">3 months</option>
+                        <option value="6m">6 months</option>
+                        <option value="1y">1 year</option>
+                        <option value="2y">2 years</option>
+                        <option value="3y">3 years</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z" clip-rule="evenodd" /></svg>
+                    </div>
+                </div>
+                <div class="relative">
+                    <select id="statusFilter" class="appearance-none block w-full rounded-md border-0 py-2 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm">
+                        <option value="">Status</option>
+                        <option value="Open">Open</option>
+                        <option value="Closed">Closed</option>
+                        <option value="Cancelled">Cancelled</option>
+                        <option value="Draft">Draft</option>
+                        <option value="Dispute Accept">Dispute Accept</option>
+                        <option value="CAPA Closed">CAPA Closed</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z" clip-rule="evenodd" /></svg>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2 ml-auto">
+                    <button id="columnConfigBtn" class="p-2 rounded-md hover:bg-gray-100 text-gray-500" data-tooltip="Configure Columns">
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v1a1 1 0 01-1 1H4a1 1 0 01-1-1V3zm2 4a1 1 0 011-1h10a1 1 0 011 1v1a1 1 0 01-1 1H6a1 1 0 01-1-1V7zm2 4a1 1 0 011-1h8a1 1 0 011 1v1a1 1 0 01-1 1H8a1 1 0 01-1-1v-1zm2 4a1 1 0 011-1h6a1 1 0 011 1v1a1 1 0 01-1 1h-6a1 1 0 01-1-1v-1z" clip-rule="evenodd" /></svg>
+                    </button>
+                    <button class="p-2 rounded-md hover:bg-gray-100 text-gray-500" data-tooltip="Export to Excel">
+                       <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                    </button>
+                </div>
+            </div>
+            <div id="filterPillsContainer" class="flex flex-wrap gap-2 pt-2"></div>
+        </div>
+
+        <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+            <div id="loading-state" class="p-12 text-center text-gray-500 hidden">
+                <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                <p class="mt-2">Loading data...</p>
+            </div>
+            <div id="table-container" class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr id="table-header-row">
+                            </tr>
+                    </thead>
+                    <tbody id="nc-table-body" class="divide-y divide-gray-200 bg-white">
+                       </tbody>
+                </table>
+            </div>
+             <div id="empty-state" class="text-center p-12 text-gray-500 hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7m-4 12V7m-4 12V7m-4 12V7m16-4h-2a2 2 0 00-2-2h-4a2 2 0 00-2 2H3a2 2 0 00-2 2v10a2 2 0 002 2h18a2 2 0 002-2V7a2 2 0 00-2-2z" /></svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">No Non-Conformities Found</h3>
+                <p class="mt-1 text-sm text-gray-500">Try adjusting your filters or create a new non-conformity.</p>
+            </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row items-center justify-between mt-4 text-sm text-gray-600 gap-4">
+            <div class="flex items-center gap-2">
+                <span>Rows per page:</span>
+                <select id="rowsPerPage" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                    <option>10</option>
+                    <option>25</option>
+                    <option>50</option>
+                    <option>100</option>
+                </select>
+            </div>
+            <div id="pagination-summary">Showing 0 to 0 of 0 records</div>
+            <div id="pagination-controls" class="flex items-center">
+                </div>
+        </div>
+    </div>
+    
+    <div id="linkagePopover" class="popover w-52"></div>
+    <div id="columnConfigPopover" class="popover w-64">
+        <h4 class="font-semibold mb-2">Configure Columns</h4>
+        <div id="column-checkboxes" class="max-h-60 overflow-y-auto space-y-1"></div>
+    </div>
+    <div id="customTooltip"></div>
+
+    <script>
+        // --- Mock Data Generation ---
+        function generateMockData() {
+            const initialData = [
+                { id: 1, incidentNumber: 'INC-0203902901', status: 'Draft', supplierName: 'Auto Products', supplierCode: '256480', plantName: 'HQ', name: 'NC-2025-XXXX', partName: 'Mat.cabine tunnel', partNumber: 'PN2124161', incidentDate: '2025-09-15', defectCategory: 'Cosmetic', defectName: 'Scratch', isFieldConcern: true, coordinator: 'Alice Johnson', repeatNCStatus: 'First Time', incidentCategory: 'Supplier', incidentType: 'Product', description: 'Deep scratch found on main housing during final inspection.', totalNCParts: 5, rpn: 120, commodity: 'Plastics', priority: 'High', prrStatus: 'Pending', linkages: { count: 1, items: ['8D'] } },
+                { id: 2, incidentNumber: 'INC-0203902902', status: 'Open', supplierName: 'SRI RAM RUBBER PRODUCTS', supplierCode: 'SRR-45', plantName: 'Bengaluru', name: 'UK Sample Test 40', partName: 'ARMATURE BALANCING COMPOUND', partNumber: 'PN28-0036-001', incidentDate: '2025-09-10', defectCategory: 'Dimensional', defectName: 'Out of tolerance', isFieldConcern: false, coordinator: 'Bob Williams', repeatNCStatus: 'First Time', incidentCategory: 'Process', incidentType: 'Process', description: 'Part length exceeds max tolerance by 2mm.', totalNCParts: 150, rpn: 250, commodity: 'Rubber', priority: 'High', prrStatus: 'Approved', linkages: { count: 3, items: ['8D', 'CAPA', 'AD'] } },
+                { id: 3, incidentNumber: 'INC-0203902903', status: 'Dispute Accept', supplierName: 'New Wave Components', supplierCode: 'NW-01', plantName: 'Narasimha', name: 'totestst23', partName: '.092" THK x 413" WD x .486" L', partNumber: 'PN981422', incidentDate: '2025-08-20', defectCategory: 'Functional', defectName: 'Incorrect Material', isFieldConcern: false, coordinator: 'Charlie Brown', repeatNCStatus: 'Repeat', incidentCategory: 'Supplier', incidentType: 'Material', description: 'Used incorrect grade of steel, failed stress test.', totalNCParts: 25, rpn: 450, commodity: 'Metals', priority: 'Critical', prrStatus: 'Rejected', linkages: { count: 0 } },
+                { id: 4, incidentNumber: 'INC-0203902904', status: 'CAPA Closed', supplierName: 'Global Tech Inc.', supplierCode: 'GT-99', plantName: 'Winch Broken Arrow', name: 'NC-2025-3Mat', partName: 'Mat.cabine tunnel', partNumber: 'PN2124161', incidentDate: '2025-08-01', defectCategory: 'Electrical', defectName: 'Short circuit', isFieldConcern: true, coordinator: 'Diana Prince', repeatNCStatus: 'First Time', incidentCategory: 'Supplier', incidentType: 'Component', description: 'Component failure causing short on main board.', totalNCParts: 8, rpn: 310, commodity: 'Electronics', priority: 'High', prrStatus: 'Approved', linkages: { count: 2, items: ['CAPA', 'CopQ'] } },
+                { id: 5, incidentNumber: 'INC-0203902905', status: 'Open', supplierName: 'Auto Products', supplierCode: '256480', plantName: 'HQ', name: 'Incident_test', partName: '149-70x210 w/20mm dry tab', partNumber: 'PN149-70x210', incidentDate: '2025-07-11', defectCategory: 'Cosmetic', defectName: 'Discoloration', isFieldConcern: false, coordinator: 'Alice Johnson', repeatNCStatus: 'First Time', incidentCategory: 'Process', incidentType: 'Process', description: 'Yellowish tint observed on parts from Lot #8891.', totalNCParts: 200, rpn: 80, commodity: 'Plastics', priority: 'Low', prrStatus: 'Pending', linkages: { count: 0 } },
+                { id: 6, incidentNumber: 'INC-0203902906', status: 'Closed', supplierName: 'Supplier NC 1 by Syed', supplierCode: 'SY-123', plantName: '', name: 'NC-2025-3775', partName: 'Armature', partNumber: 'PN0044', incidentDate: '2025-06-15', defectCategory: 'Material', defectName: 'Contamination', isFieldConcern: false, coordinator: 'Edward Nigma', repeatNCStatus: 'First Time', incidentCategory: 'Supplier', incidentType: 'Material', description: 'Foreign particles found embedded in the material.', totalNCParts: 30, rpn: 180, commodity: 'Composites', priority: 'Medium', prrStatus: 'Approved', linkages: { count: 1, items: ['8D'] } },
+                { id: 7, incidentNumber: 'INC-0203902907', status: 'Cancelled', supplierName: 'Auto Products', supplierCode: '256480', plantName: 'HQ', name: '000123', partName: 'ASSEMBLY,HOUSING,SLOTTED', partNumber: 'PN000123-3', incidentDate: '2025-05-30', defectCategory: 'Administrative', defectName: 'Duplicate Entry', isFieldConcern: false, coordinator: 'Frank Castle', repeatNCStatus: 'N/A', incidentCategory: 'Internal', incidentType: 'Admin', description: 'NC was created in error, duplicate of INC-0203902906.', totalNCParts: 0, rpn: 0, commodity: 'N/A', priority: 'Low', prrStatus: 'N/A', linkages: { count: 0 } },
+                { id: 8, incidentNumber: 'INC-0203902908', status: 'Closed', supplierName: 'SRI RAM RUBBER PRODUCTS', supplierCode: 'SRR-45', plantName: 'Bengaluru', name: 'Test NC 09082025', partName: 'Gasket Seal', partNumber: 'PN60-0550-400', incidentDate: '2024-10-01', defectCategory: 'Dimensional', defectName: 'Wrong thickness', isFieldConcern: false, coordinator: 'Bob Williams', repeatNCStatus: 'Repeat', incidentCategory: 'Supplier', incidentType: 'Product', description: 'Gasket thickness was 1.5mm instead of specified 2.0mm.', totalNCParts: 500, rpn: 220, commodity: 'Rubber', priority: 'Medium', prrStatus: 'Approved', linkages: { count: 0 } },
+                { id: 9, incidentNumber: 'INC-0203902909', status: 'Open', supplierName: 'Global Tech Inc.', supplierCode: 'GT-99', plantName: 'Winch Broken Arrow', name: 'NC-2025-XXXX', partName: 'Sensor Housing', partNumber: 'PN-SH-001', incidentDate: '2025-09-14', defectCategory: 'Functional', defectName: 'Sensor Mismatch', isFieldConcern: true, coordinator: 'Alice Johnson', repeatNCStatus: 'First Time', incidentCategory: 'Supplier', incidentType: 'Component', description: 'Incorrect sensor model installed in housing.', totalNCParts: 12, rpn: 350, commodity: 'Electronics', priority: 'Critical', prrStatus: 'Pending', linkages: { count: 1, items: ['8D'] } },
+                { id: 10, incidentNumber: 'INC-0203902910', status: 'Draft', supplierName: 'New Wave Components', supplierCode: 'NW-01', plantName: 'Narasimha', name: 'NC-DRAFT-002', partName: 'Bracket Assembly', partNumber: 'PN-BR-987', incidentDate: '2025-09-12', defectCategory: 'Cosmetic', defectName: 'Paint Peel', isFieldConcern: false, coordinator: 'Bob Williams', repeatNCStatus: 'First Time', incidentCategory: 'Process', incidentType: 'Process', description: 'Paint peeling near weld points on multiple brackets.', totalNCParts: 75, rpn: 90, commodity: 'Metals', priority: 'Low', prrStatus: 'N/A', linkages: { count: 0 } },
+                { id: 11, incidentNumber: 'INC-0203902911', status: 'Open', supplierName: 'Auto Products', supplierCode: '256480', plantName: 'HQ', name: 'NC-2025-WELD', partName: 'Frame Weldment', partNumber: 'PN-FW-050', incidentDate: '2025-09-11', defectCategory: 'Dimensional', defectName: 'Warped Frame', isFieldConcern: false, coordinator: 'Charlie Brown', repeatNCStatus: 'Repeat', incidentCategory: 'Supplier', incidentType: 'Product', description: 'Frame warped after welding, out of flatness tolerance.', totalNCParts: 3, rpn: 280, commodity: 'Metals', priority: 'High', prrStatus: 'Rejected', linkages: { count: 2, items: ['8D', 'CAPA'] } },
+                { id: 12, incidentNumber: 'INC-0203902912', status: 'Closed', supplierName: 'SRI RAM RUBBER PRODUCTS', supplierCode: 'SRR-45', plantName: 'Bengaluru', name: 'NC-CLOSED-015', partName: 'O-Ring Seal', partNumber: 'PN-OR-300', incidentDate: '2025-04-05', defectCategory: 'Material', defectName: 'Incorrect Durometer', isFieldConcern: false, coordinator: 'Diana Prince', repeatNCStatus: 'First Time', incidentCategory: 'Supplier', incidentType: 'Material', description: 'Material durometer tested at 60A instead of required 70A.', totalNCParts: 1000, rpn: 150, commodity: 'Rubber', priority: 'Medium', prrStatus: 'Approved', linkages: { count: 0 } },
+                { id: 13, incidentNumber: 'INC-0203902913', status: 'Open', supplierName: 'Global Tech Inc.', supplierCode: 'GT-99', plantName: 'Winch Broken Arrow', name: 'NC-2025-ELEC', partName: 'Control Board', partNumber: 'PN-CB-101', incidentDate: '2025-09-08', defectCategory: 'Electrical', defectName: 'No Power', isFieldConcern: true, coordinator: 'Alice Johnson', repeatNCStatus: 'First Time', incidentCategory: 'Process', incidentType: 'Process', description: 'Multiple boards failing initial power-up test.', totalNCParts: 22, rpn: 500, commodity: 'Electronics', priority: 'Critical', prrStatus: 'Pending', linkages: { count: 1, items: ['AD'] } },
+                { id: 14, incidentNumber: 'INC-0203902914', status: 'CAPA Closed', supplierName: 'New Wave Components', supplierCode: 'NW-01', plantName: 'Narasimha', name: 'NC-CAPA-007', partName: 'Fastener Kit', partNumber: 'PN-FK-202', incidentDate: '2025-01-20', defectCategory: 'Administrative', defectName: 'Missing Components', isFieldConcern: false, coordinator: 'Bob Williams', repeatNCStatus: 'Repeat', incidentCategory: 'Supplier', incidentType: 'Packaging', description: 'Kits are missing washers (PN-W-003).', totalNCParts: 80, rpn: 70, commodity: 'Hardware', priority: 'Low', prrStatus: 'Approved', linkages: { count: 1, items: ['CAPA'] } },
+                { id: 15, incidentNumber: 'INC-0203902915', status: 'Dispute Accept', supplierName: 'Auto Products', supplierCode: '256480', plantName: 'HQ', name: 'NC-DISPUTE-01', partName: 'Dashboard Panel', partNumber: 'PN-DP-789', incidentDate: '2025-08-30', defectCategory: 'Cosmetic', defectName: 'Color Mismatch', isFieldConcern: false, coordinator: 'Charlie Brown', repeatNCStatus: 'First Time', incidentCategory: 'Supplier', incidentType: 'Product', description: 'Panel color is shade darker than master sample.', totalNCParts: 40, rpn: 110, commodity: 'Plastics', priority: 'Medium', prrStatus: 'Pending', linkages: { count: 0 } },
+                { id: 16, incidentNumber: 'INC-0203902916', status: 'Open', supplierName: 'SRI RAM RUBBER PRODUCTS', supplierCode: 'SRR-45', plantName: 'Bengaluru', name: 'NC-2025-HOSE', partName: 'Coolant Hose', partNumber: 'PN-CH-112', incidentDate: '2025-09-02', defectCategory: 'Functional', defectName: 'Leak Under Pressure', isFieldConcern: true, coordinator: 'Diana Prince', repeatNCStatus: 'First Time', incidentCategory: 'Process', incidentType: 'Process', description: 'Hoses leaking at the crimp joint during pressure testing.', totalNCParts: 18, rpn: 600, commodity: 'Rubber', priority: 'Critical', prrStatus: 'Rejected', linkages: { count: 2, items: ['8D', 'CopQ'] } },
+                { id: 17, incidentNumber: 'INC-0203902917', status: 'Cancelled', supplierName: 'Global Tech Inc.', supplierCode: 'GT-99', plantName: 'Winch Broken Arrow', name: 'NC-CANCEL-003', partName: 'Wiring Harness', partNumber: 'PN-WH-456', incidentDate: '2025-07-25', defectCategory: 'Administrative', defectName: 'Incorrect PO', isFieldConcern: false, coordinator: 'Alice Johnson', repeatNCStatus: 'N/A', incidentCategory: 'Internal', incidentType: 'Admin', description: 'Wrong purchase order referenced on NC paperwork.', totalNCParts: 0, rpn: 0, commodity: 'Electronics', priority: 'Low', prrStatus: 'N/A', linkages: { count: 0 } },
+                { id: 18, incidentNumber: 'INC-0203902918', status: 'Closed', supplierName: 'New Wave Components', supplierCode: 'NW-01', plantName: 'Narasimha', name: 'NC-CLOSED-016', partName: 'Mounting Plate', partNumber: 'PN-MP-888', incidentDate: '2024-11-18', defectCategory: 'Dimensional', defectName: 'Hole Misalignment', isFieldConcern: false, coordinator: 'Bob Williams', repeatNCStatus: 'First Time', incidentCategory: 'Supplier', incidentType: 'Product', description: 'Mounting holes are off by 0.5mm on the Y-axis.', totalNCParts: 250, rpn: 200, commodity: 'Metals', priority: 'Medium', prrStatus: 'Approved', linkages: { count: 1, items: ['8D'] } },
+                { id: 19, incidentNumber: 'INC-0203902919', status: 'Open', supplierName: 'Auto Products', supplierCode: '256480', plantName: 'HQ', name: 'NC-2025-LENS', partName: 'Headlight Lens', partNumber: 'PN-HL-007', incidentDate: '2025-09-05', defectCategory: 'Cosmetic', defectName: 'Internal Haze', isFieldConcern: false, coordinator: 'Alice Johnson', repeatNCStatus: 'Repeat', incidentCategory: 'Process', incidentType: 'Process', description: 'Hazy film present on the inside surface of the lens.', totalNCParts: 60, rpn: 180, commodity: 'Plastics', priority: 'High', prrStatus: 'Pending', linkages: { count: 0 } },
+                { id: 20, incidentNumber: 'INC-0203902920', status: 'Open', supplierName: 'SRI RAM RUBBER PRODUCTS', supplierCode: 'SRR-45', plantName: 'Bengaluru', name: 'NC-2025-BUSH', partName: 'Suspension Bushing', partNumber: 'PN-SB-500', incidentDate: '2025-08-28', defectCategory: 'Material', defectName: 'Cracking', isFieldConcern: true, coordinator: 'Charlie Brown', repeatNCStatus: 'First Time', incidentCategory: 'Supplier', incidentType: 'Material', description: 'Material shows signs of premature cracking under load.', totalNCParts: 300, rpn: 450, commodity: 'Rubber', priority: 'Critical', prrStatus: 'Rejected', linkages: { count: 1, items: ['8D'] } },
+            ];
+
+            const generatedRecords = [];
+            const statuses = ['Open', 'Closed', 'Cancelled', 'Draft', 'Dispute Accept', 'CAPA Closed'];
+            const suppliers = ['Advanced Materials LLC', 'Precision Parts Co.', 'Dynamic Solutions', 'NextGen Components', 'Synergy Supplies', 'Apex Manufacturing'];
+            const plants = ['Bengaluru', 'HQ', 'Narasimha', 'Winch Broken Arrow', 'Delta Plant', 'Omega Site'];
+            const partNames = ['Gasket Seal', 'Control Board', 'Mounting Plate', 'Frame Weldment', 'Suspension Bushing', 'Bracket Assembly'];
+            const coordinators = ['Alice Johnson', 'Bob Williams', 'Charlie Brown', 'Diana Prince', 'Edward Nigma', 'Frank Castle'];
+            const priorities = ['Low', 'Medium', 'High', 'Critical'];
+            
+            for (let i = 0; i < 876; i++) {
+                const id = 21 + i;
+                const coordinator = (i < 600) ? 'Alice Johnson' : coordinators[i % coordinators.length];
+                const date = new Date(new Date('2025-09-15') - Math.random() * 3 * 365 * 24 * 60 * 60 * 1000);
+                const incidentDate = date.toISOString().split('T')[0];
+                const linkagesCount = Math.floor(Math.random() * 4);
+                
+                generatedRecords.push({
+                    id: id,
+                    incidentNumber: `INC-${203902921 + i}`,
+                    status: statuses[i % statuses.length],
+                    supplierName: suppliers[i % suppliers.length],
+                    supplierCode: `${suppliers[i % suppliers.length].substring(0,2).toUpperCase()}-${Math.floor(10 + Math.random() * 90)}`,
+                    plantName: plants[i % plants.length],
+                    name: `NC-2025-${String(id).padStart(4, '0')}`,
+                    partName: partNames[i % partNames.length],
+                    partNumber: `PN-${Math.floor(10000 + Math.random() * 90000)}`,
+                    incidentDate: incidentDate,
+                    defectCategory: ['Cosmetic', 'Dimensional', 'Functional', 'Material'][i % 4],
+                    defectName: 'Generated Defect',
+                    isFieldConcern: Math.random() > 0.7,
+                    coordinator: coordinator,
+                    repeatNCStatus: Math.random() > 0.8 ? 'Repeat' : 'First Time',
+                    incidentCategory: ['Supplier', 'Process', 'Internal'][i % 3],
+                    incidentType: ['Product', 'Process', 'Material', 'Component'][i % 4],
+                    description: `This is a generated description for incident number INC-${203902921 + i}.`,
+                    totalNCParts: Math.floor(Math.random() * 1000),
+                    rpn: Math.floor(Math.random() * 600),
+                    commodity: ['Plastics', 'Rubber', 'Metals', 'Electronics', 'Composites'][i % 5],
+                    priority: priorities[i % priorities.length],
+                    prrStatus: ['Pending', 'Approved', 'Rejected'][i % 3],
+                    linkages: {
+                        count: linkagesCount,
+                        items: ['8D', 'CAPA', 'AD', 'CopQ'].slice(0, linkagesCount)
+                    }
+                });
+            }
+            return [...initialData, ...generatedRecords];
+        }
+
+        // --- State Management ---
+        const ALL_MOCK_DATA = generateMockData();
+        const CURRENT_USER_ID = 'Alice Johnson';
+
+        const ALL_COLUMNS = [
+            { key: 'status', label: 'Status', sortable: true }, { key: 'supplierName', label: 'Supplier Name', sortable: true }, { key: 'plantName', label: 'Plant Name', sortable: true }, { key: 'name', label: 'Name', sortable: true }, { key: 'partName', label: 'Part Name', sortable: true }, { key: 'partNumber', label: 'Part Number', sortable: false }, { key: 'incidentDate', label: 'Incident Date', sortable: true }, { key: 'defectCategory', label: 'Defect Category', sortable: true }, { key: 'defectName', label: 'Defect Name', sortable: true }, { key: 'incidentNumber', label: 'Incident Number', sortable: true }, { key: 'isFieldConcern', label: 'Is Field Concern', sortable: true }, { key: 'age', label: 'Age (Days)', sortable: true }, { key: 'coordinator', label: 'Coordinator', sortable: true }, { key: 'repeatNCStatus', label: 'Repeat NC Status', sortable: true }, { key: 'incidentCategory', label: 'Incident Category', sortable: true }, { key: 'incidentType', label: 'Incident Type', sortable: true }, { key: 'description', label: 'Description', sortable: false }, { key: 'totalNCParts', label: 'Total NC Parts', sortable: true }, { key: 'supplierCode', label: 'Supplier Code', sortable: true }, { key: 'rpn', label: 'RPN', sortable: true }, { key: 'commodity', label: 'Commodity', sortable: true }, { key: 'priority', label: 'Priority', sortable: true }, { key: 'prrStatus', label: 'PRR Status', sortable: true },
+        ];
+
+        // Initialize column visibility and order state
+        const initialVisibleKeys = ['status', 'supplierName', 'name', 'partName', 'incidentDate', 'defectCategory', 'age', 'priority'];
+        const initialColumnVisibility = {};
+        ALL_COLUMNS.forEach(c => {
+            initialColumnVisibility[c.key] = initialVisibleKeys.includes(c.key);
+        });
+
+        let state = {
+            currentTab: 'my',
+            data: [],
+            filteredData: [],
+            allColumnsOrdered: ALL_COLUMNS.map(c => c.key),
+            columnVisibility: initialColumnVisibility,
+            sortConfig: { key: 'incidentDate', direction: 'desc' },
+            currentPage: 1,
+            rowsPerPage: 10,
+            filters: { globalSearch: '', status: '', timeRange: '' },
+            searchDebounceTimer: null
+        };
+        let linkagePopoverHideTimer = null;
+        
+        // --- DOM Elements ---
+        const DOMElements = {
+            tabsContainer: document.getElementById('tabs-container'),
+            tableBody: document.getElementById('nc-table-body'),
+            tableHeaderRow: document.getElementById('table-header-row'),
+            paginationSummary: document.getElementById('pagination-summary'),
+            paginationControls: document.getElementById('pagination-controls'),
+            emptyState: document.getElementById('empty-state'),
+            loadingState: document.getElementById('loading-state'),
+            globalSearch: document.getElementById('globalSearch'),
+            statusFilter: document.getElementById('statusFilter'),
+            timeRangeFilter: document.getElementById('timeRangeFilter'),
+            rowsPerPage: document.getElementById('rowsPerPage'),
+            filterPillsContainer: document.getElementById('filterPillsContainer'),
+            tableContainer: document.getElementById('table-container'),
+            customTooltip: document.getElementById('customTooltip'),
+            columnConfigBtn: document.getElementById('columnConfigBtn'),
+            columnConfigPopover: document.getElementById('columnConfigPopover'),
+            columnCheckboxes: document.getElementById('column-checkboxes'),
+            linkagePopover: document.getElementById('linkagePopover'),
+            linkageList: document.getElementById('linkage-list'),
+        };
+
+        // --- Core Application Logic ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initEventListeners();
+            loadDataForTab();
+            renderColumnCheckboxes();
+        });
+        
+        function loadDataForTab() {
+            DOMElements.loadingState.classList.remove('hidden');
+            setTimeout(() => { // Simulate API call
+                if (state.currentTab === 'my') {
+                    state.data = ALL_MOCK_DATA.filter(d => d.coordinator === CURRENT_USER_ID);
+                } else {
+                    state.data = ALL_MOCK_DATA;
+                }
+                state.data = state.data.map(d => ({...d, age: calculateAge(d.incidentDate)}));
+                
+                // Reset state for the new view
+                state.currentPage = 1;
+                resetFilters();
+                updateView();
+                
+                DOMElements.loadingState.classList.add('hidden');
+            }, 500);
+        }
+
+        function updateView() {
+            applyFilters();
+            applySorting();
+            renderPills();
+            renderTable();
+            renderPagination();
+        }
+        
+        function applyFilters() {
+            const { globalSearch, status, timeRange } = state.filters;
+            const searchLower = globalSearch.toLowerCase();
+
+            let dateFilter = (item) => true;
+            if (timeRange) {
+                const now = new Date('2025-09-15T19:00:00');
+                let pastDate = new Date(now);
+                if (timeRange === '7d') pastDate.setDate(now.getDate() - 7);
+                else if (timeRange === '1m') pastDate.setMonth(now.getMonth() - 1);
+                else if (timeRange === '3m') pastDate.setMonth(now.getMonth() - 3);
+                else if (timeRange === '6m') pastDate.setMonth(now.getMonth() - 6);
+                else if (timeRange === '1y') pastDate.setFullYear(now.getFullYear() - 1);
+                else if (timeRange === '2y') pastDate.setFullYear(now.getFullYear() - 2);
+                else if (timeRange === '3y') pastDate.setFullYear(now.getFullYear() - 3);
+                dateFilter = (item) => new Date(item.incidentDate) >= pastDate;
+            }
+
+            state.filteredData = state.data.filter(item => {
+                const searchMatch = !searchLower || Object.entries(item).some(([key, val]) => {
+                    if (key === 'linkages') return false;
+                    return String(val).toLowerCase().includes(searchLower)
+                });
+                const statusMatch = !status || item.status === status;
+                
+                return searchMatch && statusMatch && dateFilter(item);
+            });
+        }
+
+
+        function applySorting() {
+            const { key, direction } = state.sortConfig;
+            if (!key) return;
+            state.filteredData.sort((a, b) => {
+                if (a[key] < b[key]) return direction === 'asc' ? -1 : 1;
+                if (a[key] > b[key]) return direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+        
+        // --- Rendering Functions ---
+
+        function renderTable() {
+            renderHeaders();
+            const { tableBody, emptyState } = DOMElements;
+            const paginatedData = paginate(state.filteredData, state.currentPage, state.rowsPerPage);
+
+            if (tableBody) tableBody.innerHTML = '';
+            if (tableBody) tableBody.classList.toggle('hidden', paginatedData.length === 0);
+            if (emptyState) emptyState.classList.toggle('hidden', paginatedData.length > 0);
+            
+            paginatedData.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 group';
+                const isClosed = ['Closed', 'Cancelled'].includes(item.status);
+                const isDraft = item.status === 'Draft';
+                const isOpen = item.status === 'Open';
+
+                let cellsHTML = `
+                    <td class="sticky left-0 bg-white group-hover:bg-gray-50 z-10 whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium">
+                        <div class="flex items-center space-x-2">
+                             <button class="p-1.5 text-gray-400 hover:text-green-600 ${isClosed ? 'opacity-50 cursor-not-allowed' : ''}" data-tooltip="Edit" ${isClosed ? 'disabled' : ''}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pointer-events-none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            </button>
+                            <button class="p-1.5 text-gray-400 hover:text-blue-600" data-tooltip="View">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pointer-events-none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </button>
+                            <div class="relative">
+                                <button class="linkage-btn p-1.5 rounded-full transition-all duration-200 ${isDraft || isOpen || item.linkages.count === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-blue-500 hover:bg-blue-100 hover:text-blue-700'}" data-linkages='${JSON.stringify(item.linkages)}' data-tooltip="View Linkages" ${isDraft || isOpen ? 'disabled' : ''}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd" /></svg>
+                                </button>
+                                ${item.linkages.count > 1 && !isOpen ? `<span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white pointer-events-none">${item.linkages.count}</span>` : ''}
+                            </div>
+                        </div>
+                    </td>
+                `;
+
+                state.allColumnsOrdered.forEach(key => {
+                    if (!state.columnVisibility[key]) return; // Skip hidden columns
+                    const cellValue = item[key];
+                    let cellContent = cellValue ?? '-';
+                    if (key === 'status') {
+                        cellContent = `<span class="status-badge ${getStatusClass(item.status)}">${item.status}</span>`;
+                    } else if (typeof cellValue === 'boolean') {
+                        cellContent = cellValue ? 'Yes' : 'No';
+                    } else if (['supplierName', 'partName', 'description'].includes(key) && cellValue) {
+                         cellContent = `<div class="truncate-cell" data-tooltip="${cellValue}">${cellValue}</div>`;
+                    }
+                    cellsHTML += `<td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">${cellContent}</td>`;
+                });
+                
+                tr.innerHTML = cellsHTML;
+                if (tableBody) tableBody.appendChild(tr);
+            });
+            handleTableScroll();
+        }
+        
+        function renderHeaders() {
+            let headerHTML = `<th scope="col" class="sticky left-0 bg-gray-50 z-10 py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 w-32">Actions</th>`;
+            state.allColumnsOrdered.forEach(key => {
+                if (!state.columnVisibility[key]) return; // Skip hidden columns
+
+                const colConfig = ALL_COLUMNS.find(c => c.key === key);
+                if (!colConfig) return;
+                const sortIcon = colConfig.sortable ? `
+                    <button class="ml-1" data-sort-key="${key}" aria-label="Sort by ${colConfig.label}">
+                        <svg class="sort-icon h-4 w-4 ${state.sortConfig.key === key ? 'active' : ''}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${state.sortConfig.key === key && state.sortConfig.direction === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'}" /></svg>
+                    </button>` : '';
+                headerHTML += `<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"><div class="flex items-center">${colConfig.label} ${sortIcon}</div></th>`;
+            });
+            if (DOMElements.tableHeaderRow) DOMElements.tableHeaderRow.innerHTML = headerHTML;
+        }
+        
+        function renderPills() {
+            const { filterPillsContainer, globalSearch, statusFilter, timeRangeFilter } = DOMElements;
+            if (filterPillsContainer) filterPillsContainer.innerHTML = ''; 
+            let hasFilters = false;
+            Object.entries(state.filters).forEach(([key, value]) => {
+                if (!value) return; 
+                hasFilters = true; 
+                let label = '';
+                if (key === 'globalSearch') label = `Search: "${value}"`;
+                else if (key === 'status' && statusFilter) label = statusFilter.options[statusFilter.selectedIndex].text;
+                else if (key === 'timeRange' && timeRangeFilter) label = timeRangeFilter.options[timeRangeFilter.selectedIndex].text;
+                if (label && filterPillsContainer) {
+                    filterPillsContainer.innerHTML += `<span class="inline-flex items-center gap-x-1.5 rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">${label} <button type="button" class="group relative -mr-1 h-3.5 w-3.5 rounded-sm hover:bg-blue-600/20" data-filter-key="${key}" aria-label="Remove ${label} filter"><svg viewBox="0 0 14 14" class="h-3.5 w-3.5 stroke-blue-600/50 group-hover:stroke-blue-600/75"><path d="M4 4l6 6m0-6l-6 6" /></svg></button></span>`;
+                }
+            });
+            if (hasFilters && filterPillsContainer) {
+                 filterPillsContainer.innerHTML += `<button id="clearFiltersBtn" class="text-sm text-blue-600 hover:underline">Clear All</button>`;
+            }
+        }
+        
+        function renderPagination() {
+            const { paginationSummary, paginationControls } = DOMElements;
+            if (!paginationSummary || !paginationControls) return;
+
+            const totalItems = state.filteredData.length;
+            const start = totalItems > 0 ? (state.currentPage - 1) * state.rowsPerPage + 1 : 0;
+            const end = Math.min(start + state.rowsPerPage - 1, totalItems);
+            paginationSummary.textContent = `Showing ${start} to ${end} of ${totalItems} records`;
+            const totalPages = Math.ceil(totalItems / state.rowsPerPage) || 1;
+            let controlsHTML = `<button class="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50" ${state.currentPage === 1 ? 'disabled' : ''} data-page="prev" aria-label="Previous page"><svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button>`;
+            for(let i = 1; i <= totalPages; i++) {
+                if (totalPages > 5 && (i > 2 && i < totalPages - 1)) {
+                    if (i === 3) controlsHTML += `<span class="px-2">...</span>`; continue;
+                }
+                controlsHTML += `<button class="px-3 py-1 rounded-md hover:bg-gray-100 ${i === state.currentPage ? 'bg-blue-100 text-blue-700 font-semibold' : ''}" data-page="${i}" aria-label="Go to page ${i}">${i}</button>`;
+            }
+            controlsHTML += `<button class="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50" ${state.currentPage === totalPages ? 'disabled' : ''} data-page="next" aria-label="Next page"><svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></button>`;
+            paginationControls.innerHTML = controlsHTML;
+        }
+
+        function renderColumnCheckboxes() {
+            if (!DOMElements.columnCheckboxes) return;
+            DOMElements.columnCheckboxes.innerHTML = '';
+            state.allColumnsOrdered.forEach(key => {
+                const col = ALL_COLUMNS.find(c => c.key === key);
+                if (!col) return;
+                const isChecked = state.columnVisibility[key];
+                
+                const div = document.createElement('div');
+                div.className = 'flex items-center p-1.5 hover:bg-gray-50 rounded-md';
+                div.setAttribute('draggable', true);
+                div.dataset.key = key;
+
+                div.innerHTML = `
+                    <svg class="h-5 w-5 drag-handle mr-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a.75.75 0 01.75.75v12.5a.75.75 0 01-1.5 0V3.75A.75.75 0 0110 3zM3.75 10a.75.75 0 01.75-.75h11.5a.75.75 0 010 1.5H4.5a.75.75 0 01-.75-.75z" clip-rule="evenodd" transform="rotate(90 10 10) scale(0.8)" />
+                    </svg>
+                    <label class="flex items-center w-full cursor-pointer">
+                        <input type="checkbox" ${isChecked ? 'checked' : ''} data-key="${col.key}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 column-toggle">
+                        <span class="ml-2 block text-sm text-gray-700 select-none">${col.label}</span>
+                    </label>
+                `;
+                DOMElements.columnCheckboxes.appendChild(div);
+            });
+        }
+        
+        // --- Event Handlers & Helpers ---
+        function initEventListeners() {
+            if (DOMElements.tabsContainer) {
+                DOMElements.tabsContainer.addEventListener('click', e => {
+                    e.preventDefault();
+                    const tabButton = e.target.closest('.tab-item');
+                    if (tabButton && !tabButton.classList.contains('active')) {
+                        const newTab = tabButton.dataset.tab;
+                        state.currentTab = newTab;
+                        const currentActiveTab = DOMElements.tabsContainer.querySelector('.active');
+                        if (currentActiveTab) {
+                            currentActiveTab.classList.remove('active', 'border-blue-600', 'text-blue-600');
+                            currentActiveTab.classList.add('border-transparent', 'text-gray-500');
+                            currentActiveTab.removeAttribute('aria-current');
+                        }
+                        tabButton.classList.add('active', 'border-blue-600', 'text-blue-600');
+                        tabButton.classList.remove('border-transparent', 'text-gray-500');
+                        tabButton.setAttribute('aria-current', 'page');
+                        loadDataForTab();
+                    }
+                });
+            }
+
+            if (DOMElements.globalSearch) {
+                DOMElements.globalSearch.addEventListener('input', e => {
+                    clearTimeout(state.searchDebounceTimer);
+                    state.searchDebounceTimer = setTimeout(() => {
+                        state.filters.globalSearch = e.target.value; state.currentPage = 1; updateView();
+                    }, 300);
+                });
+            }
+
+            if (DOMElements.statusFilter) {
+                DOMElements.statusFilter.addEventListener('change', e => {
+                    state.filters.status = e.target.value; state.currentPage = 1; updateView();
+                });
+            }
+
+            if (DOMElements.timeRangeFilter) {
+                DOMElements.timeRangeFilter.addEventListener('change', e => {
+                    state.filters.timeRange = e.target.value; state.currentPage = 1; updateView();
+                });
+            }
+
+            if (DOMElements.rowsPerPage) {
+                DOMElements.rowsPerPage.addEventListener('change', e => {
+                    state.rowsPerPage = parseInt(e.target.value, 10); state.currentPage = 1; updateView();
+                });
+            }
+
+            if (DOMElements.tableContainer) {
+                DOMElements.tableContainer.addEventListener('scroll', handleTableScroll);
+            }
+
+            if (DOMElements.filterPillsContainer) {
+                DOMElements.filterPillsContainer.addEventListener('click', e => {
+                     if (e.target.closest('#clearFiltersBtn')) { resetFilters(); updateView(); }
+                     const pillRemoveBtn = e.target.closest('[data-filter-key]');
+                     if(pillRemoveBtn) {
+                         const key = pillRemoveBtn.dataset.filterKey; state.filters[key] = '';
+                         if(key === 'globalSearch' && DOMElements.globalSearch) DOMElements.globalSearch.value = '';
+                         if(key === 'status' && DOMElements.statusFilter) DOMElements.statusFilter.value = '';
+                         if(key === 'timeRange' && DOMElements.timeRangeFilter) DOMElements.timeRangeFilter.value = '';
+                         updateView();
+                     }
+                });
+            }
+
+            if (DOMElements.tableHeaderRow) {
+                DOMElements.tableHeaderRow.addEventListener('click', e => {
+                    const sortBtn = e.target.closest('[data-sort-key]'); if(!sortBtn) return;
+                    const key = sortBtn.dataset.sortKey;
+                    if (state.sortConfig.key === key) {
+                        state.sortConfig.direction = state.sortConfig.direction === 'asc' ? 'desc' : 'asc';
+                    } else { state.sortConfig = { key, direction: 'asc' }; }
+                    updateView();
+                });
+            }
+
+            if (DOMElements.paginationControls) {
+                DOMElements.paginationControls.addEventListener('click', e => {
+                    const pageBtn = e.target.closest('[data-page]'); if(!pageBtn) return;
+                    const page = pageBtn.dataset.page;
+                    const totalPages = Math.ceil(state.filteredData.length / state.rowsPerPage);
+                    if(page === 'next') state.currentPage = Math.min(state.currentPage + 1, totalPages);
+                    else if(page === 'prev') state.currentPage = Math.max(state.currentPage - 1, 1);
+                    else state.currentPage = parseInt(page, 10);
+                    updateView();
+                });
+            }
+
+            document.body.addEventListener('mouseover', e => {
+                const target = e.target.closest('[data-tooltip]'); if (target) showTooltip(target);
+            });
+            document.body.addEventListener('mouseout', e => {
+                const target = e.target.closest('[data-tooltip]'); if (target) hideTooltip();
+            });
+
+            // --- Linkage Popover Hover Logic ---
+            if (DOMElements.tableBody) {
+                DOMElements.tableBody.addEventListener('mouseover', e => {
+                    const linkageBtn = e.target.closest('.linkage-btn');
+                    if (linkageBtn && !linkageBtn.disabled) {
+                        clearTimeout(linkagePopoverHideTimer);
+                        const linkages = JSON.parse(linkageBtn.dataset.linkages);
+                        if (linkages.count > 0) {
+                            openLinkagePopover(linkageBtn, linkages);
+                        }
+                    }
+                });
+            }
+
+            const handleLinkageMouseOut = () => {
+                linkagePopoverHideTimer = setTimeout(() => {
+                    if (DOMElements.linkagePopover) DOMElements.linkagePopover.classList.remove('active');
+                }, 300);
+            };
+
+            if (DOMElements.tableBody) {
+                DOMElements.tableBody.addEventListener('mouseout', e => {
+                    if (e.target.closest('.linkage-btn')) {
+                        handleLinkageMouseOut();
+                    }
+                });
+            }
+
+            if (DOMElements.linkagePopover) {
+                DOMElements.linkagePopover.addEventListener('mouseover', () => {
+                    clearTimeout(linkagePopoverHideTimer);
+                });
+
+                DOMElements.linkagePopover.addEventListener('mouseout', handleLinkageMouseOut);
+            }
+            // --- End Linkage Popover Hover Logic ---
+            if (DOMElements.columnConfigBtn) {
+                DOMElements.columnConfigBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); togglePopover(DOMElements.columnConfigPopover, DOMElements.columnConfigBtn);
+                });
+            }
+
+            if (DOMElements.columnCheckboxes) {
+                DOMElements.columnCheckboxes.addEventListener('change', e => {
+                    if (e.target.classList.contains('column-toggle')) {
+                        const key = e.target.dataset.key;
+                        state.columnVisibility[key] = e.target.checked;
+                        updateView();
+                    }
+                });
+
+                // Drag and Drop Event Listeners
+                let draggedElement = null;
+                const dragContainer = DOMElements.columnCheckboxes;
+                dragContainer.addEventListener('dragstart', e => {
+                    draggedElement = e.target.closest('[draggable="true"]');
+                    if (draggedElement) {
+                        e.dataTransfer.effectAllowed = 'move';
+                        setTimeout(() => draggedElement.classList.add('dragging'), 0);
+                    }
+                });
+                dragContainer.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    const targetElement = e.target.closest('[draggable="true"]');
+                    if (targetElement && targetElement !== draggedElement) {
+                        const rect = targetElement.getBoundingClientRect();
+                        const nextElement = (e.clientY - rect.top) > (rect.height / 2) ? targetElement.nextSibling : targetElement;
+                        dragContainer.insertBefore(draggedElement, nextElement);
+                    }
+                });
+                dragContainer.addEventListener('drop', e => {
+                    e.preventDefault();
+                    if (draggedElement) {
+                        const newOrder = Array.from(dragContainer.children).map(child => child.dataset.key);
+                        state.allColumnsOrdered = newOrder;
+                        updateView();
+                    }
+                });
+                dragContainer.addEventListener('dragend', () => {
+                    if (draggedElement) {
+                        draggedElement.classList.remove('dragging');
+                        draggedElement = null;
+                    }
+                });
+            }
+
+            document.addEventListener('click', e => {
+                if (!e.target.closest('.popover')) {
+                    document.querySelectorAll('.popover.active').forEach(p => p.classList.remove('active'));
+                }
+            });
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.popover.active').forEach(p => p.classList.remove('active'));
+                }
+            });
+        }
+        
+        function openLinkagePopover(button, linkages) {
+            const { linkagePopover } = DOMElements;
+            if (!linkagePopover) return;
+
+            // Map linkage types to SVG icons
+            const icons = {
+                '8D': '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>',
+                'CAPA': '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>',
+                'AD': '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>',
+                'CopQ': '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" /></svg>',
+            };
+            const chevronRight = `<svg class="h-4 w-4 ml-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>`;
+
+            let popoverContent = `<h4 class="font-semibold text-sm mb-1 pb-2 border-b text-gray-800">Linked Items</h4><ul class="space-y-1 mt-2">`;
+            
+            linkages.items.forEach(link => {
+                const iconSVG = icons[link] || icons['AD']; // Default to document icon
+                popoverContent += `
+                    <li>
+                        <a href="#" class="flex items-center p-2 -mx-2 rounded-md hover:bg-gray-100 transition-colors duration-150 group">
+                            <span class="text-gray-500 group-hover:text-blue-600">${iconSVG}</span>
+                            <span class="ml-3 text-sm font-medium text-gray-700">${link}</span>
+                            ${chevronRight}
+                        </a>
+                    </li>
+                `;
+            });
+
+            popoverContent += `</ul>`;
+            linkagePopover.innerHTML = popoverContent;
+            
+            togglePopover(linkagePopover, button, 'left');
+        }
+
+        function togglePopover(popover, button, position = 'right') {
+            if (!popover || !button) return;
+
+            if (popover.classList.contains('active')) {
+                popover.classList.remove('active');
+                return;
+            }
+            document.querySelectorAll('.popover.active').forEach(p => p.classList.remove('active'));
+
+            popover.style.visibility = 'hidden';
+            popover.classList.add('active');
+
+            const rect = button.getBoundingClientRect();
+            const popoverWidth = popover.offsetWidth;
+            const popoverHeight = popover.offsetHeight;
+
+            let top = rect.bottom + window.scrollY + 5;
+            let left;
+
+            if (position === 'left') {
+                left = rect.left + window.scrollX;
+            } else { 
+                left = rect.right + window.scrollX - popoverWidth;
+            }
+
+            const margin = 8; 
+
+            if (left + popoverWidth > window.innerWidth) {
+                left = window.innerWidth - popoverWidth - margin;
+            }
+            if (left < 0) {
+                left = margin;
+            }
+            if (top + popoverHeight > window.innerHeight + window.scrollY) {
+                top = rect.top + window.scrollY - popoverHeight - 5; 
+            }
+             if (top < window.scrollY) {
+                top = rect.bottom + window.scrollY + 5; 
+            }
+
+            popover.style.top = `${top}px`;
+            popover.style.left = `${left}px`;
+            
+            popover.style.visibility = 'visible';
+        }
+        
+        function resetFilters() {
+            state.filters = { globalSearch: '', status: '', timeRange: ''};
+            if (DOMElements.globalSearch) DOMElements.globalSearch.value = '';
+            if (DOMElements.statusFilter) DOMElements.statusFilter.value = '';
+            if (DOMElements.timeRangeFilter) DOMElements.timeRangeFilter.value = '';
+        }
+
+        // --- Utility Functions ---
+        function calculateAge(incidentDate) {
+            const today = new Date('2025-09-15T19:00:00');
+            const incident = new Date(incidentDate);
+            return Math.ceil(Math.abs(today - incident) / (1000 * 60 * 60 * 24));
+        }
+        function getStatusClass(status) {
+            const map = { 'open': 'status-open', 'closed': 'status-closed', 'cancelled': 'status-cancelled', 'draft': 'status-draft', 'dispute accept': 'status-dispute-accept', 'capa closed': 'status-capa-closed'};
+            return map[status.toLowerCase()] || 'bg-gray-200';
+        }
+        function paginate(array, num, size) { return array.slice((num - 1) * size, num * size); }
+        function handleTableScroll() {
+            const el = DOMElements.tableContainer;
+            if (el) {
+                el.classList.toggle('is-scrolling-right', el.scrollWidth > el.clientWidth && el.scrollWidth - el.scrollLeft - el.clientWidth > 1);
+            }
+        }
+        function showTooltip(el) {
+            const t = DOMElements.customTooltip; 
+            if (t) {
+                t.textContent = el.dataset.tooltip; t.style.display = 'block';
+                const rect = el.getBoundingClientRect();
+                t.style.top = `${rect.top + window.scrollY - t.offsetHeight - 5}px`;
+                t.style.left = `${rect.left + window.scrollX + (rect.width / 2) - (t.offsetWidth / 2)}px`;
+            }
+        }
+        function hideTooltip() { 
+            if (DOMElements.customTooltip) {
+                DOMElements.customTooltip.style.display = 'none'; 
+            }
+        }
+    </script>
+</body>
+</html>
+

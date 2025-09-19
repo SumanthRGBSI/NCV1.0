@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NC Navigation Hub</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Custom Configuration for Tailwind -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            primary: { '50': '#f0f9ff', '100': '#e0f2fe', '200': '#bae6fd', '300': '#7dd3fc', '400': '#38bdf8', '500': '#0ea5e9', '600': '#0284c7', '700': '#0369a1', '800': '#075985', '900': '#0c4a6e' },
+            slate: { '50': '#f8fafc', '100': '#f1f5f9', '200': '#e2e8f0', '300': '#cbd5e1', '400': '#94a3b8', '500': '#64748b', '600': '#475569', '700': '#334155', '800': '#1e293b', '900': '#0f172a' }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-out forwards',
+            'slide-up': 'slideUp 0.5s ease-out forwards',
+          },
+          keyframes: {
+            fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } },
+            slideUp: { '0%': { transform: 'translateY(20px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 } },
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom Styles -->
+  <style type="text/tailwindcss">
+    body { @apply bg-slate-50 font-sans text-slate-700 antialiased; }
+    .nav-link { @apply px-3 py-2 text-sm font-medium text-slate-600 hover:bg-primary-50 hover:text-primary-600 rounded-md transition-colors duration-200 flex items-center gap-1; }
+    .nav-link.active { @apply bg-primary-100 text-primary-700 font-semibold; }
+    .card { @apply bg-white border border-slate-200/80 rounded-2xl shadow-sm hover:shadow-lg transition-shadow duration-300; }
+    .btn { @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg font-semibold shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2; }
+    .btn-primary { @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500; }
+    .btn-secondary { @apply bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:ring-primary-500; }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <!-- Header -->
+  <header id="header" class="bg-white/80 backdrop-blur-sm sticky top-0 z-50 border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-4">
+          <a href="#hub" class="flex items-center gap-3 group">
+            <div class="h-10 w-10 rounded-lg bg-primary-600 text-white grid place-items-center font-black text-lg shadow-md group-hover:scale-105 transition-transform">N</div>
+            <div>
+              <p class="text-xs tracking-wider text-slate-500 uppercase font-medium">NC Module</p>
+              <h1 class="text-base font-bold text-slate-800">Navigation Hub</h1>
+            </div>
+          </a>
+        </div>
+        <!-- Desktop Nav Links will be injected here -->
+        <nav class="hidden md:flex items-center gap-1" id="desktop-nav"></nav>
+        <div class="md:hidden">
+          <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-slate-500 hover:text-primary-600 hover:bg-primary-50 focus:outline-none">
+            <span class="sr-only">Open main menu</span>
+            <svg id="menu-icon-open" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+            <svg id="menu-icon-close" class="h-6 w-6 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="mobile-menu" class="md:hidden hidden">
+      <!-- Mobile Nav Links will be injected here -->
+      <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3" id="mobile-nav"></div>
+    </div>
+  </header>
+
+  <!-- Main Content Outlet -->
+  <main id="page-content" class="flex-grow">
+    <!-- Page content will be injected here by JavaScript -->
+  </main>
+
+  <!-- Page Templates -->
+  <template id="hub-page">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">Module Hub</h2>
+        <p class="mt-4 text-lg text-slate-600">Select a destination to begin your workflow.</p>
+      </div>
+      <!-- Hub Page Sections will be injected here -->
+      <div id="hub-sections-container" class="space-y-12"></div>
+    </div>
+  </template>
+
+  <!-- NC Group Templates -->
+  <template id="listing-page"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in text-center"><h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">NC Listing Page</h2><p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">All available NC reports would appear here.</p><div class="mt-8"><a href="NC Listing Page.html" class="btn btn-primary">View Listing Page</a></div></div></template>
+  <template id="creation-page"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in text-center"><h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">NC Creation Page</h2><p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">A form to create a new NC report would be here.</p></div></template>
+  <template id="view-page"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in text-center"><h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">NC View Page</h2><p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">Details of a specific NC would be displayed here.</p></div></template>
+  <template id="dashboard-page"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in text-center"><h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">NC Dashboard</h2><p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">Charts and stats about all NC reports would live here.</p></div></template>
+
+  <!-- 8D Group Templates -->
+  <template id="8d_view-page"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in text-center"><h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">View 8D Report</h2><p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">Details of a specific 8D report would be displayed here.</p></div></template>
+  <template id="8d_create-page"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in text-center"><h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Create 8D Report</h2><p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">A form to create a new 8D report would be here.</p></div></template>
+  <template id="8d_edit-page"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in text-center"><h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Edit 8D Report</h2><p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">A form to edit an existing 8D report would be here.</p></div></template>
+
+  <!-- CAPA Group Templates -->
+  <template id="capa_view-page"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in text-center"><h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">View CAPA</h2><p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">Details of a specific CAPA would be displayed here.</p></div></template>
+  <template id="capa_create-page"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in text-center"><h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Create CAPA</h2><p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">A form to create a new CAPA would be here.</p></div></template>
+  <template id="capa_edit-page"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in text-center"><h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Edit CAPA</h2><p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">A form to edit an existing CAPA would be here.</p></div></template>
+
+  <!-- CoPQ Group Templates -->
+  <template id="copq_view-page"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in text-center"><h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">View CoPQ Data</h2><p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">Details of CoPQ data would be displayed here.</p></div></template>
+  <template id="copq_create-page"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in text-center"><h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Create CoPQ Entry</h2><p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">A form to create a new CoPQ entry would be here.</p></div></template>
+  <template id="copq_edit-page"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in text-center"><h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Edit CoPQ Entry</h2><p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">A form to edit an existing CoPQ entry would be here.</p></div></template>
+  <template id="copq_mapping-page"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in text-center"><h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">CoPQ Mapping</h2><p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">A tool to map CoPQ data points would be here.</p><div class="mt-8"><a href="CoPQ/Template/Mapping.html" class="btn btn-primary">CoPQ Mapping</a></div></div></template>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p class="text-sm text-slate-500">&copy; 2024 NC Module Demo. All Rights Reserved.</p>
+        <!-- Footer Links will be injected here -->
+        <div class="flex items-center gap-6" id="footer-links"></div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // --- SINGLE SOURCE OF TRUTH FOR PAGES ---
+      const PAGES = [
+        { id: 'hub', title: 'Hub' },
+        // NC Group
+        { id: 'listing', title: 'Listing', url: 'NC Listing Page.html', description: 'Browse all NC reports.', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>`, group: 'NC Group' },
+        { id: 'creation', title: 'Creation', url: 'NC Creation and Edit Page.html', description: 'Launch a new NC report.', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`, group: 'NC Group' },
+        { id: 'view', title: 'View', description: 'Track a specific NC.', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>`, group: 'NC Group' },
+        { id: 'dashboard', title: 'Dashboard', description: 'Visualize NC data.', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>`, group: 'NC Group' },
+        
+        // 8D Group
+        { id: '8d_view', title: 'View', description: 'View 8D reports.', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>`, group: '8D Group' },
+        { id: '8d_create', title: 'Create', description: 'Create a new 8D report.', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`, group: '8D Group' },
+        { id: '8d_edit', title: 'Edit', description: 'Edit an existing 8D.', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>`, group: '8D Group' },
+
+        // CAPA Group
+        { id: 'capa_view', title: 'View', description: 'View CAPA reports.', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`, group: 'CAPA Group' },
+        { id: 'capa_create', title: 'Create', description: 'Create a new CAPA.', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`, group: 'CAPA Group' },
+        { id: 'capa_edit', title: 'Edit', description: 'Edit an existing CAPA.', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>`, group: 'CAPA Group' },
+
+        // CoPQ Group
+        { id: 'copq_view', title: 'View', description: 'View CoPQ data.', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>`, group: 'CoPQ Group' },
+        { id: 'copq_create', title: 'Create', description: 'Log new CoPQ entries.', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`, group: 'CoPQ Group' },
+        { id: 'copq_edit', title: 'Edit', description: 'Edit CoPQ entries.', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>`, group: 'CoPQ Group' },
+        { id: 'copq_mapping', title: 'Mapping', url: 'CoPQ/Template/Mapping.html',  description: 'Map CoPQ data points.', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`, group: 'CoPQ Group' },
+      ];
+      
+      const pageGroups = PAGES.reduce((acc, page) => {
+        if (page.group) {
+          if (!acc[page.group]) acc[page.group] = [];
+          acc[page.group].push(page);
+        }
+        return acc;
+      }, {});
+
+      // --- DYNAMIC CONTENT GENERATION ---
+      const pageContent = document.getElementById('page-content');
+      const desktopNav = document.getElementById('desktop-nav');
+      const mobileNav = document.getElementById('mobile-nav');
+      const footerLinks = document.getElementById('footer-links');
+      
+      function generateContent() {
+        desktopNav.innerHTML = `<a href="#hub" class="nav-link">Hub</a>`;
+        mobileNav.innerHTML = `<a href="#hub" class="nav-link block">Hub</a>`;
+        footerLinks.innerHTML = '';
+
+        for (const groupName in pageGroups) {
+          const groupPages = pageGroups[groupName];
+          
+          // Desktop Nav
+          desktopNav.innerHTML += `
+            <div class="relative group">
+              <button class="nav-link">
+                ${groupName}
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+              </button>
+              <div class="absolute top-full left-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-lg z-10 hidden group-hover:block">
+                <div class="py-1">
+                  ${groupPages.map(p => `<a href="${p.url || '#' + p.id}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-primary-50 hover:text-primary-600">${p.title}</a>`).join('')}
+                </div>
+              </div>
+            </div>
+          `;
+          
+          // Mobile Nav
+          mobileNav.innerHTML += `<div class="px-3 py-2 text-xs font-semibold text-slate-500 uppercase">${groupName}</div>`;
+          groupPages.forEach(p => {
+             mobileNav.innerHTML += `<a href="${p.url || '#' + p.id}" class="nav-link block ml-2">${p.title}</a>`;
+          });
+          
+          // Footer
+          footerLinks.innerHTML += `
+            <div>
+              <h4 class="text-sm font-semibold text-slate-800">${groupName}</h4>
+              <div class="flex flex-col items-start gap-1 mt-2">
+                ${groupPages.map(p => `<a href="${p.url || '#' + p.id}" class="text-sm text-slate-600 hover:text-primary-600 transition-colors">${p.title}</a>`).join('')}
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      function generateHubSections() {
+        const hubContainer = document.getElementById('hub-sections-container');
+        if (!hubContainer) return;
+        hubContainer.innerHTML = '';
+
+        for (const groupName in pageGroups) {
+           const groupPages = pageGroups[groupName];
+           hubContainer.innerHTML += `
+            <section>
+              <h3 class="text-2xl font-bold text-slate-800 mb-6">${groupName}</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
+                ${groupPages.map(page => `
+                  <a href="${page.url || '#' + page.id}" class="card p-6 text-center group flex flex-col items-center justify-center transform hover:-translate-y-2 transition-transform duration-300">
+                    <div class="mb-4 h-16 w-16 rounded-full bg-primary-100 text-primary-600 grid place-items-center transition-all duration-300 group-hover:bg-primary-600 group-hover:text-white group-hover:scale-110">
+                      ${page.icon}
+                    </div>
+                    <h4 class="text-lg font-bold text-slate-800">${page.title}</h4>
+                    <p class="mt-1 text-sm text-slate-500">${page.description}</p>
+                  </a>
+                `).join('')}
+              </div>
+            </section>
+           `;
+        }
+      }
+
+      // --- PAGE ROUTING LOGIC ---
+      const routes = PAGES.reduce((acc, page) => {
+        if (!page.url) acc[`#${page.id}`] = `${page.id}-page`;
+        return acc;
+      }, {});
+      
+      function loadContent() {
+        const hash = window.location.hash || '#hub';
+        const templateId = routes[hash];
+        
+        if (templateId) {
+          const template = document.getElementById(templateId);
+          if (template) {
+            pageContent.innerHTML = '';
+            pageContent.appendChild(template.content.cloneNode(true));
+            if (hash === '#hub') generateHubSections();
+            
+            const animatedElements = pageContent.querySelectorAll('.animate-fade-in');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                el.offsetHeight;
+                el.style.animation = null; 
+            });
+          }
+        }
+        updateActiveLinks(hash);
+      }
+      
+      function updateActiveLinks(hash) {
+          const allLinks = document.querySelectorAll('.nav-link');
+          allLinks.forEach(link => {
+              link.classList.remove('active');
+              if (link.getAttribute('href') === hash) {
+                  link.classList.add('active');
+              }
+          });
+      }
+      
+      // --- INITIALIZATION ---
+      generateContent();
+      window.addEventListener('hashchange', loadContent);
+      loadContent();
+
+      // --- Mobile Menu Toggle ---
+      const mobileMenuButton = document.getElementById('mobile-menu-button');
+      const mobileMenu = document.getElementById('mobile-menu');
+      const menuIconOpen = document.getElementById('menu-icon-open');
+      const menuIconClose = document.getElementById('menu-icon-close');
+
+      mobileMenuButton.addEventListener('click', () => {
+        const isHidden = mobileMenu.classList.toggle('hidden');
+        menuIconOpen.classList.toggle('hidden', !isHidden);
+        menuIconClose.classList.toggle('hidden', isHidden);
+      });
+      
+      mobileNav.addEventListener('click', (e) => {
+          if (e.target.tagName === 'A') {
+              mobileMenu.classList.add('hidden');
+              menuIconOpen.classList.remove('hidden');
+              menuIconClose.classList.add('hidden');
+          }
+      });
+    });
+  </script>
+
+</body>
+</html>
+

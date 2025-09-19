@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NC Creation Wizard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* A slightly off-white background */
+        }
+
+        /* Custom styles for the stepper */
+        .step {
+            transition: all 0.3s ease;
+        }
+        .step-active {
+            color: #3b82f6; /* blue-500 */
+            border-color: #3b82f6;
+        }
+        .step-completed {
+            color: #16a34a; /* green-600 */
+            border-color: #16a34a;
+        }
+        .step-connector {
+            flex: 1 1 0%;
+            height: 2px;
+            background-color: #d1d5db; /* gray-300 */
+            transition: background-color 0.3s ease;
+        }
+        .step-connector-completed {
+            background-color: #16a34a;
+        }
+        
+        /* Custom styles for animations and specific components */
+        .form-step {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .form-step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Custom scrollbar for summary panel */
+        .summary-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+        .summary-panel::-webkit-scrollbar-track {
+            background: #e5e7eb;
+        }
+        .summary-panel::-webkit-scrollbar-thumb {
+            background: #9ca3af;
+            border-radius: 3px;
+        }
+        .summary-panel::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+        
+        /* Styling for the search dropdowns */
+        .search-results {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #d1d5db;
+            border-top: none;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 lg:p-8">
+
+    <div class="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-200">
+        <div class="p-6 border-b border-gray-200">
+            <h1 class="text-2xl font-bold text-gray-800">Create New Non-Conformance</h1>
+            <p class="mt-1 text-gray-500">Follow the steps below to report a new NC.</p>
+        </div>
+
+        <!-- Stepper -->
+        <div id="stepper" class="p-6 border-b border-gray-200 flex items-center">
+            <!-- Step 1 -->
+            <div class="step step-active flex items-center" data-step="1">
+                <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold">1</div>
+                <div class="ml-3 font-semibold hidden md:block">Core Issue</div>
+            </div>
+            <div class="step-connector"></div>
+            <!-- Step 2 -->
+            <div class="step flex items-center" data-step="2">
+                <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold">2</div>
+                <div class="ml-3 font-semibold hidden md:block">Affected Item</div>
+            </div>
+            <div class="step-connector"></div>
+            <!-- Step 3 -->
+            <div class="step flex items-center" data-step="3">
+                <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold">3</div>
+                <div class="ml-3 font-semibold hidden md:block">Context & Ownership</div>
+            </div>
+            <div class="step-connector"></div>
+            <!-- Step 4 -->
+            <div class="step flex items-center" data-step="4">
+                <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold">4</div>
+                <div class="ml-3 font-semibold hidden md:block">Disposition & Action</div>
+            </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row">
+            <!-- Form Content -->
+            <div class="w-full lg:w-2/3 p-6 sm:p-8">
+                <form id="ncForm">
+                    <!-- Step 1: Define the Core Issue -->
+                    <div id="step-1" class="form-step active">
+                        <h2 class="text-xl font-semibold text-gray-700 mb-6">Step 1: Define the Core Issue</h2>
+                        <div class="space-y-6">
+                            <div>
+                                <label for="ncTitle" class="block text-sm font-medium text-gray-700">NC Title</label>
+                                <input type="text" id="ncTitle" name="ncTitle" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="e.g., Crack found on chassis bracket">
+                            </div>
+                            <div>
+                                <label for="whatHappened" class="block text-sm font-medium text-gray-700">What Happened?</label>
+                                <textarea id="whatHappened" name="whatHappened" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="Provide a detailed description of the non-conformance..."></textarea>
+                            </div>
+                            <div>
+                                <label for="whyProblem" class="block text-sm font-medium text-gray-700">Why is it a Problem?</label>
+                                <textarea id="whyProblem" name="whyProblem" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="Explain the reason this is a non-conformance..."></textarea>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="ncType" class="block text-sm font-medium text-gray-700">NC Type</label>
+                                    <select id="ncType" name="ncType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                        <option value="supplier">Supplier</option>
+                                        <option value="internal">Internal</option>
+                                        <option value="customer">Customer</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="ncBuildEvent" class="block text-sm font-medium text-gray-700">NC Build Event</label>
+                                    <input type="text" id="ncBuildEvent" name="ncBuildEvent" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="e.g., Pilot Build, Stage 2">
+                                </div>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-4">
+                               <h3 class="font-medium text-gray-800">Defect Classification</h3>
+                               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                   <div>
+                                       <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+                                       <select id="category" name="category" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"><option>Cosmetic</option><option>Functional</option><option>Safety</option></select>
+                                   </div>
+                                   <div>
+                                       <label for="defect" class="block text-sm font-medium text-gray-700">Defect Type</label>
+                                       <select id="defect" name="defect" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"><option>Scratch</option><option>Dent</option><option>Crack</option><option>Missing Component</option></select>
+                                   </div>
+                               </div>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-4">
+                               <h3 class="font-medium text-gray-800">Detection Details</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label for="detectionDate" class="block text-sm font-medium text-gray-700">When Detected?</label>
+                                        <input type="date" id="detectionDate" name="detectionDate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    </div>
+                                    <div>
+                                        <label for="detectionTime" class="block text-sm font-medium text-gray-700">Time</label>
+                                        <input type="time" id="detectionTime" name="detectionTime" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    </div>
+                                     <div>
+                                        <label for="whoDetected" class="block text-sm font-medium text-gray-700">Who Detected It?</label>
+                                        <input type="text" id="whoDetected" name="whoDetected" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="Enter name or employee ID...">
+                                    </div>
+                                    <div>
+                                        <label for="inspector" class="block text-sm font-medium text-gray-700">Inspector</label>
+                                        <input type="text" id="inspector" name="inspector" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="Inspector's name...">
+                                    </div>
+                                     <div>
+                                        <label for="whereDetected" class="block text-sm font-medium text-gray-700">Where Detected?</label>
+                                        <input type="text" id="whereDetected" name="whereDetected" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="e.g., Assembly Line 3, Station B">
+                                    </div>
+                                     <div>
+                                        <label for="howDetected" class="block text-sm font-medium text-gray-700">How Detected?</label>
+                                        <input type="text" id="howDetected" name="howDetected" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="e.g., Visual Inspection, Gauge Measurement">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                               <div>
+                                   <label class="block text-sm font-medium text-gray-700">Priority</label>
+                                    <div class="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2" id="priority-buttons">
+                                        <button type="button" data-value="Low" class="priority-btn px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Low</button>
+                                        <button type="button" data-value="Medium" class="priority-btn px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Medium</button>
+                                        <button type="button" data-value="High" class="priority-btn px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">High</button>
+                                        <button type="button" data-value="Critical" class="priority-btn px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Critical</button>
+                                    </div>
+                                    <input type="hidden" name="priority" id="priority">
+                               </div>
+                                <div>
+                                    <label for="ncNumber" class="block text-sm font-medium text-gray-700">NC Number</label>
+                                    <input type="text" id="ncNumber" name="ncNumber" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 sm:text-sm" readonly>
+                                </div>
+                                 <div>
+                                    <label for="plantImpact" class="block text-sm font-medium text-gray-700">Plant Impact</label>
+                                    <select id="plantImpact" name="plantImpact" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"><option>None</option><option>Line Stoppage</option><option>Rework Required</option></select>
+                                </div>
+                                <div>
+                                    <label for="customerImpact" class="block text-sm font-medium text-gray-700">Customer Impact</label>
+                                    <select id="customerImpact" name="customerImpact" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"><option>None</option><option>Potential for Recall</option><option>Field Complaint</option></select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Identify the Affected Item -->
+                    <div id="step-2" class="form-step">
+                        <h2 class="text-xl font-semibold text-gray-700 mb-6">Step 2: Identify the Affected Item</h2>
+                        <div class="space-y-6">
+                            <!-- Part Search -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Part Name / Number</label>
+                                <div class="mt-1 flex rounded-md shadow-sm">
+                                    <input type="text" id="partSearchInput" class="flex-1 block w-full min-w-0 rounded-none rounded-l-md sm:text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500" placeholder="Enter part name or number to search">
+                                    <button type="button" id="partSearchBtn" class="inline-flex items-center px-4 py-2 border border-l-0 border-gray-300 bg-gray-50 text-sm font-medium text-gray-700 hover:bg-gray-100">
+                                        <i data-lucide="search" class="w-4 h-4 mr-2"></i> Search
+                                    </button>
+                                </div>
+                                <div id="partSearchResults" class="hidden mt-1 rounded-md bg-white shadow-lg search-results"></div>
+                            </div>
+                            
+                            <!-- Auto-populated fields -->
+                            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-4 hidden" id="partDetailsCard">
+                               <h3 class="font-medium text-gray-800">Selected Part Details</h3>
+                               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                   <div><span class="text-sm text-gray-500">Commodity:</span> <strong id="commodity" class="text-sm text-gray-900"></strong></div>
+                                   <div><span class="text-sm text-gray-500">Part Revision:</span> <strong id="partRevision" class="text-sm text-gray-900"></strong></div>
+                                   <div><span class="text-sm text-gray-500">Project Number:</span> <strong id="projectNumber" class="text-sm text-gray-900"></strong></div>
+                                   <div><span class="text-sm text-gray-500">Supplier:</span> <strong id="supplierName" class="text-sm text-gray-900"></strong></div>
+                               </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="totalNCParts" class="block text-sm font-medium text-gray-700">Total Non-Conforming (NC) Parts</label>
+                                    <input type="number" id="totalNCParts" name="totalNCParts" min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="adjustedNCParts" class="block text-sm font-medium text-gray-700">Adjusted NC Parts</label>
+                                    <input type="number" id="adjustedNCParts" name="adjustedNCParts" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="lotSerialNumber" class="block text-sm font-medium text-gray-700">Lot/Serial Number</label>
+                                    <input type="text" id="lotSerialNumber" name="lotSerialNumber" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                </div>
+                                 <div>
+                                    <label for="chassisNumber" class="block text-sm font-medium text-gray-700">Chassis Number</label>
+                                    <input type="text" id="chassisNumber" name="chassisNumber" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                </div>
+                            </div>
+
+                            <!-- File Uploader -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Upload Evidence (Good Part, Bad Part, Other Docs)</label>
+                                <div id="drop-zone" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                    <div class="space-y-1 text-center">
+                                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                        <div class="flex text-sm text-gray-600">
+                                            <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                                <span>Upload a file</span>
+                                                <input id="file-upload" name="file-upload" type="file" class="sr-only" multiple>
+                                            </label>
+                                            <p class="pl-1">or drag and drop</p>
+                                        </div>
+                                        <p class="text-xs text-gray-500">PNG, JPG, PDF up to 10MB</p>
+                                    </div>
+                                </div>
+                                <div id="file-list" class="mt-2 text-sm text-gray-600"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Assign Context & Ownership -->
+                    <div id="step-3" class="form-step">
+                        <h2 class="text-xl font-semibold text-gray-700 mb-6">Step 3: Assign Context & Ownership</h2>
+                        <div class="space-y-8">
+                             <!-- Supplier Section -->
+                            <div id="supplier-section" class="p-5 bg-white rounded-lg border border-gray-200 shadow-sm space-y-4">
+                               <h3 class="font-semibold text-lg text-gray-800 flex items-center"><i data-lucide="truck" class="w-5 h-5 mr-2 text-gray-500"></i>Supplier Details</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                     <div>
+                                        <label for="supplierCoordinators" class="block text-sm font-medium text-gray-700">Supplier Coordinators</label>
+                                        <input type="text" id="supplierCoordinators" name="supplierCoordinators" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="Search for coordinators...">
+                                    </div>
+                                    <div>
+                                        <label for="supplierLocation" class="block text-sm font-medium text-gray-700">Supplier Location</label>
+                                        <input type="text" id="supplierLocation" name="supplierLocation" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    </div>
+                                     <div>
+                                        <label for="supplierPlant" class="block text-sm font-medium text-gray-700">Supplier Plant</label>
+                                        <input type="text" id="supplierPlant" name="supplierPlant" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    </div>
+                                     <div>
+                                        <label for="supplierProductLine" class="block text-sm font-medium text-gray-700">Supplier Product Line</label>
+                                        <input type="text" id="supplierProductLine" name="supplierProductLine" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    </div>
+                                    <div>
+                                        <label for="invoiceRmaNumber" class="block text-sm font-medium text-gray-700">Invoice / RMA Number</label>
+                                        <input type="text" id="invoiceRmaNumber" name="invoiceRmaNumber" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    </div>
+                                </div>
+                                 <div class="relative flex items-start">
+                                    <div class="flex h-5 items-center">
+                                      <input id="sendEmailSupplier" name="sendEmailSupplier" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    </div>
+                                    <div class="ml-3 text-sm">
+                                      <label for="sendEmailSupplier" class="font-medium text-gray-700">Send Email to All Supplier Users</label>
+                                    </div>
+                                  </div>
+                            </div>
+                            
+                             <!-- Customer Section -->
+                            <div id="customer-section" class="hidden p-5 bg-white rounded-lg border border-gray-200 shadow-sm space-y-4">
+                               <h3 class="font-semibold text-lg text-gray-800 flex items-center"><i data-lucide="user-check" class="w-5 h-5 mr-2 text-gray-500"></i>Customer Details</h3>
+                               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                   <div>
+                                       <label for="customer" class="block text-sm font-medium text-gray-700">Customer Name</label>
+                                       <input type="text" id="customer" name="customer" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="Enter customer name">
+                                   </div>
+                               </div>
+                            </div>
+
+                             <!-- Internal Section -->
+                            <div id="internal-section" class="p-5 bg-white rounded-lg border border-gray-200 shadow-sm space-y-4">
+                               <h3 class="font-semibold text-lg text-gray-800 flex items-center"><i data-lucide="building-2" class="w-5 h-5 mr-2 text-gray-500"></i>Internal Details</h3>
+                               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                   <div>
+                                       <label for="location" class="block text-sm font-medium text-gray-700">Location</label>
+                                       <select id="location" name="location" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"><option>Main Plant</option><option>Warehouse B</option></select>
+                                   </div>
+                                   <div>
+                                       <label for="plant" class="block text-sm font-medium text-gray-700">Plant</label>
+                                       <select id="plant" name="plant" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"><option>P-101</option><option>P-203</option></select>
+                                   </div>
+                                    <div>
+                                       <label for="division" class="block text-sm font-medium text-gray-700">Division</label>
+                                       <select id="division" name="division" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"><option>Powertrain</option><option>Chassis</option></select>
+                                   </div>
+                                   <div>
+                                       <label for="department" class="block text-sm font-medium text-gray-700">Department</label>
+                                       <select id="department" name="department" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"><option>Quality Assurance</option><option>Assembly Line 3</option></select>
+                                   </div>
+                                    <div>
+                                       <label for="businessUnitName" class="block text-sm font-medium text-gray-700">Business Unit</label>
+                                       <select id="businessUnitName" name="businessUnitName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"><option>Commercial Vehicles</option><option>Passenger Vehicles</option></select>
+                                   </div>
+                                    <div>
+                                       <label for="logisticGroupName" class="block text-sm font-medium text-gray-700">Logistic Group</label>
+                                       <select id="logisticGroupName" name="logisticGroupName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"><option>Inbound</option><option>Outbound</option></select>
+                                   </div>
+                                   <div>
+                                       <label for="asset" class="block text-sm font-medium text-gray-700">Asset</label>
+                                       <input type="text" id="asset" name="asset" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="e.g., CNC-Machine-05">
+                                   </div>
+                                    <div>
+                                       <label for="vehicle" class="block text-sm font-medium text-gray-700">Vehicle</label>
+                                       <input type="text" id="vehicle" name="vehicle" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="e.g., Model X">
+                                   </div>
+                               </div>
+                            </div>
+                            
+                            <!-- Common Fields -->
+                             <div class="p-5 bg-white rounded-lg border border-gray-200 shadow-sm space-y-4">
+                                <h3 class="font-semibold text-lg text-gray-800 flex items-center"><i data-lucide="users" class="w-5 h-5 mr-2 text-gray-500"></i>Stakeholders</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label for="assignee" class="block text-sm font-medium text-gray-700">Assignee (Internal)</label>
+                                        <input type="text" id="assignee" name="assignee" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="Who is managing this issue?">
+                                    </div>
+                                     <div>
+                                        <label for="approvers" class="block text-sm font-medium text-gray-700">Approvers</label>
+                                        <input type="text" id="approvers" name="approvers" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="Add users or groups">
+                                    </div>
+                                    <div>
+                                        <label for="watcherGroup" class="block text-sm font-medium text-gray-700">Watcher Group</label>
+                                        <input type="text" id="watcherGroup" name="watcherGroup" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="Add watcher groups">
+                                    </div>
+                                    <div>
+                                        <label for="individualWatchers" class="block text-sm font-medium text-gray-700">Individual Watchers</label>
+                                        <input type="text" id="individualWatchers" name="individualWatchers" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="Add individual users to notify">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Propose Disposition & Initial Action -->
+                    <div id="step-4" class="form-step">
+                        <h2 class="text-xl font-semibold text-gray-700 mb-6">Step 4: Propose Disposition & Initial Action</h2>
+                        <div class="space-y-6">
+                            <div>
+                                <label for="dispositionStatus" class="block text-sm font-medium text-gray-700">Part Disposition Status</label>
+                                <select id="dispositionStatus" name="dispositionStatus" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    <option value="awaiting">Awaiting Inspection</option>
+                                    <option value="rework">Rework</option>
+                                    <option value="scrap">Scrap</option>
+                                    <option value="useAsIs">Use As Is</option>
+                                    <option value="return">Return to Supplier</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Disposition Quantities -->
+                            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <h3 class="font-medium text-gray-800 mb-3">Disposition Quantities</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                     <div class="disposition-quantity">
+                                        <label for="checkedQuantity" class="block text-sm font-medium text-gray-700">Checked Quantity</label>
+                                        <input type="number" id="checkedQuantity" name="checkedQuantity" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                                    </div>
+                                    <div class="disposition-quantity hidden" id="reworkQtyDiv">
+                                        <label for="reworkQuantity" class="block text-sm font-medium text-gray-700">Rework Quantity</label>
+                                        <input type="number" id="reworkQuantity" name="reworkQuantity" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                                    </div>
+                                    <div class="disposition-quantity hidden" id="scrapQtyDiv">
+                                        <label for="scrapQuantity" class="block text-sm font-medium text-gray-700">Scrap Quantity</label>
+                                        <input type="number" id="scrapQuantity" name="scrapQuantity" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                                    </div>
+                                    <div class="disposition-quantity hidden" id="useAsIsQtyDiv">
+                                        <label for="useAsIsQuantity" class="block text-sm font-medium text-gray-700">Use As Is Quantity</label>
+                                        <input type="number" id="useAsIsQuantity" name="useAsIsQuantity" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                                    </div>
+                                     <div class="disposition-quantity hidden" id="returnedQtyDiv">
+                                        <label for="returnedQuantity" class="block text-sm font-medium text-gray-700">Returned Quantity</label>
+                                        <input type="number" id="returnedQuantity" name="returnedQuantity" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                                    </div>
+                                </div>
+                                <p id="disposition-placeholder" class="text-sm text-gray-500 mt-3">Select a status other than 'Awaiting Inspection' to enter disposition quantities.</p>
+                            </div>
+                            
+                            <div>
+                                <label for="responseAction" class="block text-sm font-medium text-gray-700">Response & Containment Plan</label>
+                                <textarea id="responseAction" name="responseAction" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="Describe the immediate actions to contain the issue, supplier containment, and any rework plans..."></textarea>
+                            </div>
+
+                            <div class="p-5 bg-white rounded-lg border border-gray-200 shadow-sm space-y-4">
+                                <h3 class="font-semibold text-lg text-gray-800 flex items-center"><i data-lucide="dollar-sign" class="w-5 h-5 mr-2 text-gray-500"></i>Cost of Poor Quality (CoPQ)</h3>
+                                <div class="relative flex items-start">
+                                    <div class="flex h-5 items-center">
+                                      <input id="createCopq" name="createCopq" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    </div>
+                                    <div class="ml-3 text-sm">
+                                      <label for="createCopq" class="font-medium text-gray-700">Create CoPQ</label>
+                                    </div>
+                                </div>
+                                <div id="copq-details" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                                    <div>
+                                        <label for="copqTemplate" class="block text-sm font-medium text-gray-700">Template</label>
+                                        <select id="copqTemplate" name="copqTemplate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"><option>Standard Labor</option><option>Material Loss</option></select>
+                                    </div>
+                                    <div>
+                                        <label for="copqCurrency" class="block text-sm font-medium text-gray-700">Currency</label>
+                                        <select id="copqCurrency" name="copqCurrency" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"><option>USD</option><option>EUR</option><option>INR</option></select>
+                                    </div>
+                                </div>
+                            </div>
+                             <div>
+                                <label for="additionalDetails" class="block text-sm font-medium text-gray-700">Additional Details</label>
+                                <textarea id="additionalDetails" name="additionalDetails" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="Any other notes or details that don't fit elsewhere."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Summary Panel -->
+            <div class="w-full lg:w-1/3 p-6 sm:p-8 bg-gray-50 border-l border-gray-200">
+                <div class="sticky top-8">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4 flex items-center">
+                        <i data-lucide="clipboard-list" class="w-6 h-6 mr-2 text-gray-500"></i>
+                        Real-time Summary
+                    </h2>
+                    <div class="space-y-4 summary-panel max-h-[70vh] overflow-y-auto pr-2">
+                        <div class="summary-item">
+                            <dt class="text-sm font-medium text-gray-500">NC Title</dt>
+                            <dd class="mt-1 text-sm text-gray-900" id="summary-ncTitle">-</dd>
+                        </div>
+                         <div class="summary-item">
+                            <dt class="text-sm font-medium text-gray-500">NC Number</dt>
+                            <dd class="mt-1 text-sm text-gray-900" id="summary-ncNumber">-</dd>
+                        </div>
+                        <div class="summary-item">
+                            <dt class="text-sm font-medium text-gray-500">NC Type</dt>
+                            <dd class="mt-1 text-sm text-gray-900" id="summary-ncType">-</dd>
+                        </div>
+                        <div class="summary-item">
+                            <dt class="text-sm font-medium text-gray-500">Priority</dt>
+                            <dd class="mt-1 text-sm text-gray-900" id="summary-priority">-</dd>
+                        </div>
+                        <div class="summary-item">
+                            <dt class="text-sm font-medium text-gray-500">Detection Date</dt>
+                            <dd class="mt-1 text-sm text-gray-900" id="summary-detectionDate">-</dd>
+                        </div>
+                        <div class="summary-item">
+                            <dt class="text-sm font-medium text-gray-500">Inspector</dt>
+                            <dd class="mt-1 text-sm text-gray-900" id="summary-inspector">-</dd>
+                        </div>
+                        <div class="summary-item">
+                            <dt class="text-sm font-medium text-gray-500">Part</dt>
+                            <dd class="mt-1 text-sm text-gray-900" id="summary-part">-</dd>
+                        </div>
+                        <div class="summary-item">
+                            <dt class="text-sm font-medium text-gray-500">Total NC Parts</dt>
+                            <dd class="mt-1 text-sm text-gray-900" id="summary-totalNCParts">-</dd>
+                        </div>
+                        <div class="summary-item">
+                            <dt class="text-sm font-medium text-gray-500">Assignee</dt>
+                            <dd class="mt-1 text-sm text-gray-900" id="summary-assignee">-</dd>
+                        </div>
+                         <div class="summary-item">
+                            <dt class="text-sm font-medium text-gray-500">Customer</dt>
+                            <dd class="mt-1 text-sm text-gray-900" id="summary-customer">-</dd>
+                        </div>
+                        <div class="summary-item">
+                            <dt class="text-sm font-medium text-gray-500">Disposition Status</dt>
+                            <dd class="mt-1 text-sm text-gray-900" id="summary-dispositionStatus">-</dd>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation Buttons -->
+        <div class="p-6 bg-gray-50 rounded-b-2xl border-t border-gray-200 flex justify-between items-center">
+            <div>
+                 <button type="button" class="px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">Save as Draft</button>
+            </div>
+            <div class="space-x-4">
+                <button type="button" id="backBtn" class="px-6 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50" style="display: none;">Back</button>
+                <button type="button" id="nextBtn" class="px-6 py-2 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Next</button>
+                <button type="submit" id="submitBtn" class="px-6 py-2 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" style="display: none;">Create NC</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize Lucide icons
+            lucide.createIcons();
+
+            // State
+            let currentStep = 1;
+            const totalSteps = 4;
+            let ncData = {
+                part: null,
+                createCopq: false
+            };
+
+            // DOM Elements
+            const backBtn = document.getElementById('backBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const formSteps = document.querySelectorAll('.form-step');
+            const stepperItems = document.querySelectorAll('#stepper .step');
+            
+            // --- Auto-fill initial values ---
+            const now = new Date();
+            // Format date as YYYY-MM-DD
+            const year = now.getFullYear();
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const day = now.getDate().toString().padStart(2, '0');
+            document.getElementById('detectionDate').value = `${year}-${month}-${day}`;
+            // Format time as HH:MM
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('detectionTime').value = `${hours}:${minutes}`;
+            // Auto-generate NC Number
+            document.getElementById('ncNumber').value = `NC-${year}-${String(Math.floor(Math.random() * 90000) + 10000)}`;
+
+            // --- Form Input Listeners for Real-time Summary ---
+            const form = document.getElementById('ncForm');
+            form.addEventListener('input', (e) => {
+                const { name, value, type, checked } = e.target;
+                if (name) {
+                    ncData[name] = type === 'checkbox' ? checked : value;
+                    updateSummary();
+                }
+            });
+
+            // --- Navigation ---
+            nextBtn.addEventListener('click', () => {
+                if (currentStep < totalSteps) {
+                    currentStep++;
+                    updateWizardUI();
+                }
+            });
+
+            backBtn.addEventListener('click', () => {
+                if (currentStep > 1) {
+                    currentStep--;
+                    updateWizardUI();
+                }
+            });
+            
+            function updateWizardUI() {
+                // Update form steps visibility
+                formSteps.forEach((step, index) => {
+                    step.classList.toggle('active', index + 1 === currentStep);
+                });
+
+                // Update stepper visual state
+                stepperItems.forEach((step, index) => {
+                    const stepNum = index + 1;
+                    const stepDiv = step.querySelector('div:first-child');
+                    const connector = step.nextElementSibling;
+                    
+                    step.classList.remove('step-active', 'step-completed');
+                    stepDiv.classList.remove('bg-green-600', 'text-white', 'border-green-600');
+
+                    if (stepNum < currentStep) {
+                        step.classList.add('step-completed');
+                        stepDiv.innerHTML = `<i data-lucide="check" class="w-5 h-5"></i>`;
+                        stepDiv.classList.add('bg-green-600', 'text-white', 'border-green-600');
+                        if (connector) connector.classList.add('step-connector-completed');
+                    } else if (stepNum === currentStep) {
+                        step.classList.add('step-active');
+                        stepDiv.textContent = stepNum;
+                        if (connector) connector.classList.remove('step-connector-completed');
+                    } else {
+                        stepDiv.textContent = stepNum;
+                         if (connector) connector.classList.remove('step-connector-completed');
+                    }
+                });
+                lucide.createIcons(); // Re-render icons after innerHTML change
+
+                // Update button visibility
+                backBtn.style.display = currentStep > 1 ? 'inline-block' : 'none';
+                nextBtn.style.display = currentStep < totalSteps ? 'inline-block' : 'none';
+                submitBtn.style.display = currentStep === totalSteps ? 'inline-block' : 'none';
+            }
+
+            // --- Part Search Logic ---
+            const partSearchBtn = document.getElementById('partSearchBtn');
+            const partSearchInput = document.getElementById('partSearchInput');
+            const partSearchResults = document.getElementById('partSearchResults');
+            const partDetailsCard = document.getElementById('partDetailsCard');
+            const dummyParts = [
+                { id: 'PN-12345', name: 'Chassis Bracket Assembly', commodity: 'Metals', revision: 'C', project: 'X-45', supplier: 'Global Steel Inc.' },
+                { id: 'PN-67890', name: 'Injector Fuel Rail', commodity: 'Plastics', revision: 'A', project: 'Z-12', supplier: 'Advanced Polymers' },
+                { id: 'PN-54321', name: 'Headlamp Housing Unit', commodity: 'Electronics', revision: 'B', project: 'X-45', supplier: 'BrightLight Components' }
+            ];
+
+            partSearchBtn.addEventListener('click', () => {
+                const searchTerm = partSearchInput.value.toLowerCase();
+                if (!searchTerm) return;
+                
+                const results = dummyParts.filter(p => p.id.toLowerCase().includes(searchTerm) || p.name.toLowerCase().includes(searchTerm));
+                
+                partSearchResults.innerHTML = '';
+                if (results.length > 0) {
+                    const list = document.createElement('ul');
+                    list.className = 'divide-y divide-gray-200';
+                    results.forEach(part => {
+                        const li = document.createElement('li');
+                        li.className = 'p-3 hover:bg-gray-100 cursor-pointer';
+                        li.innerHTML = `<div class="font-semibold text-sm">${part.id}</div><div class="text-xs text-gray-500">${part.name}</div>`;
+                        li.addEventListener('click', () => selectPart(part));
+                        list.appendChild(li);
+                    });
+                    partSearchResults.appendChild(list);
+                } else {
+                    partSearchResults.innerHTML = `<p class="p-3 text-sm text-gray-500">No parts found.</p>`;
+                }
+                partSearchResults.classList.remove('hidden');
+            });
+
+            function selectPart(part) {
+                ncData.part = part;
+                partSearchInput.value = `${part.id} - ${part.name}`;
+                partSearchResults.classList.add('hidden');
+                
+                // Auto-populate fields
+                document.getElementById('commodity').textContent = part.commodity;
+                document.getElementById('partRevision').textContent = part.revision;
+                document.getElementById('projectNumber').textContent = part.project;
+                document.getElementById('supplierName').textContent = part.supplier;
+                partDetailsCard.classList.remove('hidden');
+                
+                updateSummary();
+            }
+
+
+            // --- Contextual Logic (Step 3 & 4) ---
+            const ncTypeSelect = document.getElementById('ncType');
+            ncTypeSelect.addEventListener('change', (e) => {
+                const type = e.target.value;
+                document.getElementById('supplier-section').style.display = type === 'supplier' ? 'block' : 'none';
+                document.getElementById('customer-section').style.display = type === 'customer' ? 'block' : 'none';
+                document.getElementById('internal-section').style.display = type === 'internal' ? 'block' : 'none';
+                updateSummary();
+            });
+            
+            const createCopqCheckbox = document.getElementById('createCopq');
+            createCopqCheckbox.addEventListener('change', (e) => {
+                document.getElementById('copq-details').style.display = e.target.checked ? 'grid' : 'none';
+            });
+
+
+            // --- Disposition Quantities (Step 4) ---
+            const dispositionStatus = document.getElementById('dispositionStatus');
+            dispositionStatus.addEventListener('change', (e) => {
+                const status = e.target.value;
+                const quantityDivs = document.querySelectorAll('.disposition-quantity');
+                const dynamicQtyDivs = ['reworkQtyDiv', 'scrapQtyDiv', 'useAsIsQtyDiv', 'returnedQtyDiv'];
+                
+                dynamicQtyDivs.forEach(id => document.getElementById(id).classList.add('hidden'));
+                
+                let showPlaceholder = true;
+                if (status !== 'awaiting') {
+                    if (status === 'rework') document.getElementById('reworkQtyDiv').classList.remove('hidden');
+                    if (status === 'scrap') document.getElementById('scrapQtyDiv').classList.remove('hidden');
+                    if (status === 'useAsIs') document.getElementById('useAsIsQtyDiv').classList.remove('hidden');
+                    if (status === 'return') document.getElementById('returnedQtyDiv').classList.remove('hidden');
+                    showPlaceholder = false;
+                }
+                
+                document.getElementById('disposition-placeholder').style.display = showPlaceholder ? 'block' : 'none';
+                updateSummary();
+            });
+            
+            // --- Priority Buttons ---
+            const priorityButtonsContainer = document.getElementById('priority-buttons');
+            priorityButtonsContainer.addEventListener('click', e => {
+                if (e.target.classList.contains('priority-btn')) {
+                    const value = e.target.dataset.value;
+                    document.getElementById('priority').value = value;
+                    
+                    // Update visuals
+                    priorityButtonsContainer.querySelectorAll('.priority-btn').forEach(btn => {
+                        btn.classList.remove('bg-blue-500', 'text-white', 'border-blue-500');
+                        btn.classList.add('bg-white');
+                    });
+                    e.target.classList.add('bg-blue-500', 'text-white', 'border-blue-500');
+                    e.target.classList.remove('bg-white');
+
+                    ncData.priority = value;
+                    updateSummary();
+                }
+            });
+
+            // --- File Uploader ---
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('file-upload');
+            const fileList = document.getElementById('file-list');
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('border-blue-500', 'bg-blue-50');
+            });
+            dropZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+            });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+                const files = e.dataTransfer.files;
+                handleFiles(files);
+            });
+            fileInput.addEventListener('change', () => {
+                handleFiles(fileInput.files);
+            });
+            
+            function handleFiles(files) {
+                 fileList.innerHTML = ''; // Clear previous list
+                 if (files.length > 0) {
+                     const list = document.createElement('ul');
+                     list.className = 'list-disc pl-5 space-y-1';
+                     Array.from(files).forEach(file => {
+                         const li = document.createElement('li');
+                         li.textContent = `${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+                         list.appendChild(li);
+                     });
+                     fileList.appendChild(list);
+                 }
+            }
+
+
+            // --- Summary Panel Update Function ---
+            function updateSummary() {
+                document.getElementById('summary-ncTitle').textContent = ncData.ncTitle || '-';
+                document.getElementById('summary-ncNumber').textContent = ncData.ncNumber || '-';
+                document.getElementById('summary-ncType').textContent = ncData.ncType ? ncData.ncType.charAt(0).toUpperCase() + ncData.ncType.slice(1) : '-';
+                document.getElementById('summary-priority').textContent = ncData.priority || '-';
+                document.getElementById('summary-detectionDate').textContent = ncData.detectionDate ? `${ncData.detectionDate} ${ncData.detectionTime || ''}` : '-';
+                document.getElementById('summary-inspector').textContent = ncData.inspector || '-';
+                document.getElementById('summary-part').textContent = ncData.part ? `${ncData.part.id} - ${ncData.part.name}` : '-';
+                document.getElementById('summary-totalNCParts').textContent = ncData.totalNCParts || '-';
+                document.getElementById('summary-assignee').textContent = ncData.assignee || '-';
+                document.getElementById('summary-customer').textContent = ncData.customer || '-';
+                document.getElementById('summary-dispositionStatus').textContent = ncData.dispositionStatus ? document.querySelector(`#dispositionStatus option[value="${ncData.dispositionStatus}"]`).textContent : '-';
+            }
+
+            // Initial UI setup
+            updateWizardUI();
+            updateSummary(); // Populate initial auto-filled values
+        });
+    </script>
+</body>
+</html>
