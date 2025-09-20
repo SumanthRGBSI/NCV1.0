@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8D Problem-Solving Interface</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --status-pending-bg: #e5e7eb; /* gray-200 */
+            --status-pending-text: #4b5563; /* gray-600 */
+            --status-in-progress-bg: #f59e0b; /* amber-500 */
+            --status-in-progress-text: #ffffff;
+            --status-completed-bg: #10b981; /* emerald-500 */
+            --status-completed-text: #ffffff;
+            --active-bg: #eff6ff; /* blue-50 */
+            --active-border: #3b82f6; /* blue-500 */
+        }
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb; /* gray-50 */
+        }
+        
+        /* Stepper Navigation Styles */
+        #stepper-nav {
+            position: relative;
+        }
+        .step {
+            position: relative;
+            z-index: 10;
+        }
+        #stepper-nav::before {
+            content: '';
+            position: absolute;
+            left: 1.25rem; /* calc(2.5rem / 2) */
+            top: 1.25rem;
+            bottom: 1.25rem;
+            width: 2px;
+            background-color: #e5e7eb; /* gray-200 */
+            z-index: 1;
+            transition: left 0.3s ease-in-out;
+        }
+        .step-circle {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            transition: all 0.3s;
+            background-color: var(--status-pending-bg);
+            color: var(--status-pending-text);
+        }
+        .step-link.status-in-progress .step-circle {
+            background-color: var(--status-in-progress-bg);
+            color: var(--status-in-progress-text);
+        }
+        .step-link.status-completed .step-circle {
+            background-color: var(--status-completed-bg);
+            color: var(--status-completed-text);
+        }
+        .step-link.active .step-content {
+            background-color: var(--active-bg);
+            border-color: var(--active-border);
+            color: var(--active-border);
+        }
+        .step-link.active .step-arrow {
+            opacity: 1;
+        }
+        .step-content {
+            transition: border 0.3s, background-color 0.3s, color 0.3s;
+            border: 1px solid transparent;
+        }
+        .step-arrow {
+            opacity: 0;
+            transition: opacity 0.3s;
+            color: var(--active-border);
+        }
+
+        /* Fade-in animation for loaded content */
+        #content-container.loading {
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+
+        /* Sidebar collapse styles */
+        #sidebar {
+            transition: width 0.3s ease-in-out;
+        }
+        #app-container.sidebar-collapsed #sidebar {
+            width: 6rem;
+        }
+        #app-container.sidebar-collapsed .sidebar-text,
+        #app-container.sidebar-collapsed .step-content {
+            display: none;
+        }
+        #app-container.sidebar-collapsed #stepper-nav::before {
+            left: 1.25rem;
+        }
+        #app-container.sidebar-collapsed .step {
+            justify-content: center;
+        }
+        #app-container.sidebar-collapsed #toggle-btn-icon {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="app-container" class="flex h-screen bg-gray-100">
+        <!-- Stepper Navigation -->
+        <nav id="sidebar" class="w-1/3 lg:w-1/4 bg-white p-6 shadow-lg flex flex-col transition-all duration-300">
+            <div class="flex items-center mb-2">
+                <div class="bg-blue-600 p-2 rounded-lg">
+                    <i class="fas fa-sitemap text-white fa-lg"></i>
+                </div>
+                <div class="ml-3 sidebar-text">
+                    <h1 class="text-xl font-bold text-gray-800">8D Process</h1>
+                    <p class="text-sm text-gray-500">Problem Solving Framework</p>
+                </div>
+            </div>
+            
+            <div class="border-t my-6"></div>
+
+            <div id="stepper-nav" class="stepper flex-grow overflow-y-auto pr-2">
+                <!-- Stepper links will be generated by JS -->
+            </div>
+
+            <div class="mt-auto pt-6 border-t">
+                <button id="sidebar-toggle-btn" class="w-full flex items-center p-3 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">
+                    <i id="toggle-btn-icon" class="fas fa-chevron-left transition-transform duration-300"></i>
+                    <span class="ml-4 font-semibold sidebar-text">Collapse</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="w-2/3 lg:w-3/4 p-4 md:p-8 overflow-y-auto">
+            <div id="content-container">
+                <!-- Content from HTML files will be loaded here -->
+            </div>
+        </main>
+    </div>
+
+    <script>
+    // --- DATA STRUCTURE & INITIAL STATE ---
+    const disciplines = [
+        { id: 'd1', title: 'IDENTIFY TEAM', shortDesc: 'Establish a small group of people with the knowledge, time, and authority to solve the problem.' },
+        { id: 'd2', title: 'PROBLEM DESCRIPTION', shortDesc: 'Describe the internal/external problem by identifying "what is wrong with what" and detailing the problem in quantifiable terms.' },
+        { id: 'd3', title: 'INTERIM CONTAINMENT', shortDesc: 'Define and implement containment actions to isolate the problem from any customer.' },
+        { id: 'd4', title: 'IDENTIFICATION AND VERIFICATION OF ROOT CAUSE', shortDesc: 'Identify all potential causes that could explain why the problem occurred. Isolate and verify the root cause.' },
+        { id: 'd5', title: 'SELECTION AND VERIFICATION OF CORRECTIVE ACTION', shortDesc: 'Select the best permanent corrective action to remove the root cause.' },
+        { id: 'd6', title: 'IMPLEMENT AND VALIDATE PERMANENT CORRECTIVE ACTION', shortDesc: 'Plan and implement the selected permanent corrective action. Validate the action.' },
+        { id: 'd7', title: 'PREVENTIVE ACTION', shortDesc: 'Modify the necessary systems including policies, practices, and procedures to prevent recurrence of this and similar problems.' },
+        { id: 'd8', title: 'RECOGNITION', shortDesc: 'Congratulate your team and recognize their collective efforts.' }
+    ];
+
+    function getInitialData() {
+        const data = {};
+        disciplines.forEach(d => {
+            data[d.id] = {
+                status: 'pending', // pending, in-progress, completed
+                lastUpdated: null,
+                fields: {},
+                checklist: {}
+            };
+        });
+        // Pre-populate some fields for structure
+        data.d1.fields = { teamLeader: '', sponsor: '', members: [] };
+        data.d2.fields = { problemStatement: '', who: '', what: '', when: '', where: '', why: '', how: '', howMany: '' };
+        data.d3.fields = { containmentActions: '', verification: '' };
+        data.d4.fields = { rootCause: '', verificationMethod: '' };
+        data.d5.fields = { correctiveAction: '', verificationPlan: '' };
+        data.d6.fields = { implementationPlan: '', validationResults: '' };
+        data.d7.fields = { preventiveActions: '', responsiblePerson: '', completionDate: '' };
+        data.d8.fields = { recognitionSummary: '', teamFeedback: '' };
+        return data;
+    }
+
+    // --- APPLICATION LOGIC ---
+    const app = {
+        data: {},
+
+        init() {
+            this.loadData();
+            this.renderStepper();
+            this.attachEventListeners();
+            this.applySidebarState();
+            this.handleRouting();
+            this.updateStepperStatusColors();
+        },
+
+        loadData() {
+            const savedData = localStorage.getItem('8d-data-v2');
+            if (savedData) {
+                this.data = JSON.parse(savedData);
+            } else {
+                this.data = getInitialData();
+            }
+        },
+
+        saveData() {
+            localStorage.setItem('8d-data-v2', JSON.stringify(this.data));
+            this.updateStepperStatusColors();
+        },
+
+        renderStepper() {
+            const nav = document.getElementById('stepper-nav');
+            nav.innerHTML = disciplines.map(d => `
+                <a href="#${d.id}" id="nav-${d.id}" data-id="${d.id}" class="step-link block">
+                    <div class="step flex items-center mb-4">
+                        <div class="step-circle z-10">${d.id.toUpperCase()}</div>
+                        <div class="ml-4 p-3 rounded-lg w-full step-content font-semibold text-gray-600 flex justify-between items-center">
+                            <span>${d.title}</span>
+                            <i class="fas fa-chevron-right step-arrow"></i>
+                        </div>
+                    </div>
+                </a>
+            `).join('');
+        },
+        
+        async loadDisciplineContent(id) {
+            const container = document.getElementById('content-container');
+            container.classList.add('loading');
+            try {
+                // In a real app, this would be a fetch. For this self-contained example,
+                // we'll check if a file exists or show an error.
+                const response = await fetch(`${id}.html`);
+                if (!response.ok) {
+                   throw new Error(`File not found: ${id}.html. Please create this file.`);
+                }
+                const html = await response.text();
+                container.innerHTML = html;
+                this.populateForm(id);
+            } catch (error) {
+                console.error('Failed to fetch discipline content:', error);
+                container.innerHTML = `<div class="bg-white p-8 rounded-lg shadow-lg text-center"><h2 class="text-2xl font-bold text-red-600">Error</h2><p class="mt-2 text-gray-600">Could not load content for ${id.toUpperCase()}. Please ensure the file '${id}.html' exists and the application is run from a server environment.</p></div>`;
+            } finally {
+                container.classList.remove('loading');
+            }
+        },
+
+        attachEventListeners() {
+            window.addEventListener('hashchange', this.handleRouting.bind(this));
+            document.getElementById('sidebar-toggle-btn').addEventListener('click', this.toggleSidebar.bind(this));
+
+            document.getElementById('content-container').addEventListener('click', (e) => {
+                const target = e.target.closest('.save-btn, #d1-add-member-btn, .remove-member-btn');
+                if (!target) return;
+                
+                if (target.matches('.save-btn')) this.handleSave(target.dataset.id);
+                if (target.matches('#d1-add-member-btn')) this.addTeamMember();
+                if (target.matches('.remove-member-btn')) this.removeTeamMember(target.dataset.index);
+            });
+
+            document.getElementById('content-container').addEventListener('change', (e) => {
+                if (e.target.matches('.status-select')) {
+                    const id = e.target.dataset.id;
+                    this.data[id].status = e.target.value;
+                    this.data[id].lastUpdated = new Date().toISOString();
+                    this.saveData();
+                    this.populateForm(id);
+                }
+                if (e.target.matches('input[type="checkbox"]')) {
+                    const id = e.target.dataset.id;
+                    if (this.data[id]) {
+                       this.data[id].checklist[e.target.dataset.index] = e.target.checked;
+                       this.saveData();
+                    }
+                }
+            });
+        },
+
+        handleRouting() {
+            let hash = window.location.hash.replace('#', '');
+            if (!disciplines.some(d => d.id === hash)) {
+                hash = 'd1';
+                window.location.hash = '#d1';
+                return;
+            }
+            
+            this.loadDisciplineContent(hash);
+            
+            document.querySelectorAll('.step-link').forEach(link => link.classList.remove('active'));
+            const activeLink = document.getElementById(`nav-${hash}`);
+            if (activeLink) activeLink.classList.add('active');
+        },
+
+        populateForm(id) {
+            const disciplineData = this.data[id];
+            if (!disciplineData) return;
+
+            const statusSelect = document.getElementById(`${id}-status-select`);
+            if(statusSelect) statusSelect.value = disciplineData.status;
+
+            const timestamp = document.getElementById(`${id}-timestamp`);
+            if(timestamp) timestamp.textContent = disciplineData.lastUpdated ? new Date(disciplineData.lastUpdated).toLocaleString() : "Never";
+            
+            for (const key in disciplineData.fields) {
+                const element = document.getElementById(`${id}-${key}`);
+                if (element) element.value = disciplineData.fields[key] || '';
+            }
+
+            if (id === 'd1') this.renderTeamMembers();
+
+            for (const key in disciplineData.checklist) {
+                const element = document.getElementById(`${id}-check-${key}`);
+                if (element) element.checked = disciplineData.checklist[key];
+            }
+        },
+        
+        handleSave(id) {
+            const disciplineData = this.data[id];
+            if (!disciplineData) return;
+            
+            for (const key in disciplineData.fields) {
+                 if (key !== 'members') {
+                    const element = document.getElementById(`${id}-${key}`);
+                    if (element) disciplineData.fields[key] = element.value;
+                }
+            }
+            
+            disciplineData.lastUpdated = new Date().toISOString();
+            this.saveData();
+            this.populateForm(id);
+
+            // Show feedback
+            const saveBtn = document.querySelector(`.save-btn[data-id="${id}"]`);
+            if(saveBtn) {
+                const originalText = saveBtn.innerHTML;
+                saveBtn.innerHTML = `<i class="fas fa-check mr-2"></i> Saved!`;
+                saveBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                saveBtn.classList.add('bg-blue-600');
+                setTimeout(() => {
+                    saveBtn.innerHTML = originalText;
+                    saveBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                    saveBtn.classList.remove('bg-blue-600');
+                }, 2000);
+            }
+        },
+        
+        renderTeamMembers() {
+            const list = document.getElementById('d1-members-list');
+            if (!list) return;
+            list.innerHTML = this.data.d1.fields.members.map((member, index) => `
+                <div class="flex items-center justify-between bg-gray-100 p-2 rounded">
+                    <span class="text-gray-800 break-all">${member}</span>
+                    <button type="button" class="remove-member-btn text-red-500 hover:text-red-700 ml-2" data-index="${index}"><i class="fas fa-times-circle"></i></button>
+                </div>
+            `).join('');
+        },
+
+        addTeamMember() {
+            const input = document.getElementById('d1-new-member');
+            if (input && input.value.trim() !== '') {
+                this.data.d1.fields.members.push(input.value.trim());
+                input.value = '';
+                this.renderTeamMembers();
+            }
+        },
+
+        removeTeamMember(index) {
+            this.data.d1.fields.members.splice(index, 1);
+            this.renderTeamMembers();
+        },
+        
+        toggleSidebar() {
+            const container = document.getElementById('app-container');
+            const isCollapsed = container.classList.toggle('sidebar-collapsed');
+            localStorage.setItem('sidebarCollapsed', isCollapsed);
+        },
+
+        applySidebarState() {
+            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+                document.getElementById('app-container').classList.add('sidebar-collapsed');
+            }
+        },
+
+        updateStepperStatusColors() {
+            disciplines.forEach(d => {
+                const link = document.getElementById(`nav-${d.id}`);
+                if(link && this.data[d.id]) {
+                    link.classList.remove('status-pending', 'status-in-progress', 'status-completed');
+                    link.classList.add(`status-${this.data[d.id].status}`);
+                }
+            });
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        app.init();
+    });
+    </script>
+</body>
+</html>
