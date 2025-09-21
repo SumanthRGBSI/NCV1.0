@@ -121,6 +121,7 @@
         const phone = tr?.querySelector('.contact-phone'); if(phone) phone.value = person.phone;
       }
       renderOrgChart(container);
+      renderTeamCards(container);
     });
   }
 
