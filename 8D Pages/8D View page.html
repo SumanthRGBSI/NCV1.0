@@ -443,6 +443,7 @@
                 }
             }
             
+            if(!this.validate(id)) return;
             disciplineData.lastUpdated = new Date().toISOString();
             this.saveData();
             this.populateForm(id);
