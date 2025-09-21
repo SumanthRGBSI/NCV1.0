@@ -1,4 +1,5 @@
 <section class="container">
+  <link rel="stylesheet" href="/assets/8d.css">
   <div class="card header">
     <div>
       <div class="h-title">D3 — Interim Containment 🚧</div>
@@ -6,7 +7,7 @@
     </div>
     <div class="controls">
       <div class="timestamp">Last updated: <span id="d3-timestamp">Never</span></div>
-      <select id="d3-status-select" class="input" style="width:160px">
+      <select id="d3-status-select" class="input select-compact">
         <option value="pending">Pending</option>
         <option value="in-progress">In Progress</option>
         <option value="completed">Completed</option>
@@ -20,7 +21,7 @@
     <label class="label">3A. Supplier description of problem / POV</label>
     <textarea id="d3-supplierDescription" class="input"></textarea>
 
-    <div class="small" style="margin-top:0.75rem">3B. Immediate Actions & Responsibility</div>
+    <div class="small" class="mt-small">3B. Immediate Actions & Responsibility</div>
     <table class="table dynamic-table">
       <thead><tr><th>Action</th><th>Responsibility</th><th>Target Date</th><th>Status</th><th></th></tr></thead>
       <tbody></tbody>
@@ -30,7 +31,7 @@
       </template>
     </table>
 
-    <label class="label" style="margin-top:0.75rem">3C. Immediate Action Notes</label>
+    <label class="label" class="mt-small">3C. Immediate Action Notes</label>
     <textarea id="d3-actionNotes" class="input"></textarea>
   </div>
 
@@ -46,7 +47,7 @@
       </template>
     </table>
 
-    <div class="small" style="margin-top:0.75rem">3E. Identification / Labelling of Verified Parts</div>
+    <div class="small" class="mt-small">3E. Identification / Labelling of Verified Parts</div>
     <table class="table dynamic-table">
       <thead><tr><th>Cut Off Number</th><th>Date / Time</th><th>Image</th><th>Comments</th><th></th></tr></thead>
       <tbody></tbody>
@@ -62,7 +63,7 @@
       </template>
     </table>
 
-    <div class="small" style="margin-top:0.75rem">3F. Sorting / Containment Details</div>
+    <div class="small" class="mt-small">3F. Sorting / Containment Details</div>
     <table class="table dynamic-table">
       <thead><tr><th>Task/Indicators</th><th>Responsibility</th><th>Qty to be Checked</th><th>Ok Qty</th><th>Not Ok Qty</th><th>Activity Date</th><th>Comments</th><th></th></tr></thead>
       <tbody></tbody>
@@ -81,7 +82,7 @@
       </template>
     </table>
 
-    <div style="margin-top:0.75rem">
+    <div class="mt-small">
       <label class="label">3G. Documents</label>
       <input class="preview-file" type="file" multiple />
     </div>
