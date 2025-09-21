@@ -8,6 +8,10 @@
       const s=document.createElement('script'); s.src='https://unpkg.com/lucide@latest'; s.async=true; s.onload=()=>res(); document.head.appendChild(s);
     });
   }
+  function ensureDataStore(){
+    if(window.DataStore && typeof window.DataStore.init==='function') return Promise.resolve();
+    return new Promise((res)=>{ const s=document.createElement('script'); s.src='assets/data-store.js'; s.async=true; s.onload=()=>res(); document.head.appendChild(s); });
+  }
   function applyBranding(){
     try{
       const theme = JSON.parse(localStorage.getItem('ds-branding')||'{}');
@@ -51,10 +55,16 @@
     return hdr;
   }
 
-  function populateBell(){
+  async function populateBell(){
     const host = qs('#ds-bell-pop'); if(!host) return;
     let items = [];
-    try{ items = JSON.parse(localStorage.getItem('ds-notifications')||'[]'); }catch(_){ items = []; }
+    // Try DataStore first
+    try{
+      if(window.DataStore){ const ds = await window.DataStore.get('ds-notifications'); if(Array.isArray(ds)) items = ds; }
+    }catch(_){ /* ignore */ }
+    if(!Array.isArray(items) || items.length===0){
+      try{ items = JSON.parse(localStorage.getItem('ds-notifications')||'[]'); }catch(_){ items = []; }
+    }
     if(!Array.isArray(items) || items.length===0){
       items = [
         { t:'New 8D assigned', s:'success', d: new Date().toLocaleString() },
@@ -187,8 +197,14 @@
     const enhanced = maybeEnhanceExistingHeader();
     if(!enhanced){ document.body.insertBefore(buildHeader(), document.body.firstChild); }
 
+    // Initial local branding for fast paint
     applyBranding();
-    ensureLucide().then(()=>{ if(window.lucide && window.lucide.createIcons){ window.lucide.createIcons(); } });
+    // Load icons and datastore, then hydrate from backend if available
+    Promise.all([ensureLucide(), ensureDataStore().then(()=> window.DataStore && window.DataStore.init())]).then(()=>{
+      if(window.lucide && window.lucide.createIcons){ window.lucide.createIcons(); }
+      // Re-apply branding from DataStore if present
+      (async function(){ try{ if(window.DataStore){ const theme = await window.DataStore.get('ds-branding'); if(theme && theme.primary){ document.documentElement.style.setProperty('--theme-primary', theme.primary); document.documentElement.setAttribute('data-theme-primary',''); } if(theme && theme.logo){ const img=qs('#ds-brand-logo'); if(img){ img.src = theme.logo; img.classList.remove('ds-hidden'); qs('#ds-brand-fallback')?.classList.add('ds-hidden'); } } } }catch(_){ } })();
+    });
     wireInteractions();
     enhanceAccessibility();
   }
