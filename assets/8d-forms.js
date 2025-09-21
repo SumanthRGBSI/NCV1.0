@@ -49,6 +49,28 @@
     });
   }
 
+  // Simple tabs
+  function initTabs(container){
+    Array.from((container||document).querySelectorAll('[data-tabs]')).forEach(host=>{
+      const tabs = Array.from(host.querySelectorAll('.tab'));
+      const panels = Array.from(host.querySelectorAll('.tab-panel'));
+      tabs.forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const id = btn.getAttribute('data-tab');
+          tabs.forEach(t=> t.classList.toggle('active', t===btn));
+          panels.forEach(p=> p.classList.toggle('active', p.getAttribute('data-panel')===id));
+        });
+      });
+    });
+  }
+
+  // Sticky titles helper
+  function initStickyTitles(container){
+    Array.from((container||document).querySelectorAll('.section-title')).forEach(el=>{
+      el.classList.add('sticky-section-title');
+    });
+  }
+
   // File previews for image inputs
   function initFilePreviews(container){
     qsa('.preview-file', container).forEach(inp=>{
@@ -302,6 +324,14 @@
     num.addEventListener('input', sync); sync();
   }
 
+  // D3: auto-calc total checked
+  function initD3AutoCalc(container){
+    const tbl = (container||document).querySelector('#d3-sort'); if(!tbl) return;
+    function recalcRow(tr){ const ok = Number(tr.querySelector('.qty-ok')?.value||0); const nok = Number(tr.querySelector('.qty-nok')?.value||0); const out = tr.querySelector('.qty-checked'); if(out){ out.value = String(ok + nok); out.dispatchEvent(new Event('input', {bubbles:true})); } }
+    tbl.addEventListener('input', (e)=>{ const tr=e.target.closest('tr'); if(!tr) return; if(e.target.classList.contains('qty-ok') || e.target.classList.contains('qty-nok')) recalcRow(tr); });
+    Array.from(tbl.querySelectorAll('tbody tr')).forEach(recalcRow);
+  }
+
   // Gantt for D6
   function initD6Gantt(container){
     const host = qs('#d6-impl', container);
@@ -337,6 +367,8 @@
   // Boot
   document.addEventListener('DOMContentLoaded', ()=>{
     initDynamicTables(document);
+    initTabs(document);
+    initStickyTitles(document);
     initFilePreviews(document);
     initDropZones(document);
     initD1QuickAdd(document);
@@ -347,6 +379,7 @@
     initPartLink(document);
     initRichText(document, 'd2-problemStatement');
     initRichText(document, 'd2-situationBefore');
+    initD3AutoCalc(document);
     renderOrgChart(document);
     renderTeamCards(document);
   });
@@ -355,6 +388,8 @@
   window.__init8D = function(container){
     const ctx = container||document;
     initDynamicTables(ctx);
+    initTabs(ctx);
+    initStickyTitles(ctx);
     initFilePreviews(ctx);
     initDropZones(ctx);
     initD1QuickAdd(ctx);
@@ -365,6 +400,7 @@
     initPartLink(ctx);
     initRichText(ctx, 'd2-problemStatement');
     initRichText(ctx, 'd2-situationBefore');
+    initD3AutoCalc(ctx);
     renderOrgChart(ctx);
     renderTeamCards(ctx);
     // init D6 gantt if present
