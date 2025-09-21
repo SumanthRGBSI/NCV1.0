@@ -6,135 +6,68 @@
     <title>8D Problem-Solving Interface</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="assets/design-system.css">
-    <!-- FontAwesome removed; using Lucide icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --status-pending-bg: #e5e7eb; /* gray-200 */
-            --status-pending-text: #4b5563; /* gray-600 */
-            --status-in-progress-bg: #f59e0b; /* amber-500 */
+            --status-pending-bg: #e5e7eb;
+            --status-pending-text: #4b5563;
+            --status-in-progress-bg: #f59e0b;
             --status-in-progress-text: #ffffff;
-            --status-completed-bg: #10b981; /* emerald-500 */
+            --status-completed-bg: #10b981;
             --status-completed-text: #ffffff;
-            --active-bg: #eff6ff; /* blue-50 */
-            --active-border: #3b82f6; /* blue-500 */
+            --active-bg: #eff6ff;
+            --active-border: #3b82f6;
         }
-        html, body {
-            height: 100%;
-            overflow: hidden;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f9fafb; /* gray-50 */
-        }
-        
-        /* Stepper Navigation Styles */
-        #stepper-nav {
-            position: relative;
-        }
-        .step {
-            position: relative;
-            z-index: 10;
-        }
-        #stepper-nav::before {
-            content: '';
-            position: absolute;
-            left: 1.25rem; /* calc(2.5rem / 2) */
-            top: 1.25rem;
-            bottom: 1.25rem;
-            width: 2px;
-            background-color: #e5e7eb; /* gray-200 */
-            z-index: 1;
-            transition: left 0.3s ease-in-out;
-        }
-        .step-circle {
-            width: 2.5rem;
-            height: 2.5rem;
-            border-radius: 9999px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            transition: all 0.3s;
-            background-color: var(--status-pending-bg);
-            color: var(--status-pending-text);
-        }
-        .step-link.status-in-progress .step-circle {
-            background-color: var(--status-in-progress-bg);
-            color: var(--status-in-progress-text);
-        }
-        .step-link.status-completed .step-circle {
-            background-color: var(--status-completed-bg);
-            color: var(--status-completed-text);
-        }
-        .step-link.active .step-content {
-            background-color: var(--active-bg);
-            border-color: var(--active-border);
-            color: var(--active-border);
-        }
-        .step-link.active .step-arrow {
-            opacity: 1;
-        }
-        .step-content {
-            transition: border 0.3s, background-color 0.3s, color 0.3s;
-            border: 1px solid transparent;
-        }
-        .step-arrow {
-            opacity: 0;
-            transition: opacity 0.3s;
-            color: var(--active-border);
-        }
-
-        /* Fade-in animation for loaded content */
-        #content-container.loading {
-            opacity: 0.5;
-            transition: opacity 0.3s;
-        }
-
-        /* Sidebar collapse styles */
-        #sidebar {
-            transition: width 0.3s ease-in-out, padding 0.3s ease-in-out, background-color 0.3s ease-in-out;
-        }
+        html, body { height: 100%; overflow: hidden; }
+        body { font-family: 'Inter', sans-serif; background-color: #f9fafb; }
+        #stepper-nav { position: relative; }
+        .step { position: relative; z-index: 10; }
+        #stepper-nav::before { content: ''; position: absolute; left: 1.25rem; top: 1.25rem; bottom: 1.25rem; width: 2px; background-color: #e5e7eb; z-index: 1; transition: left 0.3s ease-in-out; }
+        .step-circle { width: 2.5rem; height: 2.5rem; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-weight: 700; transition: all 0.3s; background-color: var(--status-pending-bg); color: var(--status-pending-text); position: relative; }
+        .step-link.status-in-progress .step-circle { background-color: var(--status-in-progress-bg); color: var(--status-in-progress-text); }
+        .step-link.status-completed .step-circle { background-color: var(--status-completed-bg); color: var(--status-completed-text); }
+        .step-link.active .step-content { background-color: var(--active-bg); border-color: var(--active-border); color: var(--active-border); }
+        .step-link.active .step-arrow { opacity: 1; }
+        .step-content { transition: border 0.3s, background-color 0.3s, color 0.3s; border: 1px solid transparent; }
+        .step-arrow { opacity: 0; transition: opacity 0.3s; color: var(--active-border); }
+        #content-container.loading { opacity: 0.5; transition: opacity 0.3s; }
+        #sidebar { transition: width 0.3s ease-in-out, padding 0.3s ease-in-out, background-color 0.3s ease-in-out; }
         main#main-panel { transition: width 0.3s ease-in-out, flex 0.3s ease-in-out; }
         #app-container.sidebar-collapsed #sidebar { width: 6rem; padding-left: 0.75rem; padding-right: 0.75rem; }
-        #app-container.sidebar-collapsed .sidebar-text,
-        #app-container.sidebar-collapsed .step-content { display: none; }
+        #app-container.sidebar-collapsed .sidebar-text, #app-container.sidebar-collapsed .step-content { display: none; }
         #app-container.sidebar-collapsed #stepper-nav::before { left: 1.25rem; }
         #app-container.sidebar-collapsed .step { justify-content: center; }
         #app-container.sidebar-collapsed #toggle-btn-icon { transform: rotate(180deg); }
-        #app-container.sidebar-collapsed main#main-panel { flex: 1 1 auto; width: auto; }
-        /* Ensure main panel uses full width on desktop */
         #app-container #main-panel { flex: 1 1 auto; width: auto; max-width: none; }
-        /* Tooltips for steps */
         .step-link{ position: relative; }
         .step-link[data-tooltip]:hover::after { content: attr(data-tooltip); position: absolute; left: 3.75rem; top: 50%; transform: translateY(-50%); background: #111827; color: #fff; padding: 0.5rem 0.6rem; border-radius: 0.5rem; box-shadow: 0 4px 18px rgba(0,0,0,0.2); width: 16rem; font-size: 0.75rem; line-height: 1.1; z-index: 50; }
         .step-link[data-tooltip]:hover::before { content: ''; position: absolute; left: 3.4rem; top: 50%; transform: translateY(-50%); border-width: 6px; border-style: solid; border-color: transparent #111827 transparent transparent; }
-
-        /* Animated progress line */
         #stepper-nav { position: relative; }
         #stepper-progress { position: absolute; left: 1.25rem; top: 1.25rem; width: 2px; height: 0; background-color: #10b981; z-index: 2; transition: height 0.4s ease; }
-
-        /* Collapsed: show icons in the circle, hide text */
         .step-abbr{ display:inline; }
         .step-icon-circle{ display:none; }
         #app-container.sidebar-collapsed .step-abbr{ display:none; }
         #app-container.sidebar-collapsed .step-icon-circle{ display:inline-flex; }
-
-        /* Focus ring for accessibility */
         a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.45); border-color: #93c5fd; }
-
-        /* Skeleton loading */
         .skeleton{ position:relative; overflow:hidden; background:#f3f4f6; }
         .skeleton::after{ content:''; position:absolute; inset:0; background: linear-gradient(90deg, rgba(243,244,246,0) 0%, rgba(209,213,219,.7) 50%, rgba(243,244,246,0) 100%); transform:translateX(-100%); animation: sk 1.2s infinite; }
         @keyframes sk{ to { transform: translateX(100%); } }
+        /* Collapsed badge overlay */
+        .step-badge { position: absolute; bottom: -6px; right: -6px; display: none; background: #111827; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 9999px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+        #app-container.sidebar-collapsed .step-badge { display: inline-flex; }
+        /* Context bar */
+        #context-bar { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; padding: 0.5rem; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 6px 18px rgba(2,6,23,0.06); }
+        /* Floating save bar */
+        #save-fab { position: fixed; left: 50%; transform: translateX(-50%); bottom: 16px; background: #0f172a; color: #fff; padding: 8px 10px; border-radius: 9999px; box-shadow: 0 12px 28px rgba(0,0,0,0.22); display: none; align-items: center; gap: 8px; z-index: 60; }
+        #save-fab.visible { display: inline-flex; }
+        /* Sticky section headers inside content */
+        .sticky-section-title { position: sticky; top: 8px; background: #fff; z-index: 5; padding-top: 4px; }
     </style>
 </head>
 <body class="antialiased">
-
     <div id="app-container" class="flex h-screen bg-gray-100">
-        <!-- Stepper Navigation -->
         <nav id="sidebar" class="w-1/3 lg:w-1/4 bg-white p-6 shadow-lg flex flex-col transition-all duration-300">
             <div class="flex items-center mb-2">
                 <div class="bg-blue-600 p-2 rounded-lg">
@@ -145,13 +78,8 @@
                     <p class="text-sm text-gray-500">Problem Solving Framework</p>
                 </div>
             </div>
-            
             <div class="border-t my-6"></div>
-
-            <div id="stepper-nav" class="stepper flex-grow overflow-y-auto pr-2">
-                <!-- Stepper links will be generated by JS -->
-            </div>
-
+            <div id="stepper-nav" class="stepper flex-grow overflow-y-auto pr-2"></div>
             <div class="mt-auto pt-6 border-t">
                 <button id="sidebar-toggle-btn" class="w-full flex items-center p-3 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">
                     <i id="toggle-btn-icon" data-lucide="chevron-left" class="transition-transform duration-300"></i>
@@ -159,25 +87,31 @@
                 </button>
             </div>
         </nav>
-
-        <!-- Main Content -->
         <main id="main-panel" class="w-2/3 lg:w-3/4 p-4 md:p-8 overflow-y-auto">
-            <div id="content-toolbar" class="flex items-center justify-between mb-4">
+            <div id="content-toolbar" class="flex items-center justify-between mb-3">
               <div class="text-xs text-gray-600" id="progress-summary"></div>
-              <div class="flex gap-2">
-                <button id="export-csv" class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold focus-ring"><i data-lucide="file-text" class="mr-1"></i> Export CSV</button>
-                <button id="export-json" class="px-3 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 text-sm focus-ring"><i data-lucide="code" class="mr-1"></i> Export JSON</button>
-                <button id="print-pdf" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring"><i data-lucide="printer" class="mr-1"></i> Print / PDF</button>
+              <div class="flex items-center gap-2">
+                <div class="relative" id="export-dropdown">
+                  <button id="export-toggle" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring"><i data-lucide="download" class="mr-1"></i> Export</button>
+                  <div id="export-menu" class="hidden absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+                    <a href="#" id="export-csv" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Export CSV</a>
+                    <a href="#" id="export-json" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Export JSON</a>
+                    <a href="#" id="print-pdf" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Print / PDF</a>
+                  </div>
+                </div>
               </div>
             </div>
-            <div id="content-container">
-                <!-- Content from HTML files will be loaded here -->
-            </div>
+            <div id="context-bar" class="mb-4"></div>
+            <div id="content-container"></div>
         </main>
+    </div>
+    <div id="save-fab" aria-live="polite">
+      <span class="text-xs opacity-80">Unsaved changes</span>
+      <button id="save-current" class="px-3 py-1.5 bg-white text-gray-800 rounded-full text-sm font-semibold focus-ring">Save</button>
+      <button id="save-all-fab" class="px-3 py-1.5 bg-blue-600 text-white rounded-full text-sm font-semibold hover:bg-blue-700 focus-ring">Save All</button>
     </div>
 
     <script>
-    // --- DATA STRUCTURE & INITIAL STATE ---
     const disciplines = [
         { id: 'd1', title: 'IDENTIFY TEAM', shortDesc: 'Establish a small group of people with the knowledge, time, and authority to solve the problem.' },
         { id: 'd2', title: 'PROBLEM DESCRIPTION', shortDesc: 'Describe the internal/external problem by identifying "what is wrong with what" and detailing the problem in quantifiable terms.' },
@@ -189,28 +123,13 @@
         { id: 'd8', title: 'RECOGNITION', shortDesc: 'Congratulate your team and recognize their collective efforts.' }
     ];
 
-    const stepIcons = {
-        d1: 'users',
-        d2: 'file-text',
-        d3: 'shield-check',
-        d4: 'search',
-        d5: 'check-square',
-        d6: 'tool',
-        d7: 'ban',
-        d8: 'award'
-    };
+    const stepIcons = { d1: 'users', d2: 'file-text', d3: 'shield-check', d4: 'search', d5: 'check-square', d6: 'tool', d7: 'ban', d8: 'award' };
 
     function getInitialData() {
         const data = {};
         disciplines.forEach(d => {
-            data[d.id] = {
-                status: 'pending', // pending, in-progress, completed
-                lastUpdated: null,
-                fields: {},
-                checklist: {}
-            };
+            data[d.id] = { status: 'pending', lastUpdated: null, fields: {}, checklist: {} };
         });
-        // Pre-populate some fields for structure
         data.d1.fields = { teamLeader: '', sponsor: '', members: [] };
         data.d2.fields = { problemStatement: '', who: '', what: '', when: '', where: '', why: '', how: '', howMany: '' };
         data.d3.fields = { containmentActions: '', verification: '' };
@@ -222,10 +141,8 @@
         return data;
     }
 
-    // --- APPLICATION LOGIC ---
     const app = {
-        data: {},
-
+        data: {}, _dirty:false,
         init() {
             this.loadData();
             this.renderStepper();
@@ -234,36 +151,29 @@
             this.handleRouting();
             this.updateStepperStatusColors();
         },
-
         loadData() {
             const savedData = localStorage.getItem('8d-data-v2');
-            if (savedData) {
-                this.data = JSON.parse(savedData);
-            } else {
-                this.data = getInitialData();
-            }
-            // Attempt to hydrate from backend if available (non-blocking)
+            if (savedData) { this.data = JSON.parse(savedData); } else { this.data = getInitialData(); }
             try{
               if(window.DataStore && typeof window.DataStore.get==='function'){
                 window.DataStore.get('8d-data-v2').then((cloud)=>{
                   if(cloud && typeof cloud === 'object'){
-                    this.data = cloud;
-                    this.renderStepper();
-                    this.handleRouting();
-                    this.updateStepperStatusColors();
+                    this.data = cloud; this.renderStepper(); this.handleRouting(); this.updateStepperStatusColors();
                   }
                 }).catch(()=>{});
               }
-            }catch(_){ /* ignore */ }
+            }catch(_){ }
+            if(!this.data.meta) this.data.meta = { overallStatus:'Open', assignee:'', team:'', role: localStorage.getItem('8d-role')||'Admin' };
+            if(!this.data.audit) this.data.audit = [];
         },
-
         saveData(reason) {
+            try{ if(reason){ this.data.audit.push({ ts: new Date().toISOString(), userRole: this.data.meta?.role||'Admin', reason }); } }catch(_){ }
             localStorage.setItem('8d-data-v2', JSON.stringify(this.data));
-            // Best-effort sync to backend
             try{ if(window.DataStore && typeof window.DataStore.set==='function'){ window.DataStore.set('8d-data-v2', this.data); } }catch(_){ }
             this.updateStepperStatusColors();
+            const ind = document.getElementById('autosave-indicator'); if(ind){ ind.textContent = 'All changes saved'; }
+            this._dirty = false; this.updateSaveFab();
         },
-
         renderStepper() {
             const nav = document.getElementById('stepper-nav');
             const stepsHtml = disciplines.map(d => {
@@ -276,6 +186,7 @@
                         <div class="step-circle z-10">
                             <span class="step-abbr">${d.id.toUpperCase()}</span>
                             <i data-lucide="${icon}" class="step-icon-circle"></i>
+                            <span class="step-badge">${d.id.toUpperCase()}</span>
                         </div>
                         <div class="ml-4 p-3 rounded-lg w-full step-content font-semibold text-gray-600 flex justify-between items-center">
                             <span class="flex items-center gap-2"><i data-lucide="${icon}" class="text-gray-500"></i> ${d.title} <span class="inline-flex items-center gap-1 text-xs font-medium" id="badge-${d.id}">${badge}</span></span>
@@ -284,185 +195,109 @@
                     </div>
                 </a>`;
             }).join('');
-            nav.innerHTML = `<div id=\"stepper-progress\"></div>` + stepsHtml;
+            nav.innerHTML = `<div id="stepper-progress"></div>` + stepsHtml;
             this.updateProgressSummary();
             this.updateStepperProgressLine && this.updateStepperProgressLine();
         },
-        
         async loadDisciplineContent(id) {
             const container = document.getElementById('content-container');
             container.classList.add('loading');
             this.showSkeleton && this.showSkeleton(container);
             try {
-                // Try multiple candidate paths (root, same directory, relative) to be resilient across hosts
                 const tryPaths = [];
-                const base = window.location.pathname.replace(/[^\/]*$/, ''); // directory of current page
-                tryPaths.push('/' + id + '.html'); // root
-                tryPaths.push(base + id + '.html'); // same directory as view page
-                tryPaths.push('./' + id + '.html'); // relative
+                const base = window.location.pathname.replace(/[^\/]*$/, '');
+                tryPaths.push(base + id + '.html');
+                tryPaths.push('/' + id + '.html');
+                tryPaths.push('./' + id + '.html');
                 tryPaths.push(id + '.html');
-
                 let response = null;
                 let lastError = null;
                 for (const p of tryPaths) {
-                    try {
-                        response = await fetch(p);
-                        if (response && response.ok) break;
-                        lastError = new Error(`Not found at ${p}`);
-                    } catch (fetchErr) {
-                        lastError = fetchErr;
-                    }
+                    try { response = await fetch(p); if (response && response.ok) break; lastError = new Error(`Not found at ${p}`); } catch (fetchErr) { lastError = fetchErr; }
                 }
-                if (!response || !response.ok) {
-                   console.warn('Fetch attempts failed:', tryPaths, lastError);
-                   throw new Error(`File not found: ${id}.html. Please create this file.`);
-                }
+                if (!response || !response.ok) { console.warn('Fetch attempts failed:', tryPaths, lastError); throw new Error(`File not found: ${id}.html.`); }
                 const html = await response.text();
                 container.innerHTML = html;
-
-                // Move stylesheet links to document head so styles load
-                Array.from(container.querySelectorAll('link[rel="stylesheet"]')).forEach(link => {
-                    if (!document.querySelector(`link[href="${link.href}"]`)) {
-                        document.head.appendChild(link.cloneNode());
-                    }
-                    link.remove();
-                });
-
-                // Execute scripts safely: external scripts are appended once; inline scripts run inside a function scope to avoid redeclaration errors
+                Array.from(container.querySelectorAll('link[rel="stylesheet"]').forEach(link=>{ if(!document.querySelector(`link[href="${link.getAttribute('href')}"]`)){ document.head.appendChild(link.cloneNode()); } link.remove(); }));
                 const scripts = Array.from(container.querySelectorAll('script'));
                 for (const oldScript of scripts) {
-                    try {
-                        if (oldScript.src) {
-                            // Avoid loading the same external script multiple times
-                            if (!document.querySelector(`script[src="${oldScript.src}"]`)) {
-                                const s = document.createElement('script');
-                                s.src = oldScript.src;
-                                s.async = false;
-                                document.body.appendChild(s);
-                            }
-                        } else {
-                            // Run inline script in a new Function scope to prevent global redeclarations
-                            const code = oldScript.textContent || '';
-                            if (code.trim()) {
-                                try {
-                                    new Function(code)();
-                                } catch (inlineErr) {
-                                    // If the inline script cannot be executed via Function (rare), fallback to appending a script tag
-                                    const s = document.createElement('script');
-                                    s.textContent = code;
-                                    document.body.appendChild(s);
-                                }
-                            }
-                        }
-                    } catch (e) {
-                        console.warn('Error executing injected script:', e);
-                    } finally {
-                        oldScript.remove();
-                    }
+                    try { if (oldScript.src) { if (!document.querySelector(`script[src="${oldScript.src}"]`)) { const s = document.createElement('script'); s.src = oldScript.src; s.async = false; document.body.appendChild(s); } } else { const code = oldScript.textContent || ''; if (code.trim()) { try { new Function(code)(); } catch (inlineErr) { const s = document.createElement('script'); s.textContent = code; document.body.appendChild(s); } } } } catch (e) { console.warn('Error executing injected script:', e); } finally { oldScript.remove(); }
                 }
-
-                // Initialize form behaviors (shared initializer)
                 if (window.__init8D) window.__init8D(container);
-
                 this.populateForm(id);
             } catch (error) {
                 console.error('Failed to fetch discipline content:', error);
-                container.innerHTML = `<div class="bg-white p-8 rounded-lg shadow-lg text-center"><h2 class="text-2xl font-bold text-red-600">Error</h2><p class="mt-2 text-gray-600">Could not load content for ${id.toUpperCase()}. Please ensure the file '${id}.html' exists and the application is run from a server environment.</p></div>`;
-            } finally {
-                container.classList.remove('loading');
-            }
+                container.innerHTML = `<div class="bg-white p-8 rounded-lg shadow-lg text-center"><h2 class="text-2xl font-bold text-red-600">Error</h2><p class="mt-2 text-gray-600">Could not load content for ${id.toUpperCase()}.</p></div>`;
+            } finally { container.classList.remove('loading'); }
         },
-
         attachEventListeners() {
             window.addEventListener('hashchange', this.handleRouting.bind(this));
             document.getElementById('sidebar-toggle-btn').addEventListener('click', this.toggleSidebar.bind(this));
-
             const contentEl = document.getElementById('content-container');
             contentEl.addEventListener('click', (e) => {
-                const target = e.target.closest('.save-btn, #d1-add-member-btn, .remove-member-btn, .remove-row-btn');
+                const target = e.target.closest('#d1-add-member-btn, .remove-member-btn, .remove-row-btn');
                 if (!target) return;
-
-                if (target.matches('.save-btn')) this.handleSave(target.dataset.id);
                 if (target.matches('#d1-add-member-btn')) this.addTeamMember();
                 if (target.matches('.remove-member-btn')) this.removeTeamMember(target.dataset.index);
                 if (target.matches('.remove-row-btn')) { if(!confirm('Remove this item?')){ e.preventDefault(); e.stopImmediatePropagation(); return; } }
             });
-
+            const menuBtn = document.getElementById('export-toggle');
+            const menu = document.getElementById('export-menu');
+            if(menuBtn){ menuBtn.addEventListener('click', (e)=>{ e.stopPropagation(); menu.classList.toggle('hidden'); }); document.addEventListener('click', ()=> menu.classList.add('hidden')); }
             const csvBtn = document.getElementById('export-csv');
             const jsonBtn = document.getElementById('export-json');
             const printBtn = document.getElementById('print-pdf');
-            if(csvBtn) csvBtn.addEventListener('click', ()=> this.exportCurrentToCSV());
-            if(jsonBtn) jsonBtn.addEventListener('click', ()=> this.exportAllToJSON());
-            if(printBtn) printBtn.addEventListener('click', ()=> this.printCurrent());
-
+            if(csvBtn) csvBtn.addEventListener('click', (ev)=>{ ev.preventDefault(); this.exportCurrentToCSV(); });
+            if(jsonBtn) jsonBtn.addEventListener('click', (ev)=>{ ev.preventDefault(); this.exportAllToJSON(); });
+            if(printBtn) printBtn.addEventListener('click', (ev)=>{ ev.preventDefault(); this.printCurrent(); });
             document.getElementById('content-container').addEventListener('change', (e) => {
                 if (e.target.matches('.status-select')) {
-                    const id = e.target.dataset.id;
-                    this.data[id].status = e.target.value;
-                    this.data[id].lastUpdated = new Date().toISOString();
-                    this.saveData();
-                    this.populateForm(id);
+                    const id = e.target.dataset.id; this.data[id].status = e.target.value; this.data[id].lastUpdated = new Date().toISOString(); this.saveData('status-change-'+id); this.populateForm(id);
                 }
                 if (e.target.matches('input[type="checkbox"]')) {
-                    const id = e.target.dataset.id;
-                    if (this.data[id]) {
-                       this.data[id].checklist[e.target.dataset.index] = e.target.checked;
-                       this.saveData();
-                    }
+                    const id = e.target.dataset.id; if (this.data[id]) { this.data[id].checklist[e.target.dataset.index] = e.target.checked; this.saveData('checklist-'+id); }
                 }
             });
+            const fab = document.getElementById('save-fab');
+            document.getElementById('save-current').addEventListener('click', ()=>{ const id=(location.hash||'#dashboard').replace('#',''); const disc = disciplines.find(d=>d.id===id); this.saveData('manual-'+(disc?disc.id:'dashboard')); });
+            document.getElementById('save-all-fab').addEventListener('click', ()=> this.saveData('manual-save-all'));
+            const containerEl = document.getElementById('content-container');
+            let saveTimer = null;
+            containerEl.addEventListener('input', (e)=>{
+              const id = (location.hash||'#dashboard').replace('#','');
+              const t = e.target;
+              if(!(t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t instanceof HTMLSelectElement)) return;
+              if(disciplines.some(d=> d.id===id)){
+                if(!this.data[id]) return;
+                const m = t.id && t.id.startsWith(id+'-') ? t.id.slice((id+'-').length) : null;
+                if(m){ this.data[id].fields[m] = t.value; this.data[id].lastUpdated = new Date().toISOString(); }
+              }
+              this._dirty = true; this.updateSaveFab(true);
+              const ind = document.getElementById('autosave-indicator'); if(ind){ ind.textContent = 'Saving…'; }
+              clearTimeout(saveTimer);
+              saveTimer = setTimeout(()=> this.saveData('field-change-'+id), 600);
+            });
         },
-
         handleRouting() {
-            let hash = window.location.hash.replace('#', '');
-            if (!disciplines.some(d => d.id === hash)) {
-                hash = 'd1';
-                window.location.hash = '#d1';
-                return;
-            }
-            
+            let hash = (window.location.hash || '').replace('#','');
+            if(!hash) { hash = 'dashboard'; window.location.hash = '#dashboard'; }
+            const isDiscipline = disciplines.some(d => d.id === hash);
+            if (!isDiscipline && hash !== 'dashboard') { hash = 'dashboard'; window.location.hash = '#dashboard'; return; }
             this.loadDisciplineContent(hash);
-            
             document.querySelectorAll('.step-link').forEach(link => link.classList.remove('active'));
             const activeLink = document.getElementById(`nav-${hash}`);
             if (activeLink) activeLink.classList.add('active');
         },
-
         populateForm(id) {
-            const disciplineData = this.data[id];
-            if (!disciplineData) return;
-
-            const statusSelect = document.getElementById(`${id}-status-select`);
-            if(statusSelect) statusSelect.value = disciplineData.status;
-
-            const timestamp = document.getElementById(`${id}-timestamp`);
-            if(timestamp) timestamp.textContent = disciplineData.lastUpdated ? new Date(disciplineData.lastUpdated).toLocaleString() : "Never";
-            
-            for (const key in disciplineData.fields) {
-                const element = document.getElementById(`${id}-${key}`);
-                if (element) element.value = disciplineData.fields[key] || '';
-            }
-
+            const disciplineData = this.data[id]; if (!disciplineData) return;
+            const statusSelect = document.getElementById(`${id}-status-select`); if(statusSelect) statusSelect.value = disciplineData.status;
+            const timestamp = document.getElementById(`${id}-timestamp`); if(timestamp) timestamp.textContent = disciplineData.lastUpdated ? new Date(disciplineData.lastUpdated).toLocaleString() : "Never";
+            for (const key in disciplineData.fields) { const element = document.getElementById(`${id}-${key}`); if (element) element.value = disciplineData.fields[key] || ''; }
             if (id === 'd1') this.renderTeamMembers();
-
-            for (const key in disciplineData.checklist) {
-                const element = document.getElementById(`${id}-check-${key}`);
-                if (element) element.checked = disciplineData.checklist[key];
-            }
-        },
-        
-        validate(id){
-            const container = document.getElementById('content-container');
-            let ok = true;
-            container.querySelectorAll('[data-required]').forEach(el=>{
-                const val = (el.value||'').trim();
-                if(!val){ ok = false; el.classList.add('invalid'); el.setAttribute('aria-invalid','true'); }
-                else { el.classList.remove('invalid'); el.removeAttribute('aria-invalid'); }
-            });
-            return ok;
+            for (const key in disciplineData.checklist) { const element = document.getElementById(`${id}-check-${key}`); if (element) element.checked = disciplineData.checklist[key]; }
         },
         exportCurrentToCSV(){
-            const hash = window.location.hash.replace('#','') || 'd1';
+            const hash = window.location.hash.replace('#','') || 'dashboard';
             const container = document.getElementById('content-container');
             const rows = [];
             container.querySelectorAll('label.label').forEach(label=>{
@@ -485,141 +320,43 @@
             const csv = rows.join('\n');
             const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `${hash}.csv`; a.click();
-            URL.revokeObjectURL(url);
+            const a = document.createElement('a'); a.href = url; a.download = `${hash}.csv`; a.click(); URL.revokeObjectURL(url);
         },
-        exportAllToJSON(){
-            const blob = new Blob([JSON.stringify(this.data, null, 2)], {type:'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = '8d-data.json'; a.click();
-            URL.revokeObjectURL(url);
-        },
-        printCurrent(){
-            const w = window.open('', '_blank');
-            const title = document.title;
-            const html = document.getElementById('content-container').innerHTML;
-            w.document.write(`<!doctype html><html><head><title>${title}</title><link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css\"></head><body><main class=\"container\">${html}</main><script>setTimeout(()=>window.print(), 200);<\\/script></body></html>`);
-            w.document.close();
-        },
-        handleSave(id) {
-            const disciplineData = this.data[id];
-            if (!disciplineData) return;
-            
-            for (const key in disciplineData.fields) {
-                 if (key !== 'members') {
-                    const element = document.getElementById(`${id}-${key}`);
-                    if (element) disciplineData.fields[key] = element.value;
-                }
-            }
-            
-            if(!this.validate(id)) return;
-            disciplineData.lastUpdated = new Date().toISOString();
-            this.saveData();
-            this.populateForm(id);
-
-            // Micro-interaction feedback
-            const saveBtn = document.querySelector(`.save-btn[data-id="${id}"]`);
-            if(saveBtn) {
-                const originalHTML = saveBtn.innerHTML;
-                saveBtn.disabled = true;
-                saveBtn.innerHTML = `<i data-lucide=\"loader\" class=\"lucide-spin mr-2\"></i> Saving...`;
-                setTimeout(() => {
-                    saveBtn.innerHTML = `<i data-lucide=\"check\" class=\"mr-2\"></i> Saved!`;
-                    setTimeout(() => {
-                        saveBtn.innerHTML = originalHTML;
-                        saveBtn.disabled = false;
-                    }, 1200);
-                }, 400);
-            }
-        },
-        
+        exportAllToJSON(){ const blob = new Blob([JSON.stringify(this.data, null, 2)], {type:'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = '8d-data.json'; a.click(); URL.revokeObjectURL(url); },
+        printCurrent(){ const w = window.open('', '_blank'); const title = document.title; const html = document.getElementById('content-container').innerHTML; w.document.write(`<!doctype html><html><head><title>${title}</title><link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css\"></head><body><main class=\"container\">${html}</main><script>setTimeout(()=>window.print(), 200);<\\/script></body></html>`); w.document.close(); },
         renderTeamMembers() {
-            const list = document.getElementById('d1-members-list');
-            if (!list) return;
-            list.innerHTML = this.data.d1.fields.members.map((member, index) => `
+            const list = document.getElementById('d1-members-list'); if (!list) return;
+            list.innerHTML = (this.data.d1.fields.members||[]).map((member, index) => `
                 <div class="flex items-center justify-between bg-gray-100 p-2 rounded">
                     <span class="text-gray-800 break-all">${member}</span>
                     <button type="button" class="remove-member-btn text-red-500 hover:text-red-700 ml-2" data-index="${index}"><i data-lucide="x-circle"></i></button>
                 </div>
             `).join('');
         },
-
-        addTeamMember() {
-            const input = document.getElementById('d1-new-member');
-            if (input && input.value.trim() !== '') {
-                this.data.d1.fields.members.push(input.value.trim());
-                input.value = '';
-                this.renderTeamMembers();
-            }
-        },
-
-        removeTeamMember(index) {
-            this.data.d1.fields.members.splice(index, 1);
-            this.renderTeamMembers();
-        },
-        
+        addTeamMember() { const input = document.getElementById('d1-new-member'); if (input && input.value.trim() !== '') { this.data.d1.fields.members.push(input.value.trim()); input.value = ''; this.renderTeamMembers(); } },
+        removeTeamMember(index) { this.data.d1.fields.members.splice(index, 1); this.renderTeamMembers(); },
         toggleSidebar() {
             const container = document.getElementById('app-container');
             const isCollapsed = container.classList.toggle('sidebar-collapsed');
             localStorage.setItem('sidebarCollapsed', isCollapsed);
             this.updateSidebarToggleUI(isCollapsed);
         },
-
-        applySidebarState() {
-            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            if (isCollapsed) {
-                document.getElementById('app-container').classList.add('sidebar-collapsed');
-            }
-            this.updateSidebarToggleUI(isCollapsed);
-        },
-
-        renderStatusBadge(status){
-            const map = {
-              'pending': '<span class="px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">Pending</span>',
-              'in-progress': '<span class="px-2 py-0.5 rounded-full bg-amber-500 text-white">In Progress</span>',
-              'completed': '<span class="px-2 py-0.5 rounded-full bg-emerald-500 text-white">Completed</span>'
-            };
-            return map[status] || map['pending'];
-        },
-        updateProgressSummary(){
-            const done = disciplines.filter(d=>this.data[d.id]?.status==='completed').length;
-            const total = disciplines.length;
-            const el = document.getElementById('progress-summary');
-            if(el) el.textContent = `Progress: ${done}/${total} steps completed`;
-        },
+        applySidebarState() { const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true'; if (isCollapsed) { document.getElementById('app-container').classList.add('sidebar-collapsed'); } this.updateSidebarToggleUI(isCollapsed); },
+        renderStatusBadge(status){ const map = { 'pending': '<span class="px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">Pending</span>', 'in-progress': '<span class="px-2 py-0.5 rounded-full bg-amber-500 text-white">In Progress</span>', 'completed': '<span class="px-2 py-0.5 rounded-full bg-emerald-500 text-white">Completed</span>' }; return map[status] || map['pending']; },
+        updateProgressSummary(){ const done = disciplines.filter(d=>this.data[d.id]?.status==='completed').length; const total = disciplines.length; const el = document.getElementById('progress-summary'); if(el) el.textContent = `Progress: ${done}/${total} steps completed`; },
         updateStepperStatusColors() {
             disciplines.forEach(d => {
                 const link = document.getElementById(`nav-${d.id}`);
                 if(link && this.data[d.id]) {
                     link.classList.remove('status-pending', 'status-in-progress', 'status-completed');
-                    const st = this.data[d.id].status;
-                    link.classList.add(`status-${st}`);
-                    const badgeHost = document.getElementById(`badge-${d.id}`);
-                    if(badgeHost) badgeHost.innerHTML = this.renderStatusBadge(st);
+                    const st = this.data[d.id].status; link.classList.add(`status-${st}`);
+                    const badgeHost = document.getElementById(`badge-${d.id}`); if(badgeHost) badgeHost.innerHTML = this.renderStatusBadge(st);
                 }
             });
             this.updateProgressSummary(); this.updateStepperProgressLine && this.updateStepperProgressLine();
         },
-
-        updateSidebarToggleUI(isCollapsed){
-            const btn = document.getElementById('sidebar-toggle-btn');
-            const icon = document.getElementById('toggle-btn-icon');
-            const label = btn ? btn.querySelector('.sidebar-text') : null;
-            if(label) label.textContent = isCollapsed ? 'Expand' : 'Collapse';
-            if(btn) btn.setAttribute('aria-expanded', (!isCollapsed).toString());
-            if(icon) icon.setAttribute('aria-hidden','true');
-        }
-    };
-
-    document.addEventListener('DOMContentLoaded', () => {
-        app.init();
-    });
-
-    // Helper: show skeletons during load
-    app.showSkeleton = function(container){
-        const host = container || document.getElementById('content-container');
-        if(!host) return;
-        host.innerHTML = `
+        updateSidebarToggleUI(isCollapsed){ const btn = document.getElementById('sidebar-toggle-btn'); const icon = document.getElementById('toggle-btn-icon'); const label = btn ? btn.querySelector('.sidebar-text') : null; if(label) label.textContent = isCollapsed ? 'Expand' : 'Collapse'; if(btn) btn.setAttribute('aria-expanded', (!isCollapsed).toString()); if(icon) icon.setAttribute('aria-hidden','true'); },
+        showSkeleton(container){ const host = container || document.getElementById('content-container'); if(!host) return; host.innerHTML = `
           <div class="card">
             <div class="flex items-center justify-between">
               <div class="skeleton" style="height:24px;width:220px;border-radius:6px"></div>
@@ -629,28 +366,14 @@
               <div class="skeleton" style="height:140px;border-radius:10px"></div>
               <div class="skeleton" style="height:140px;border-radius:10px"></div>
             </div>
-          </div>`;
+          </div>`; },
+        updateSaveFab(force){ const bar = document.getElementById('save-fab'); if(!bar) return; bar.classList.toggle('visible', !!(force || this._dirty)); },
+        updateStepperProgressLine(){ const nav = document.getElementById('stepper-nav'); const line = document.getElementById('stepper-progress'); if(!nav || !line) return; const steps = Array.from(nav.querySelectorAll('.step')); if(!steps.length) { line.style.height = '0px'; return; } let lastIdx = -1; disciplines.forEach((d, i)=>{ if(app.data[d.id]?.status === 'completed') lastIdx = i; }); if(lastIdx < 0){ line.style.height = '0px'; return; } const targetStep = steps[Math.min(lastIdx, steps.length-1)]; const navTop = nav.getBoundingClientRect().top; const stepRect = targetStep.getBoundingClientRect(); const center = stepRect.top - navTop + (stepRect.height/2); const offsetTop = 20; const h = Math.max(0, center - offsetTop); line.style.height = h + 'px'; }
     };
 
-    // Compute and animate the stepper green progress line
-    app.updateStepperProgressLine = function(){
-        const nav = document.getElementById('stepper-nav');
-        const line = document.getElementById('stepper-progress');
-        if(!nav || !line) return;
-        const steps = Array.from(nav.querySelectorAll('.step'));
-        if(!steps.length) { line.style.height = '0px'; return; }
-        let lastIdx = -1;
-        disciplines.forEach((d, i)=>{ if(app.data[d.id]?.status === 'completed') lastIdx = i; });
-        if(lastIdx < 0){ line.style.height = '0px'; return; }
-        const targetStep = steps[Math.min(lastIdx, steps.length-1)];
-        const navTop = nav.getBoundingClientRect().top;
-        const stepRect = targetStep.getBoundingClientRect();
-        const center = stepRect.top - navTop + (stepRect.height/2);
-        const offsetTop = 20; // matches top: 1.25rem (~20px)
-        const h = Math.max(0, center - offsetTop);
-        line.style.height = h + 'px';
-    };
+    document.addEventListener('DOMContentLoaded', () => { app.init(); });
     </script>
+
 <script>
 (function(){
   function $(id){return document.getElementById(id)}
@@ -660,27 +383,25 @@
 
   function ensureStyle(){
     if(document.getElementById('extras-style')) return;
-    const s=document.createElement('style');
-    s.id='extras-style';
-    s.textContent = `
+    const s=document.createElement('style'); s.id='extras-style'; s.textContent = `
       .card[data-collapsed="true"] > *:not(.header){ display:none }
       .disabled-ui { opacity:0.6; pointer-events:none }
       #autosave-indicator { min-width:140px }
-    `;
-    document.head.appendChild(s);
+    `; document.head.appendChild(s);
+  }
+
+  function ensureContextBar(){
+    const bar = $('context-bar'); if(!bar) return null; return bar;
   }
 
   function injectToolbarExtras(){
-    const bar = $('content-toolbar');
-    if(!bar || $('quick-jump')) return;
-    const right = bar.querySelector('.flex.gap-2');
+    const cbar = ensureContextBar(); if(!cbar || $('quick-jump')) return;
     const extras = createEl(`
-      <div class="hidden md:flex items-center gap-2 flex-wrap">
+      <div class="flex items-center gap-2 flex-wrap w-full">
         <select id="quick-jump" class="px-2 py-2 bg-white border border-gray-200 rounded-lg text-sm">
           <option value="">Jump to…</option>
           <option value="d1">D1</option><option value="d2">D2</option><option value="d3">D3</option><option value="d4">D4</option><option value="d5">D5</option><option value="d6">D6</option><option value="d7">D7</option><option value="d8">D8</option>
         </select>
-        <button id="save-all" class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"><i data-lucide="cloud-upload" class="mr-1"></i> Save All</button>
         <select id="view-role" class="px-2 py-2 bg-white border border-gray-200 rounded-lg text-sm">
           <option>Admin</option>
           <option>Team Member</option>
@@ -696,205 +417,49 @@
         <input id="global-team" class="px-2 py-2 bg-white border border-gray-200 rounded-lg text-sm" placeholder="Team" />
         <a id="nc-link" href="../NC Listing Page.html" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring" title="Open NC Report"><i data-lucide="link" class="mr-1"></i> NC Report</a>
         <button id="show-audit" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring"><i data-lucide="clock" class="mr-1"></i> Audit</button>
+        <span id="autosave-indicator" class="ml-auto text-xs text-gray-500"></span>
       </div>`);
-    right.parentNode.insertBefore(extras, right);
-
-    // Add autosave indicator next to progress
-    const progress = $('progress-summary');
-    if(progress && !$('autosave-indicator')){
-      progress.insertAdjacentHTML('afterend', '<span id="autosave-indicator" class="ml-3 text-xs text-gray-500"></span>');
-    }
+    cbar.appendChild(extras);
   }
 
   function patchApp(){
     if(!window.app) return;
     const app = window.app;
-
-    // Meta & audit
     if(!app.data) app.data = {};
     if(!app.data.meta) app.data.meta = { overallStatus:'Open', assignee:'', team:'', role: localStorage.getItem('8d-role')||'Admin' };
     if(!app.data.audit) app.data.audit = [];
 
-    const origLoadData = app.loadData.bind(app);
-    app.loadData = function(){
-      origLoadData();
-      if(!this.data.meta) this.data.meta = { overallStatus:'Open', assignee:'', team:'', role: localStorage.getItem('8d-role')||'Admin' };
-      if(!this.data.audit) this.data.audit = [];
-    };
-
-    const origSaveData = app.saveData.bind(app);
-    app.saveData = function(reason){
-      try{
-        if(reason){ this.data.audit.push({ ts: nowISO(), userRole: this.data.meta.role, reason }); }
-      }catch(e){}
-      origSaveData();
-      const ind = $('autosave-indicator');
-      if(ind){ ind.textContent = 'All changes saved'; }
-      this.updateStepperStatusColors();
-    };
-
-    // Prefer same-directory HTML first
-    app.loadDisciplineContent = async function(id){
-      const container = $('content-container');
-      container.classList.add('loading');
-            this.showSkeleton && this.showSkeleton(container);
-      try{
-        const base = window.location.pathname.replace(/[^\/]*$/, '');
-        const tryPaths = [ base + id + '.html', '/' + id + '.html', './' + id + '.html', id + '.html' ];
-        let response = null;
-        for (const p of tryPaths){
-          try{ response = await fetch(p); if(response && response.ok) break; }catch(_){/* ignore */}
-        }
-        if(!response || !response.ok){ throw new Error('Not found: '+id+'.html'); }
-        const html = await response.text();
-        container.innerHTML = html;
-        Array.from(container.querySelectorAll('link[rel="stylesheet"]')).forEach(link=>{ if(!document.querySelector(`link[href="${link.href}"]`)){ document.head.appendChild(link.cloneNode()); } link.remove(); });
-        const scripts = Array.from(container.querySelectorAll('script'));
-        for(const oldScript of scripts){
-          try{
-            if(oldScript.src){ if(!document.querySelector(`script[src="${oldScript.src}"]`)){ const s=document.createElement('script'); s.src=oldScript.src; s.async=false; document.body.appendChild(s);} }
-            else{ const code = oldScript.textContent||''; if(code.trim()) new Function(code)(); }
-          }catch(e){ console.warn('Injected script error', e); } finally { oldScript.remove(); }
-        }
-        if(window.__init8D) window.__init8D(container);
-        this.populateForm(id);
-        markValidationForCurrent(id);
-        setupPageSpecificUI(id);
-      }catch(err){
-        console.error(err);
-        container.innerHTML = `<div class="bg-white p-8 rounded-lg shadow-lg text-center"><h2 class="text-2xl font-bold text-red-600">Error</h2><p class="mt-2 text-gray-600">Could not load content for ${id.toUpperCase()}.</p></div>`;
-      }finally{ container.classList.remove('loading'); }
-    };
+    const origSave = app.saveData.bind(app);
+    app.saveData = function(reason){ try{ if(reason){ this.data.audit.push({ ts: nowISO(), userRole: this.data.meta.role, reason }); } }catch(e){}
+      origSave(reason);
+      const ind = $('autosave-indicator'); if(ind){ ind.textContent = 'All changes saved'; }
+      this._dirty = false; this.updateSaveFab(); this.updateStepperStatusColors(); };
 
     const origInit = app.init.bind(app);
-    app.init = function(){
-      this.loadData();
-      origInit();
-      ensureStyle();
-      injectToolbarExtras();
-      bindGlobalControls(this);
-      applyRoleUI();
-      // Initial autosave indicator
-      const ind = $('autosave-indicator'); if(ind) ind.textContent = '';
-      // Periodic autosave checkpoint
-      setInterval(()=>{ this.saveData('interval-autosave'); }, 180000);
-    };
+    app.init = function(){ this.loadData(); origInit(); ensureStyle(); injectToolbarExtras(); bindGlobalControls(this); applyRoleUI(); const ind=$('autosave-indicator'); if(ind) ind.textContent=''; setInterval(()=>{ this.saveData('interval-autosave'); }, 180000); };
 
-    const origUpdateStepper = app.updateStepperStatusColors.bind(app);
-    app.updateStepperStatusColors = function(){
-      origUpdateStepper();
-      (window.disciplines||[]).forEach(d=>{
-        const warn = this.data[d.id]?.hasWarnings;
-        const link = $('nav-'+d.id);
-        if(!link) return;
-        const content = link.querySelector('.step-content');
-        if(!content) return;
-        let icon = content.querySelector('.warn-icon');
-        if(warn){
-          if(!icon){ icon = createEl('<span class="warn-icon text-amber-600 ml-2" title="Validation issues"><i data-lucide="alert-triangle"></i></span>'); content.appendChild(icon); }
-        } else if(icon){ icon.remove(); }
-      });
-      const ind = $('autosave-indicator'); if(ind && ind.textContent==='Saving…'){ ind.textContent='All changes saved'; }
-    };
+    const origUpdate = app.updateStepperStatusColors.bind(app);
+    app.updateStepperStatusColors = function(){ origUpdate(); (window.disciplines||[]).forEach(d=>{ const warn = this.data[d.id]?.hasWarnings; const link = $('nav-'+d.id); if(!link) return; const content = link.querySelector('.step-content'); if(!content) return; let icon = content.querySelector('.warn-icon'); if(warn){ if(!icon){ icon = createEl('<span class="warn-icon text-amber-600 ml-2" title="Validation issues"><i data-lucide="alert-triangle"></i></span>'); content.appendChild(icon); } } else if(icon){ icon.remove(); } }); const ind=$('autosave-indicator'); if(ind && ind.textContent==='Saving…'){ ind.textContent='All changes saved'; } };
 
-    // Inline validation tracker
-    function markValidationForCurrent(id){
-      const container = $('content-container');
-      let ok = true; qsa('[data-required]', container).forEach(el=>{ const val=(el.value||'').trim(); if(!val){ ok=false; } });
-      app.data[id].hasWarnings = !ok;
-      app.saveData('validation-scan-'+id);
-    }
+    function markValidationForCurrent(id){ const container = $('content-container'); let ok = true; qsa('[data-required]', container).forEach(el=>{ const val=(el.value||'').trim(); if(!val){ ok=false; el.classList.add('invalid'); el.setAttribute('aria-invalid','true'); } else { el.classList.remove('invalid'); el.removeAttribute('aria-invalid'); } }); app.data[id].hasWarnings = !ok; app.saveData('validation-scan-'+id); }
 
-    // Auto-save on edits (keyed inputs like id="dX-foo")
-    const containerEl = $('content-container');
-    let saveTimer = null;
-    containerEl.addEventListener('input', (e)=>{
-      const id = (location.hash||'#d1').replace('#','');
-      const t = e.target;
-      if(!(t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t instanceof HTMLSelectElement)) return;
-      if(!app.data[id]) return;
-      const m = t.id && t.id.startsWith(id+'-') ? t.id.slice((id+'-').length) : null;
-      if(m){ app.data[id].fields[m] = t.value; app.data[id].lastUpdated = nowISO(); }
-      const ind = $('autosave-indicator'); if(ind){ ind.textContent = 'Saving…'; }
-      clearTimeout(saveTimer);
-      saveTimer = setTimeout(()=> app.saveData('field-change-'+id), 500);
-    });
+    const containerEl = $('content-container'); let saveTimer=null;
+    containerEl.addEventListener('input', (e)=>{ const id=(location.hash||'#dashboard').replace('#',''); const t=e.target; if(t && t.hasAttribute && t.hasAttribute('data-required')){ markValidationForCurrent(id); } app._dirty=true; app.updateSaveFab(true); clearTimeout(saveTimer); saveTimer=setTimeout(()=> app.saveData('field-change-'+id), 600); });
 
-    // Also validate on blur for required fields
-    containerEl.addEventListener('blur', (e)=>{
-      const t=e.target; if(t && t.hasAttribute && t.hasAttribute('data-required')){ const id=(location.hash||'#d1').replace('#',''); markValidationForCurrent(id); }
-    }, true);
+    containerEl.addEventListener('blur', (e)=>{ const t=e.target; if(t && t.hasAttribute && t.hasAttribute('data-required')){ const id=(location.hash||'#dashboard').replace('#',''); markValidationForCurrent(id); } }, true);
 
-    function bindGlobalControls(appRef){
-      // Quick jump
-      $('quick-jump')?.addEventListener('change', (e)=>{ const v=e.target.value; if(v){ location.hash = '#'+v; e.target.value=''; }});
-      // Save all
-      $('save-all')?.addEventListener('click', ()=>{
-        const activeInputs = qsa('#content-container input, #content-container textarea, #content-container select');
-        activeInputs.forEach(i=> i.dispatchEvent(new Event('input', {bubbles:true})));
-        appRef.saveData('save-all');
-      });
-      // Role
-      const roleSel = $('view-role'); if(roleSel){ roleSel.value = appRef.data.meta.role||'Admin'; roleSel.addEventListener('change',()=>{ appRef.data.meta.role = roleSel.value; localStorage.setItem('8d-role', roleSel.value); appRef.saveData('role-change'); applyRoleUI(); }); }
-      // Overall status
-      const os = $('overall-status'); if(os){ os.value = appRef.data.meta.overallStatus||'Open'; os.addEventListener('change',()=>{ appRef.data.meta.overallStatus=os.value; appRef.saveData('overall-status'); }); }
-      // Assignee/team
-      const asg = $('global-assignee'); const team = $('global-team');
-      if(asg){ asg.value = appRef.data.meta.assignee||''; asg.addEventListener('input',()=>{ appRef.data.meta.assignee=asg.value; appRef.saveData('assignee'); }); }
-      if(team){ team.value = appRef.data.meta.team||''; team.addEventListener('input',()=>{ appRef.data.meta.team=team.value; appRef.saveData('team'); }); }
-      // Audit button
+    function bindGlobalControls(appRef){ $('quick-jump')?.addEventListener('change', (e)=>{ const v=e.target.value; if(v){ location.hash = '#'+v; e.target.value=''; }});
+      const roleSel=$('view-role'); if(roleSel){ roleSel.value = appRef.data.meta.role||'Admin'; roleSel.addEventListener('change',()=>{ appRef.data.meta.role = roleSel.value; localStorage.setItem('8d-role', roleSel.value); appRef.saveData('role-change'); applyRoleUI(); }); }
+      const os=$('overall-status'); if(os){ os.value = appRef.data.meta.overallStatus||'Open'; os.addEventListener('change',()=>{ appRef.data.meta.overallStatus=os.value; appRef.saveData('overall-status'); }); }
+      const asg=$('global-assignee'); const team=$('global-team'); if(asg){ asg.value = appRef.data.meta.assignee||''; asg.addEventListener('input',()=>{ appRef.data.meta.assignee=asg.value; appRef.saveData('assignee'); }); } if(team){ team.value = appRef.data.meta.team||''; team.addEventListener('input',()=>{ appRef.data.meta.team=team.value; appRef.saveData('team'); }); }
       $('show-audit')?.addEventListener('click', showAuditLog);
     }
 
-    function applyRoleUI(){
-      const role = app.data.meta.role||'Admin';
-      const container = $('content-container');
-      const toolbar = $('content-toolbar');
-      // Reset
-      qsa('input,select,textarea,button', container).forEach(el=>{ el.disabled=false; el.classList.remove('disabled-ui'); });
-      qsa('#overall-status, #global-assignee, #global-team', toolbar).forEach(el=>{ el.disabled=false; el.classList.remove('disabled-ui'); });
-      if(role === 'Viewer'){
-        qsa('input,select,textarea,button', container).forEach(el=>{ el.disabled=true; el.classList.add('disabled-ui'); });
-        qsa('#overall-status, #global-assignee, #global-team', toolbar).forEach(el=>{ el.disabled=true; el.classList.add('disabled-ui'); });
-      } else if(role === 'Team Member'){
-        qsa('#overall-status, #global-assignee, #global-team', toolbar).forEach(el=>{ el.disabled=true; el.classList.add('disabled-ui'); });
-      }
-    }
+    function applyRoleUI(){ const role = app.data.meta.role||'Admin'; const container = $('content-container'); const toolbar = $('context-bar'); qsa('input,select,textarea,button', container).forEach(el=>{ el.disabled=false; el.classList.remove('disabled-ui'); }); qsa('#overall-status, #global-assignee, #global-team', toolbar).forEach(el=>{ el.disabled=false; el.classList.remove('disabled-ui'); }); if(role === 'Viewer'){ qsa('input,select,textarea,button', container).forEach(el=>{ el.disabled=true; el.classList.add('disabled-ui'); }); qsa('#overall-status, #global-assignee, #global-team', toolbar).forEach(el=>{ el.disabled=true; el.classList.add('disabled-ui'); }); } else if(role === 'Team Member'){ qsa('#overall-status, #global-assignee, #global-team', toolbar).forEach(el=>{ el.disabled=true; el.classList.add('disabled-ui'); }); } }
 
-    function setupPageSpecificUI(id){
-      // Expand/Collapse controls for D3
-      if(id === 'd3' && !$('expand-all')){
-        const barRight = $('content-toolbar')?.querySelector('.flex.gap-2');
-        if(barRight){
-          const ex = createEl('<button id="expand-all" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring">Expand All</button>');
-          const col = createEl('<button id="collapse-all" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring">Collapse All</button>');
-          barRight.parentNode.insertBefore(ex, barRight);
-          barRight.parentNode.insertBefore(col, barRight);
-          const cards = qsa('#content-container .card');
-          ex.addEventListener('click', ()=> cards.forEach(c=> c.removeAttribute('data-collapsed')));
-          col.addEventListener('click', ()=> cards.forEach(c=> c.setAttribute('data-collapsed','true')));
-        }
-      } else if(id !== 'd3'){
-        $('expand-all')?.remove(); $('collapse-all')?.remove();
-      }
-      applyRoleUI();
-    }
+    function showAuditLog(){ const modal = createEl('<div id="audit-modal" class="modal-overlay"></div>'); const card = createEl('<div class="card modal-card"></div>'); const head = createEl('<div class="flex-between"><div class="h-title">Audit Trail</div><button class="icon-btn" id="audit-close" aria-label="Close">✕</button></div>'); const list = createEl('<div class="mt-small" style="max-height:60vh;overflow:auto"></div>'); const logs = (app.data.audit||[]).slice().reverse(); list.innerHTML = logs.length ? `<table class="table"><thead><tr><th>When</th><th>Who</th><th>What</th></tr></thead><tbody>${logs.map(l=>`<tr><td>${new Date(l.ts).toLocaleString()}</td><td>${l.userRole||''}</td><td>${l.reason||''}</td></tr>`).join('')}</tbody></table>` : '<div class="small text-gray-600">No entries yet.</div>'; card.appendChild(head); card.appendChild(list); modal.appendChild(card); document.body.appendChild(modal); modal.addEventListener('click', (e)=>{ if(e.target.id==='audit-modal' || e.target.id==='audit-close'){ modal.remove(); }}); }
 
-    function showAuditLog(){
-      const modal = createEl('<div id="audit-modal" class="modal-overlay"></div>');
-      const card = createEl('<div class="card modal-card"></div>');
-      const head = createEl('<div class="flex-between"><div class="h-title">Audit Trail</div><button class="icon-btn" id="audit-close" aria-label="Close">✕</button></div>');
-      const list = createEl('<div class="mt-small" style="max-height:60vh;overflow:auto"></div>');
-      const logs = (app.data.audit||[]).slice().reverse();
-      list.innerHTML = logs.length ? `<table class="table"><thead><tr><th>When</th><th>Who</th><th>What</th></tr></thead><tbody>${logs.map(l=>`<tr><td>${new Date(l.ts).toLocaleString()}</td><td>${l.userRole||''}</td><td>${l.reason||''}</td></tr>`).join('')}</tbody></table>` : '<div class="small text-gray-600">No entries yet.</div>';
-      card.appendChild(head); card.appendChild(list); modal.appendChild(card); document.body.appendChild(modal);
-      modal.addEventListener('click', (e)=>{ if(e.target.id==='audit-modal' || e.target.id==='audit-close'){ modal.remove(); }});
-    }
-
-    ensureStyle();
-    injectToolbarExtras();
-    // If app already initialized, bind controls; otherwise our patched init will do it
-    if(window.app && window.disciplines && $('stepper-nav').children.length){ bindGlobalControls(window.app); applyRoleUI(); }
+    ensureStyle(); injectToolbarExtras(); if(window.app && window.disciplines && $('stepper-nav').children.length){ }
   })();
 })();
 </script>
