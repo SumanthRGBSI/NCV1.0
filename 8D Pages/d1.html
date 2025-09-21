@@ -16,6 +16,8 @@
     </div>
   </div>
 
+  <datalist id="contact-directory"></datalist>
+
   <div class="card">
     <div class="section-title">Key Point of Contact</div>
     <div class="hint">Add one or more primary contacts for this 8D.</div>
@@ -25,10 +27,10 @@
       <tfoot><tr><td colspan="5"><button type="button" class="add-row-btn btn btn-ghost">Add Contact</button></td></tr></tfoot>
       <template>
         <tr>
-          <td><input class="input" placeholder="Full name of primary contact" /></td>
-          <td><input class="input" placeholder="Job title" /></td>
-          <td><input class="input" placeholder="name@company.com" /></td>
-          <td><input class="input" placeholder="(555) 555-5555" /></td>
+          <td><input class="input contact-name" list="contact-directory" placeholder="Full name of primary contact" /></td>
+          <td><input class="input contact-title" placeholder="Job title" /></td>
+          <td><input class="input contact-email" placeholder="name@company.com" /></td>
+          <td><input class="input contact-phone" placeholder="(555) 555-5555" /></td>
           <td><button type="button" class="remove-row-btn btn btn-danger">Remove</button></td>
         </tr>
       </template>
@@ -44,10 +46,10 @@
       <tfoot><tr><td colspan="5"><button type="button" class="add-row-btn btn btn-ghost">Add Champion</button></td></tr></tfoot>
       <template>
         <tr>
-          <td><input class="input" placeholder="Full name" /></td>
-          <td><input class="input" placeholder="Job title" /></td>
-          <td><input class="input" placeholder="name@company.com" /></td>
-          <td><input class="input" placeholder="(555) 555-5555" /></td>
+          <td><input class="input contact-name" list="contact-directory" placeholder="Full name" /></td>
+          <td><input class="input contact-title" placeholder="Job title" /></td>
+          <td><input class="input contact-email" placeholder="name@company.com" /></td>
+          <td><input class="input contact-phone" placeholder="(555) 555-5555" /></td>
           <td><button type="button" class="remove-row-btn btn btn-danger">Remove</button></td>
         </tr>
       </template>
@@ -63,6 +65,7 @@
       </div>
       <div class="col col-fixed">
         <button id="d1-add-member-btn" class="btn btn-primary">Add</button>
+        <button id="d1-add-me" class="btn btn-ghost">Add Me</button>
         <button id="d1-clear-members" class="btn btn-ghost">Clear</button>
       </div>
     </div>
@@ -71,23 +74,42 @@
     <div class="mt-small">
       <table class="table dynamic-table" id="d1-team-table">
         <thead>
-          <tr><th>Name</th><th>Title</th><th>Email</th><th>Phone Number</th><th></th></tr>
+          <tr><th>Name</th><th>Role</th><th>Title</th><th>Email</th><th>Phone Number</th><th></th></tr>
         </thead>
         <tbody></tbody>
         <tfoot>
-          <tr><td colspan="5"><button type="button" class="add-row-btn btn btn-ghost">Add Team Member</button></td></tr>
+          <tr><td colspan="6"><button type="button" class="add-row-btn btn btn-ghost">Add Team Member</button></td></tr>
         </tfoot>
         <template>
           <tr>
-            <td><input class="input" placeholder="Full name" /></td>
-            <td><input class="input" placeholder="Job title" /></td>
-            <td><input class="input" placeholder="name@company.com" /></td>
-            <td><input class="input" placeholder="(555) 555-5555" /></td>
+            <td><input class="input contact-name" list="contact-directory" placeholder="Full name" /></td>
+            <td>
+              <select class="input member-role">
+                <option>Team Lead</option>
+                <option>Quality Engineer</option>
+                <option>Design Engineer</option>
+                <option>Sponsor</option>
+                <option>Operator</option>
+                <option>Supplier</option>
+                <option>Other</option>
+              </select>
+            </td>
+            <td><input class="input contact-title" placeholder="Job title" /></td>
+            <td><input class="input contact-email" placeholder="name@company.com" /></td>
+            <td><input class="input contact-phone" placeholder="(555) 555-5555" /></td>
             <td><button type="button" class="remove-row-btn btn btn-danger">Remove</button></td>
           </tr>
         </template>
       </table>
+      <div class="mt-small">
+        <button id="d1-schedule-meeting" class="btn btn-ghost"><i class="fa-solid fa-calendar-days"></i> Schedule Meeting</button>
+      </div>
     </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Team Org Chart</div>
+    <div id="d1-org-chart" class="mt-small"></div>
   </div>
 
   <div class="card">
