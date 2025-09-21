@@ -382,6 +382,56 @@
             }
         },
         
+        validate(id){
+            const container = document.getElementById('content-container');
+            let ok = true;
+            container.querySelectorAll('[data-required]').forEach(el=>{
+                const val = (el.value||'').trim();
+                if(!val){ ok = false; el.classList.add('invalid'); el.setAttribute('aria-invalid','true'); }
+                else { el.classList.remove('invalid'); el.removeAttribute('aria-invalid'); }
+            });
+            return ok;
+        },
+        exportCurrentToCSV(){
+            const hash = window.location.hash.replace('#','') || 'd1';
+            const container = document.getElementById('content-container');
+            const rows = [];
+            container.querySelectorAll('label.label').forEach(label=>{
+                const forId = label.getAttribute('for');
+                const input = forId ? container.querySelector(`#${forId}`) : null;
+                if(input && (input.value||'').trim()){
+                    const name = label.textContent.trim().replaceAll(',', ' ');
+                    const val = input.value.replaceAll('\n',' ');
+                    rows.push(`${name},"${val.replaceAll('"','""')}"`);
+                }
+            });
+            container.querySelectorAll('table.table').forEach(tbl=>{
+                const headers = Array.from(tbl.querySelectorAll('thead th')).map(th=>th.textContent.trim().replaceAll(',', ' '));
+                if(headers.length){ rows.push(''); rows.push(headers.join(',')); }
+                tbl.querySelectorAll('tbody tr').forEach(tr=>{
+                    const cols = Array.from(tr.querySelectorAll('td')).map(td=> td.querySelector('input,select,textarea')?.value || td.textContent.trim());
+                    rows.push(cols.map(v=>`"${(v||'').toString().replaceAll('"','""')}"`).join(','));
+                });
+            });
+            const csv = rows.join('\n');
+            const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `${hash}.csv`; a.click();
+            URL.revokeObjectURL(url);
+        },
+        exportAllToJSON(){
+            const blob = new Blob([JSON.stringify(this.data, null, 2)], {type:'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = '8d-data.json'; a.click();
+            URL.revokeObjectURL(url);
+        },
+        printCurrent(){
+            const w = window.open('', '_blank');
+            const title = document.title;
+            const html = document.getElementById('content-container').innerHTML;
+            w.document.write(`<!doctype html><html><head><title>${title}</title><link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css\"></head><body><main class=\"container\">${html}</main><script>setTimeout(()=>window.print(), 200);<\\/script></body></html>`);
+            w.document.close();
+        },
         handleSave(id) {
             const disciplineData = this.data[id];
             if (!disciplineData) return;
