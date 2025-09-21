@@ -7,7 +7,7 @@
     </div>
     <div class="controls">
       <div class="timestamp">Last updated: <span id="d1-timestamp">Never</span></div>
-      <select id="d1-status-select" class="input select-compact">
+      <select id="d1-status-select" class="input select-compact status-select" data-id="d1">
         <option value="pending">Pending</option>
         <option value="in-progress">In Progress</option>
         <option value="completed">Completed</option>
@@ -20,21 +20,21 @@
     <div class="section-title">Key Point of Contact</div>
     <div class="row">
       <div class="col">
-        <label class="label">Name</label>
+        <label class="label" for="d1-teamLeader">Name</label>
         <input id="d1-teamLeader" class="input" data-required placeholder="Full name of primary contact" />
       </div>
       <div class="col">
-        <label class="label">Title</label>
+        <label class="label" for="d1-teamLeaderTitle">Title</label>
         <input id="d1-teamLeaderTitle" class="input" placeholder="Job title" />
       </div>
     </div>
     <div class="row">
       <div class="col">
-        <label class="label">Email</label>
+        <label class="label" for="d1-teamLeaderEmail">Email</label>
         <input id="d1-teamLeaderEmail" class="input" data-required placeholder="name@company.com" />
       </div>
       <div class="col">
-        <label class="label">Phone Number</label>
+        <label class="label" for="d1-teamLeaderPhone">Phone Number</label>
         <input id="d1-teamLeaderPhone" class="input" placeholder="(555) 555-5555" />
       </div>
     </div>

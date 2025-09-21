@@ -7,7 +7,7 @@
     </div>
     <div class="controls">
       <div class="timestamp">Last updated: <span id="d2-timestamp">Never</span></div>
-      <select id="d2-status-select" class="input select-compact">
+      <select id="d2-status-select" class="input select-compact status-select" data-id="d2">
         <option value="pending">Pending</option>
         <option value="in-progress">In Progress</option>
         <option value="completed">Completed</option>
@@ -18,21 +18,21 @@
 
   <div class="card">
     <div class="section-title">Problem Definition</div>
-    <label class="label">2A. Problem Description</label>
-    <textarea id="d2-problemStatement" class="input" placeholder="Full story of the problem..."></textarea>
+    <label class="label" for="d2-problemStatement">2A. Problem Description</label>
+    <textarea id="d2-problemStatement" class="input" data-required placeholder="Full story of the problem..."></textarea>
 
     <div class="row">
       <div class="col">
-        <label class="label">2C. Impact on Customer</label>
+        <label class="label" for="d2-impactCustomer">2C. Impact on Customer</label>
         <input id="d2-impactCustomer" class="input" placeholder="How customers are affected" />
       </div>
       <div class="col">
-        <label class="label">2B. Problem Statement (concise)</label>
-        <input id="d2-briefStatement" class="input" placeholder="One-sentence problem statement" />
+        <label class="label" for="d2-briefStatement">2B. Problem Statement (concise)</label>
+        <input id="d2-briefStatement" class="input" data-required placeholder="One-sentence problem statement" />
       </div>
     </div>
 
-    <div class="section-title" class="mt-small">2D. Problem Description Images / Documents</div>
+    <div class="section-title mt-small">2D. Problem Description Images / Documents</div>
     <div class="file-block card">
       <label class="label">Upload images or documents</label>
       <div class="file-input">
@@ -62,7 +62,7 @@
       </template>
     </table>
 
-    <div class="small" class="mt-small">2F. Current Process Control Documentary</div>
+    <div class="small mt-small">2F. Current Process Control Documentary</div>
     <table class="table dynamic-table" id="d2-docs">
       <thead><tr><th>Document</th><th>Reviewed (Y/N)</th><th>Current RPN</th><th></th></tr></thead>
       <tbody></tbody>
@@ -79,13 +79,13 @@
       </template>
     </table>
 
-    <div class="row" class="mt-small">
+    <div class="row mt-small">
       <div class="col">
-        <label class="label">2G. Situation Before Countermeasure</label>
+        <label class="label" for="d2-situationBefore">2G. Situation Before Countermeasure</label>
         <textarea id="d2-situationBefore" class="input"></textarea>
       </div>
       <div class="col">
-        <label class="label">2H. Situation Before (Graphs / Images)</label>
+        <label class="label" for="d2-before-graphs">2H. Situation Before (Graphs / Images)</label>
         <div class="file-block">
           <input class="preview-file" id="d2-before-graphs" type="file" />
           <div class="file-preview small"></div>
