@@ -94,24 +94,16 @@
 
         /* Sidebar collapse styles */
         #sidebar {
-            transition: width 0.3s ease-in-out;
+            transition: width 0.3s ease-in-out, padding 0.3s ease-in-out;
         }
-        #app-container.sidebar-collapsed #sidebar {
-            width: 6rem;
-        }
+        main#main-panel { transition: width 0.3s ease-in-out, flex 0.3s ease-in-out; }
+        #app-container.sidebar-collapsed #sidebar { width: 6rem; padding-left: 0.75rem; padding-right: 0.75rem; }
         #app-container.sidebar-collapsed .sidebar-text,
-        #app-container.sidebar-collapsed .step-content {
-            display: none;
-        }
-        #app-container.sidebar-collapsed #stepper-nav::before {
-            left: 1.25rem;
-        }
-        #app-container.sidebar-collapsed .step {
-            justify-content: center;
-        }
-        #app-container.sidebar-collapsed #toggle-btn-icon {
-            transform: rotate(180deg);
-        }
+        #app-container.sidebar-collapsed .step-content { display: none; }
+        #app-container.sidebar-collapsed #stepper-nav::before { left: 1.25rem; }
+        #app-container.sidebar-collapsed .step { justify-content: center; }
+        #app-container.sidebar-collapsed #toggle-btn-icon { transform: rotate(180deg); }
+        #app-container.sidebar-collapsed main#main-panel { flex: 1 1 auto; width: auto; }
     </style>
 </head>
 <body class="antialiased">
