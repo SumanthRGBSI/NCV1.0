@@ -153,6 +153,32 @@
 
   }
 
+  function enhanceAccessibility(){
+    // Skip link
+    if(!document.getElementById('ds-skip-link')){
+      const a = document.createElement('a');
+      a.id='ds-skip-link'; a.href='#page-content'; a.textContent='Skip to content';
+      a.style.position='absolute'; a.style.left='8px'; a.style.top='8px'; a.style.padding='8px'; a.style.background='#fff'; a.style.border='1px solid var(--gray-200)'; a.style.borderRadius='6px'; a.style.zIndex=9999; a.className='ds-hidden';
+      a.addEventListener('focus', ()=>{ a.classList.remove('ds-hidden'); }); a.addEventListener('blur', ()=>{ a.classList.add('ds-hidden'); });
+      document.body.insertBefore(a, document.body.firstChild);
+    }
+    // Icon-only buttons: add aria-label if missing
+    document.querySelectorAll('button, a').forEach(el=>{
+      const onlyIcon = el.childElementCount===1 && el.firstElementChild && el.firstElementChild.matches && el.firstElementChild.matches('[data-lucide]');
+      const hasText = (el.textContent||'').trim().length>0;
+      if(onlyIcon && !hasText){
+        if(!el.getAttribute('aria-label')){
+          const tt = el.getAttribute('title') || el.dataset.tooltip || el.getAttribute('aria-labelledby');
+          const label = tt || 'Action';
+          el.setAttribute('aria-label', label);
+        }
+        el.setAttribute('tabindex', el.getAttribute('tabindex')||'0');
+      }
+    });
+    // Keyboard focus indicator
+    document.body.addEventListener('keydown', (e)=>{ if(e.key==='Tab') document.documentElement.classList.add('using-keyboard'); });
+  }
+
   function init(){
     // Apply persisted density
     setDensity(getDensity());
@@ -164,6 +190,7 @@
     applyBranding();
     ensureLucide().then(()=>{ if(window.lucide && window.lucide.createIcons){ window.lucide.createIcons(); } });
     wireInteractions();
+    enhanceAccessibility();
   }
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
