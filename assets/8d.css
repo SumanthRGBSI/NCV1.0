@@ -33,3 +33,5 @@ textarea{min-height:100px;resize:vertical}
 .kv{font-weight:600;color:#0f172a}
 .timestamp{font-size:0.85rem;color:var(--muted)}
 @media (max-width:800px){.row{flex-direction:column}}
+.select-compact{width:160px}
+.mt-small{margin-top:0.75rem}
