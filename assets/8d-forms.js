@@ -620,7 +620,43 @@
   }
 
   // D1 unified table persistence for cross-page features
-  function initD1UnifiedPersist(container){ const tbl=(container||document).querySelector('#d1-team-unified'); if(!tbl) return; function persist(){ const rows = Array.from(tbl.querySelectorAll('tbody tr')).map(r=>({ name:r.querySelector('.contact-name')?.value||'', title:r.querySelector('.contact-title')?.value||'' })); app.data.d1 = app.data.d1||{fields:{}}; app.data.d1.fields.teamMembers = rows; app.saveData('d1-team'); }
-    tbl.addEventListener('input', persist); tbl.addEventListener('change', persist); persist(); }
+  function initD1UnifiedPersist(container){
+    const ctx = container||document;
+    const unified = ctx.querySelector('#d1-team-unified');
+    const kp = ctx.querySelector('#d1-kpoc-table');
+    const ch = ctx.querySelector('#d1-champions-table');
+    const tm = ctx.querySelector('#d1-team-table');
+    if(!unified && !kp && !ch && !tm) return;
+    function collect(){
+      const rows = [];
+      if(unified){
+        rows.push(...Array.from(unified.querySelectorAll('tbody tr')).map(r=>({
+          name: r.querySelector('.contact-name')?.value||'',
+          title: r.querySelector('.contact-title')?.value||'',
+          email: r.querySelector('.contact-email')?.value||'',
+          phone: r.querySelector('.contact-phone')?.value||'',
+          role: (r.querySelector('.member-roles') && Array.from(r.querySelector('.member-roles').selectedOptions).map(o=>o.value).join(', ')) || 'Member'
+        })));
+      }
+      function collectFrom(table, role){
+        if(!table) return;
+        rows.push(...Array.from(table.querySelectorAll('tbody tr')).map(r=>({
+          name: r.querySelector('.contact-name')?.value||'',
+          title: r.querySelector('.contact-title')?.value||'',
+          email: r.querySelector('.contact-email')?.value||'',
+          phone: r.querySelector('.contact-phone')?.value||'',
+          role: role
+        })));
+      }
+      collectFrom(kp, 'KPOC');
+      collectFrom(ch, 'Champion');
+      collectFrom(tm, 'Member');
+      app.data.d1 = app.data.d1||{fields:{}};
+      app.data.d1.fields.teamMembers = rows;
+      app.saveData('d1-team');
+    }
+    [unified, kp, ch, tm].filter(Boolean).forEach(t=>{ t.addEventListener('input', collect); t.addEventListener('change', collect); });
+    collect();
+  }
 
 })();
