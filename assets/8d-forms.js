@@ -9,14 +9,28 @@
       const tpl = table.querySelector('template');
       const body = table.querySelector('tbody');
       const addBtn = table.querySelector('.add-row-btn');
-      if(!addBtn || !tpl || !body) return;
-      addBtn.addEventListener('click', ()=>{
+      if(!tpl || !body) return;
+
+      function appendRow(){
         const clone = tpl.content.cloneNode(true);
         body.appendChild(clone);
-      });
+      }
+      if(body.children.length === 0){ appendRow(); }
+      if(addBtn){ addBtn.addEventListener('click', appendRow); }
+
+      // Remove row
       body.addEventListener('click', (e)=>{
         const rem = e.target.closest('.remove-row-btn');
         if(rem){ rem.closest('tr').remove(); }
+      });
+
+      // Press Enter on any input in last row to add a new row (fast entry)
+      body.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter' && !e.shiftKey){
+          const tr = e.target.closest('tr');
+          const isLast = tr && tr.parentElement && tr.nextElementSibling == null;
+          if(isLast){ e.preventDefault(); appendRow(); }
+        }
       });
     });
   }
