@@ -164,7 +164,7 @@
               <div class="flex gap-2">
                 <button id="export-csv" class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"><i class="fa-solid fa-file-csv mr-1"></i> Export CSV</button>
                 <button id="export-json" class="px-3 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 text-sm"><i class="fa-solid fa-code mr-1"></i> Export JSON</button>
-                <button id="print-pdf" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm"><i class="fa-solid fa-print mr-1"></i> Print / PDF</button>
+                <button id="print-pdf" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring"><i class="fa-solid fa-print mr-1"></i> Print / PDF</button>
               </div>
             </div>
             <div id="content-container">
@@ -619,8 +619,8 @@
         </select>
         <input id="global-assignee" class="px-2 py-2 bg-white border border-gray-200 rounded-lg text-sm" placeholder="Assignee" />
         <input id="global-team" class="px-2 py-2 bg-white border border-gray-200 rounded-lg text-sm" placeholder="Team" />
-        <a id="nc-link" href="../NC Listing Page.html" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm" title="Open NC Report"><i class="fa-solid fa-link mr-1"></i> NC Report</a>
-        <button id="show-audit" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm"><i class="fa-solid fa-clock-rotate-left mr-1"></i> Audit</button>
+        <a id="nc-link" href="../NC Listing Page.html" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring" title="Open NC Report"><i class="fa-solid fa-link mr-1"></i> NC Report</a>
+        <button id="show-audit" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring"><i class="fa-solid fa-clock-rotate-left mr-1"></i> Audit</button>
       </div>`);
     right.parentNode.insertBefore(extras, right);
 
@@ -790,8 +790,8 @@
       if(id === 'd3' && !$('expand-all')){
         const barRight = $('content-toolbar')?.querySelector('.flex.gap-2');
         if(barRight){
-          const ex = createEl('<button id="expand-all" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm">Expand All</button>');
-          const col = createEl('<button id="collapse-all" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm">Collapse All</button>');
+          const ex = createEl('<button id="expand-all" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring">Expand All</button>');
+          const col = createEl('<button id="collapse-all" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring">Collapse All</button>');
           barRight.parentNode.insertBefore(ex, barRight);
           barRight.parentNode.insertBefore(col, barRight);
           const cards = qsa('#content-container .card');
