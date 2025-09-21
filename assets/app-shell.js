@@ -40,6 +40,14 @@
               <i data-lucide="search" class="ds-search__icon"></i>
               <input id="ds-global-search" type="search" placeholder="Search 8D, NC, parts, users…" aria-label="Global search" />
             </div>
+            <div class="ds-create-wrap" style="position:relative">
+              <button id="ds-create" class="ds-btn ds-btn--primary">Create New…</button>
+              <div id="ds-create-pop" class="ds-popover" role="menu" aria-labelledby="ds-create">
+                <div class="ds-popover__section"><a href="8D Pages/8D View page.html#dashboard" class="ds-btn ds-btn--tertiary" style="width:100%">8D</a></div>
+                <div class="ds-popover__section"><a href="NC Creation and Edit Page.html" class="ds-btn ds-btn--tertiary" style="width:100%">Non-Conformance</a></div>
+                <div class="ds-popover__section"><a href="index.html#capa_create" class="ds-btn ds-btn--tertiary" style="width:100%">CAPA</a></div>
+              </div>
+            </div>
             <button id="ds-density" class="ds-icon-btn" title="Toggle density" aria-label="Toggle density">
               <i data-lucide="rows"></i>
             </button>
@@ -97,6 +105,14 @@
         <i data-lucide="search" class="ds-search__icon"></i>
         <input id="ds-global-search" type="search" placeholder="Search 8D, NC, parts, users…" aria-label="Global search" />
       </div>
+      <div class=\"ds-create-wrap\" style=\"position:relative\">
+        <button id=\"ds-create\" class=\"ds-btn ds-btn--primary\">Create New…</button>
+        <div id=\"ds-create-pop\" class=\"ds-popover\" role=\"menu\" aria-labelledby=\"ds-create\">
+          <div class=\"ds-popover__section\"><a href=\"8D Pages/8D View page.html#dashboard\" class=\"ds-btn ds-btn--tertiary\" style=\"width:100%\">8D</a></div>
+          <div class=\"ds-popover__section\"><a href=\"NC Creation and Edit Page.html\" class=\"ds-btn ds-btn--tertiary\" style=\"width:100%\">Non-Conformance</a></div>
+          <div class=\"ds-popover__section\"><a href=\"index.html#capa_create\" class=\"ds-btn ds-btn--tertiary\" style=\"width:100%\">CAPA</a></div>
+        </div>
+      </div>
       <button id="ds-density" class="ds-icon-btn" title="Toggle density" aria-label="Toggle density"><i data-lucide=rows></i></button>
       <div class="ds-notify-wrap" style="position:relative">
         <button id="ds-bell" class="ds-icon-btn" aria-haspopup="true" aria-expanded="false" aria-label="Notifications"><i data-lucide=bell></i></button>
@@ -115,6 +131,8 @@
     }
     const dens = qs('#ds-density');
     if(dens){ on(dens, 'click', ()=>{ const next = getDensity()==='compact'?'comfortable':'compact'; setDensity(next); }); }
+    const createBtn = qs('#ds-create'); const createPop = qs('#ds-create-pop');
+    if(createBtn){ on(createBtn, 'click', (e)=>{ e.stopPropagation(); createPop?.classList.toggle('active'); }); on(document, 'click', ()=> createPop&&createPop.classList.remove('active')); }
 
     const search = qs('#ds-global-search');
     if(search){ on(search, 'keydown', (e)=>{ if(e.key==='Enter'){ const q=search.value.trim(); if(!q) return; // navigate to listing with query param

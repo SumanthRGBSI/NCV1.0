@@ -1,0 +1,62 @@
+<section class="container">
+  <link rel="stylesheet" href="/assets/8d.css">
+  <div class="card header">
+    <div>
+      <div class="h-title">8D Dashboard</div>
+      <div class="h-sub">Overview of status, team and key details.</div>
+    </div>
+    <div class="controls">
+      <span class="timestamp">Last updated: <span id="dash-updated">-</span></span>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <div class="section-title sticky-section-title">Overall Status</div>
+        <div id="dash-status" class="small"></div>
+        <div class="mt-small">
+          <div class="small">Completed Disciplines</div>
+          <div id="dash-progress" class="small"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title sticky-section-title">Problem Statement (D2)</div>
+        <div id="dash-problem" class="small"></div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card">
+        <div class="section-title sticky-section-title">Key Team Members (D1)</div>
+        <div id="dash-team" class="team-cards-grid mt-small"></div>
+      </div>
+      <div class="card">
+        <div class="section-title sticky-section-title">Quick Links</div>
+        <div class="dynamic-list">
+          <a class="btn btn-ghost" href="#d1">Go to D1</a>
+          <a class="btn btn-ghost" href="#d2">Go to D2</a>
+          <a class="btn btn-ghost" href="#d3">Go to D3</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      function qs(s, c=document){return c.querySelector(s)}
+      function makeCard(name, title){ const div=document.createElement('div'); div.className='team-card'; div.innerHTML = `<div class="avatar">${(name||'').split(/\s+/).map(n=>n[0]||'').slice(0,2).join('').toUpperCase()}</div><div><div class="card-title">${name||''}</div><div class="card-sub">${title||'Member'}</div></div>`; return div; }
+      function render(){
+        const app = window.app; if(!app||!app.data) return setTimeout(render, 100);
+        const meta = app.data.meta||{};
+        qs('#dash-updated').textContent = new Date().toLocaleString();
+        qs('#dash-status').innerHTML = `<div class="small">Overall: <strong>${meta.overallStatus||'Open'}</strong></div>`;
+        const done = (window.disciplines||[]).filter(d=> app.data[d.id]?.status==='completed').length; const total=(window.disciplines||[]).length; qs('#dash-progress').textContent = `${done} of ${total} completed`;
+        const prob = (app.data.d2?.fields?.briefStatement || app.data.d2?.fields?.problemStatement || '').toString(); qs('#dash-problem').innerHTML = prob ? prob : '<span class="small text-gray-500">No problem statement yet.</span>';
+        const teamHost = qs('#dash-team'); teamHost.innerHTML='';
+        const rows = Array.from(document.querySelectorAll('#d1-team-unified tbody tr'));
+        if(rows.length){ rows.slice(0,6).forEach(r=>{ const name=r.querySelector('.contact-name')?.value||r.querySelector('td')?.textContent||''; const title=r.querySelector('.contact-title')?.value||''; teamHost.appendChild(makeCard(name, title)); }); }
+      }
+      if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', render); else render();
+    })();
+  </script>
+</section>

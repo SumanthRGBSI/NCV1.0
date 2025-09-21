@@ -12,58 +12,49 @@
         <option value="in-progress">In Progress</option>
         <option value="completed">Completed</option>
       </select>
-      <button class="btn btn-primary save-btn" data-id="d7" aria-label="Save D7"><i data-lucide="save"></i> Save</button>
     </div>
   </div>
 
   <div class="card">
     <div class="section-title">Preventive Actions</div>
-    <table id="d7-prevent" class="table dynamic-table table-alt">
-      <thead><tr><th title="Describe the action">Action <i data-lucide="help-circle"></i></th><th title="Prevent or Detect?">Type <i data-lucide="help-circle"></i></th><th title="Is it available yet?">Available <i data-lucide="help-circle"></i></th><th>Owner</th><th>Due Date</th><th>Status</th><th>History</th><th>Severity</th><th>Occurrence</th><th>Detection</th><th>Revised RPN</th><th>Document Link</th><th>Documents</th><th></th></tr></thead>
+    <table id="d7-prevent-slim" class="table dynamic-table table-alt">
+      <thead><tr><th>Action</th><th>Owner</th><th>Due Date</th><th>Status</th><th></th></tr></thead>
       <tbody></tbody>
-      <tfoot><tr><td colspan="14"><button class="add-row-btn btn btn-ghost">+ New Preventive Action</button></td></tr></tfoot>
+      <tfoot><tr><td colspan="5"><button class="add-row-btn btn btn-ghost">+ New Preventive Action</button></td></tr></tfoot>
       <template>
-        <tr>
-          <td><input class="input"/></td>
-          <td><select class="input"><option>Prevent</option><option>Detect</option></select></td>
-          <td><input type="checkbox"/></td>
-          <td><input class="input"/></td>
-          <td><input class="input" type="date"/></td>
+        <tr class="d7-row">
+          <td><input class="input d7-action"/></td>
+          <td><input class="input d7-owner"/></td>
+          <td><input class="input d7-date" type="date"/></td>
           <td><select class="input prevent-status"><option>Planned</option><option>In Progress</option><option>Done</option></select></td>
-          <td><input class="input"/></td>
-          <td><input class="input rpn-s" type="number" min="1" max="10"/></td>
-          <td><input class="input rpn-o" type="number" min="1" max="10"/></td>
-          <td><input class="input rpn-d" type="number" min="1" max="10"/></td>
-          <td><input class="input rpn" type="number" disabled /></td>
-          <td><input class="input" placeholder="https:// or DOC-123"/></td>
-          <td><div class="controls"><i data-lucide="file-text"></i> <input class="preview-file" type="file"/></div></td>
-          <td><button class="remove-row-btn btn btn-danger">Remove</button></td>
+          <td><button class="btn btn-ghost d7-expand">Details</button> <button class="remove-row-btn btn btn-danger">Remove</button></td>
         </tr>
       </template>
     </table>
+    <div id="d7-detail" class="card" style="display:none">
+      <div class="row">
+        <div class="col">
+          <label class="label">RPN (S,O,D)</label>
+          <div class="controls">
+            <input class="input rpn-s" type="number" min="1" max="10" placeholder="S"/>
+            <input class="input rpn-o" type="number" min="1" max="10" placeholder="O"/>
+            <input class="input rpn-d" type="number" min="1" max="10" placeholder="D"/>
+          </div>
+          <div class="small">Revised RPN: <strong id="d7-rpn-val">0</strong></div>
+        </div>
+        <div class="col">
+          <label class="label">Documents</label>
+          <input class="preview-file" type="file" multiple />
+        </div>
+      </div>
+      <div class="mt-small"><label class="label">Related (FMEA, Control Plan, SOPs…)</label><div id="d7-std-list" class="dynamic-list"></div></div>
+    </div>
   </div>
 
   <div class="card">
-    <div class="section-title">Document Standardization & Review</div>
-    <div class="small">Consider: FMEA, Control Plan, SOPs, Training Materials, Work Instructions, Drawings</div>
-    <div class="controls mt-xs">
-      <input id="d7-new-std" class="input" placeholder="Add checklist item" />
-      <button id="d7-add-std" class="btn btn-ghost">Add</button>
-    </div>
-    <div id="d7-std-list" class="dynamic-list mt-small"></div>
-
-    <div class="mt-small">
-      <button id="d7-track-read" class="btn btn-ghost">Track Read & Understood</button>
-    </div>
-
-    <div class="mt-small">
-      <div class="section-title">Similar Parts/Processes</div>
-      <div class="controls mt-xs">
-        <input id="d7-similar" class="input" placeholder="Add similar part/process" />
-        <button id="d7-add-similar" class="btn btn-ghost">Add</button>
-      </div>
-      <div id="d7-similar-list" class="dynamic-list mt-small"></div>
-    </div>
+    <div class="section-title">Read & Understood</div>
+    <div id="d7-ack-bar" class="small">0 of 0 acknowledged</div>
+    <div class="mt-small"><button id="d7-view-acks" class="btn btn-ghost">View Details</button></div>
   </div>
 
   <script src="/assets/8d-forms.js"></script>
