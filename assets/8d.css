@@ -43,8 +43,11 @@ textarea{min-height:100px;resize:vertical}
 .icon-btn{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #e6e9ef;border-radius:8px;background:#fff}
 .icon-btn:hover{background:#f3f4f6}
 .select-compact{width:160px}
+.mt-xs{margin-top:0.5rem}
 .mt-small{margin-top:0.75rem}
 .col-fixed{flex:0 0 160px;display:flex;gap:0.5rem}
 .modal-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.45);z-index:50}
 .modal-card{max-width:900px;width:90%}
 .input.invalid, textarea.invalid, select.invalid{border-color:#ef4444; box-shadow:0 0 0 3px rgba(239,68,68,0.1)}
+.input:focus-visible, textarea:focus-visible, select:focus-visible{outline:none;border-color:#93c5fd;box-shadow:0 0 0 3px rgba(147,197,253,0.45)}
+.btn-primary:hover{filter:saturate(1.1)}
