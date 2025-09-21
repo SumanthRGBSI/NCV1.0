@@ -1,0 +1,126 @@
+<section class="container">
+  <link rel="stylesheet" href="/assets/8d.css">
+  <div class="card header toolbar">
+    <div>
+      <div class="h-title">D4 — Root Cause Analysis 🔬</div>
+      <div class="h-sub">Identify and verify the true root cause of the problem.</div>
+    </div>
+    <div class="controls">
+      <div class="timestamp">Last updated: <span id="d4-timestamp">Never</span></div>
+      <select id="d4-status-select" class="input select-compact status-select" data-id="d4">
+        <option value="pending">Pending</option>
+        <option value="in-progress">In Progress</option>
+        <option value="completed">Completed</option>
+      </select>
+      <button class="btn btn-primary save-btn" data-id="d4"><i class="fas fa-save"></i> Save</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="controls flex-between">
+      <div class="section-title">4A. Cause & Effect (Fishbone)</div>
+      <div class="small">Brainstorm potential causes across the 6Ms</div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <button class="btn btn-ghost" id="launch-fishbone">Open Fishbone Tool</button>
+      </div>
+      <div class="col">
+        <label class="label">4B. 5 Why Analysis (Occurrence)</label>
+        <textarea id="d4-fiveWhyOccurrence" class="input" placeholder="Start with the problem and ask why 5 times..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Samples</div>
+    <div class="hint">Use these references as a guide. Replace with your investigation.</div>
+    <div class="row mt-small">
+      <div class="col">
+        <div class="small">Sample Fishbone (6M)</div>
+        <svg viewBox="0 0 700 220" width="100%" height="220" aria-label="Fishbone Sample">
+          <line x1="40" y1="110" x2="660" y2="110" stroke="#334155" stroke-width="3"/>
+          <polygon points="660,110 640,100 640,120" fill="#334155"/>
+          <!-- Upper branches -->
+          <line x1="140" y1="110" x2="220" y2="60" stroke="#64748b" stroke-width="2"/>
+          <text x="225" y="58" font-size="12" fill="#0f172a">Man</text>
+          <line x1="260" y1="110" x2="340" y2="60" stroke="#64748b" stroke-width="2"/>
+          <text x="345" y="58" font-size="12" fill="#0f172a">Machine</text>
+          <line x1="380" y1="110" x2="460" y2="60" stroke="#64748b" stroke-width="2"/>
+          <text x="465" y="58" font-size="12" fill="#0f172a">Method</text>
+          <!-- Lower branches -->
+          <line x1="140" y1="110" x2="220" y2="160" stroke="#64748b" stroke-width="2"/>
+          <text x="225" y="170" font-size="12" fill="#0f172a">Material</text>
+          <line x1="260" y1="110" x2="340" y2="160" stroke="#64748b" stroke-width="2"/>
+          <text x="345" y="170" font-size="12" fill="#0f172a">Measurement</text>
+          <line x1="380" y1="110" x2="460" y2="160" stroke="#64748b" stroke-width="2"/>
+          <text x="465" y="170" font-size="12" fill="#0f172a">Environment</text>
+          <text x="60" y="105" font-size="13" fill="#0f172a">Effect / Problem</text>
+        </svg>
+      </div>
+      <div class="col">
+        <div class="small">Sample 5 Whys</div>
+        <ol class="small">
+          <li><strong>Why 1:</strong> Process output failed spec due to excess variation.</li>
+          <li><strong>Why 2:</strong> Variation increased because fixture alignment drifts.</li>
+          <li><strong>Why 3:</strong> Alignment drifts because set screws loosen.</li>
+          <li><strong>Why 4:</strong> Set screws loosen because torque was below spec.</li>
+          <li><strong>Why 5:</strong> Torque below spec because SOP lacks torque verification step.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Verification & Finalization <span class="badge badge-pending" id="d4-verify-badge">Guide</span></div>
+    <table class="table dynamic-table">
+      <thead><tr><th>Action</th><th>Responsibility</th><th>Target Date</th><th>Status</th><th></th></tr></thead>
+      <tbody></tbody>
+      <tfoot><tr><td colspan="5"><button class="add-row-btn btn btn-ghost">Add Verification Action</button></td></tr></tfoot>
+      <template><tr><td><input class="input"/></td><td><input class="input"/></td><td><input class="input" type="date"/></td><td><input class="input"/></td><td><button class="remove-row-btn btn btn-danger">Remove</button></td></tr></template>
+    </table>
+
+    <label class="label mt-small">4D. Summary of Root Cause Verifications</label>
+    <textarea id="d4-verificationSummary" class="input"></textarea>
+
+    <div class="small mt-small">4E. Final Root Cause</div>
+    <table class="table dynamic-table">
+      <thead><tr><th>Root Cause</th><th>Category</th><th></th></tr></thead>
+      <tbody></tbody>
+      <tfoot><tr><td colspan="3"><button class="add-row-btn btn btn-ghost">Add Root Cause</button></td></tr></tfoot>
+      <template><tr><td><input class="input"/></td><td><select class="input"><option>Process</option><option>Design</option><option>Materials</option><option>Human</option><option>Other</option></select></td><td><button class="remove-row-btn btn btn-danger">Remove</button></td></tr></template>
+    </table>
+
+    <div class="mt-small">
+      <label class="label">4F. Documents</label>
+      <input class="preview-file" type="file" multiple />
+    </div>
+  </div>
+
+  <script src="/assets/8d-forms.js"></script>
+  <script>
+    window.__init8D && window.__init8D(document);
+    document.getElementById('launch-fishbone')?.addEventListener('click', ()=>{
+      const modal = document.createElement('div');
+      modal.innerHTML = `
+        <div id="fb-modal" class="modal-overlay">
+          <div class="card modal-card">
+            <div class="flex-between">
+              <div class="h-title">Fishbone Brainstorm</div>
+              <button class="icon-btn" id="fb-close" aria-label="Close">✕</button>
+            </div>
+            <div class="small mt-small">Use the 6M categories as prompts and capture ideas in the table below.</div>
+            <table class="table dynamic-table">
+              <thead><tr><th>Category</th><th>Potential Cause</th><th>Evidence/Notes</th><th></th></tr></thead>
+              <tbody></tbody>
+              <tfoot><tr><td colspan="4"><button class="add-row-btn btn btn-ghost">Add Cause</button></td></tr></tfoot>
+              <template><tr><td><select class="input"><option>Man</option><option>Machine</option><option>Method</option><option>Material</option><option>Measurement</option><option>Environment</option></select></td><td><input class="input"/></td><td><input class="input"/></td><td><button class="remove-row-btn btn btn-danger">Remove</button></td></tr></template>
+            </table>
+          </div>
+        </div>`;
+      document.body.appendChild(modal);
+      window.__init8D && window.__init8D(document.getElementById('fb-modal'));
+      modal.addEventListener('click', (e)=>{ if(e.target.id==='fb-modal' || e.target.id==='fb-close'){ modal.remove(); } });
+    });
+  </script>
+</section>

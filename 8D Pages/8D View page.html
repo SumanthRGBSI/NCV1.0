@@ -94,24 +94,16 @@
 
         /* Sidebar collapse styles */
         #sidebar {
-            transition: width 0.3s ease-in-out;
+            transition: width 0.3s ease-in-out, padding 0.3s ease-in-out;
         }
-        #app-container.sidebar-collapsed #sidebar {
-            width: 6rem;
-        }
+        main#main-panel { transition: width 0.3s ease-in-out, flex 0.3s ease-in-out; }
+        #app-container.sidebar-collapsed #sidebar { width: 6rem; padding-left: 0.75rem; padding-right: 0.75rem; }
         #app-container.sidebar-collapsed .sidebar-text,
-        #app-container.sidebar-collapsed .step-content {
-            display: none;
-        }
-        #app-container.sidebar-collapsed #stepper-nav::before {
-            left: 1.25rem;
-        }
-        #app-container.sidebar-collapsed .step {
-            justify-content: center;
-        }
-        #app-container.sidebar-collapsed #toggle-btn-icon {
-            transform: rotate(180deg);
-        }
+        #app-container.sidebar-collapsed .step-content { display: none; }
+        #app-container.sidebar-collapsed #stepper-nav::before { left: 1.25rem; }
+        #app-container.sidebar-collapsed .step { justify-content: center; }
+        #app-container.sidebar-collapsed #toggle-btn-icon { transform: rotate(180deg); }
+        #app-container.sidebar-collapsed main#main-panel { flex: 1 1 auto; width: auto; }
     </style>
 </head>
 <body class="antialiased">
@@ -144,7 +136,15 @@
         </nav>
 
         <!-- Main Content -->
-        <main class="w-2/3 lg:w-3/4 p-4 md:p-8 overflow-y-auto">
+        <main id="main-panel" class="w-2/3 lg:w-3/4 p-4 md:p-8 overflow-y-auto">
+            <div id="content-toolbar" class="flex items-center justify-between mb-4">
+              <div class="text-sm text-gray-600" id="progress-summary"></div>
+              <div class="flex gap-2">
+                <button id="export-csv" class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"><i class="fa-solid fa-file-csv mr-1"></i> Export CSV</button>
+                <button id="export-json" class="px-3 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 text-sm"><i class="fa-solid fa-code mr-1"></i> Export JSON</button>
+                <button id="print-pdf" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm"><i class="fa-solid fa-print mr-1"></i> Print / PDF</button>
+              </div>
+            </div>
             <div id="content-container">
                 <!-- Content from HTML files will be loaded here -->
             </div>
@@ -215,31 +215,97 @@
 
         renderStepper() {
             const nav = document.getElementById('stepper-nav');
-            nav.innerHTML = disciplines.map(d => `
+            nav.innerHTML = disciplines.map(d => {
+                const status = (this.data[d.id]?.status) || 'pending';
+                const badge = this.renderStatusBadge(status);
+                return `
                 <a href="#${d.id}" id="nav-${d.id}" data-id="${d.id}" class="step-link block">
                     <div class="step flex items-center mb-4">
                         <div class="step-circle z-10">${d.id.toUpperCase()}</div>
                         <div class="ml-4 p-3 rounded-lg w-full step-content font-semibold text-gray-600 flex justify-between items-center">
-                            <span>${d.title}</span>
+                            <span class="flex items-center gap-2">${d.title} <span class="inline-flex items-center gap-1 text-xs font-medium" id="badge-${d.id}">${badge}</span></span>
                             <i class="fas fa-chevron-right step-arrow"></i>
                         </div>
                     </div>
-                </a>
-            `).join('');
+                </a>`;
+            }).join('');
+            this.updateProgressSummary();
         },
         
         async loadDisciplineContent(id) {
             const container = document.getElementById('content-container');
             container.classList.add('loading');
             try {
-                // In a real app, this would be a fetch. For this self-contained example,
-                // we'll check if a file exists or show an error.
-                const response = await fetch(`${id}.html`);
-                if (!response.ok) {
+                // Try multiple candidate paths (root, same directory, relative) to be resilient across hosts
+                const tryPaths = [];
+                const base = window.location.pathname.replace(/[^\/]*$/, ''); // directory of current page
+                tryPaths.push('/' + id + '.html'); // root
+                tryPaths.push(base + id + '.html'); // same directory as view page
+                tryPaths.push('./' + id + '.html'); // relative
+                tryPaths.push(id + '.html');
+
+                let response = null;
+                let lastError = null;
+                for (const p of tryPaths) {
+                    try {
+                        response = await fetch(encodeURI(p));
+                        if (response && response.ok) break;
+                        lastError = new Error(`Not found at ${p}`);
+                    } catch (fetchErr) {
+                        lastError = fetchErr;
+                    }
+                }
+                if (!response || !response.ok) {
+                   console.warn('Fetch attempts failed:', tryPaths, lastError);
                    throw new Error(`File not found: ${id}.html. Please create this file.`);
                 }
                 const html = await response.text();
                 container.innerHTML = html;
+
+                // Move stylesheet links to document head so styles load
+                Array.from(container.querySelectorAll('link[rel="stylesheet"]')).forEach(link => {
+                    if (!document.querySelector(`link[href="${link.href}"]`)) {
+                        document.head.appendChild(link.cloneNode());
+                    }
+                    link.remove();
+                });
+
+                // Execute scripts safely: external scripts are appended once; inline scripts run inside a function scope to avoid redeclaration errors
+                const scripts = Array.from(container.querySelectorAll('script'));
+                for (const oldScript of scripts) {
+                    try {
+                        if (oldScript.src) {
+                            // Avoid loading the same external script multiple times
+                            if (!document.querySelector(`script[src="${oldScript.src}"]`)) {
+                                const s = document.createElement('script');
+                                s.src = oldScript.src;
+                                s.async = false;
+                                document.body.appendChild(s);
+                            }
+                        } else {
+                            // Run inline script in a new Function scope to prevent global redeclarations
+                            const code = oldScript.textContent || '';
+                            if (code.trim()) {
+                                try {
+                                    new Function(code)();
+                                } catch (inlineErr) {
+                                    // If the inline script cannot be executed via Function (rare), fallback to appending a script tag
+                                    const s = document.createElement('script');
+                                    s.textContent = code;
+                                    document.body.appendChild(s);
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Error executing injected script:', e);
+                    } finally {
+                        oldScript.remove();
+                    }
+                }
+
+                // Initialize form behaviors (shared initializer)
+                if (window.__init8D) window.__init8D(container);
+
                 this.populateForm(id);
             } catch (error) {
                 console.error('Failed to fetch discipline content:', error);
@@ -256,11 +322,18 @@
             document.getElementById('content-container').addEventListener('click', (e) => {
                 const target = e.target.closest('.save-btn, #d1-add-member-btn, .remove-member-btn');
                 if (!target) return;
-                
+
                 if (target.matches('.save-btn')) this.handleSave(target.dataset.id);
                 if (target.matches('#d1-add-member-btn')) this.addTeamMember();
                 if (target.matches('.remove-member-btn')) this.removeTeamMember(target.dataset.index);
             });
+
+            const csvBtn = document.getElementById('export-csv');
+            const jsonBtn = document.getElementById('export-json');
+            const printBtn = document.getElementById('print-pdf');
+            if(csvBtn) csvBtn.addEventListener('click', ()=> this.exportCurrentToCSV());
+            if(jsonBtn) jsonBtn.addEventListener('click', ()=> this.exportAllToJSON());
+            if(printBtn) printBtn.addEventListener('click', ()=> this.printCurrent());
 
             document.getElementById('content-container').addEventListener('change', (e) => {
                 if (e.target.matches('.status-select')) {
@@ -318,6 +391,56 @@
             }
         },
         
+        validate(id){
+            const container = document.getElementById('content-container');
+            let ok = true;
+            container.querySelectorAll('[data-required]').forEach(el=>{
+                const val = (el.value||'').trim();
+                if(!val){ ok = false; el.classList.add('invalid'); el.setAttribute('aria-invalid','true'); }
+                else { el.classList.remove('invalid'); el.removeAttribute('aria-invalid'); }
+            });
+            return ok;
+        },
+        exportCurrentToCSV(){
+            const hash = window.location.hash.replace('#','') || 'd1';
+            const container = document.getElementById('content-container');
+            const rows = [];
+            container.querySelectorAll('label.label').forEach(label=>{
+                const forId = label.getAttribute('for');
+                const input = forId ? container.querySelector(`#${forId}`) : null;
+                if(input && (input.value||'').trim()){
+                    const name = label.textContent.trim().replaceAll(',', ' ');
+                    const val = input.value.replaceAll('\n',' ');
+                    rows.push(`${name},"${val.replaceAll('"','""')}"`);
+                }
+            });
+            container.querySelectorAll('table.table').forEach(tbl=>{
+                const headers = Array.from(tbl.querySelectorAll('thead th')).map(th=>th.textContent.trim().replaceAll(',', ' '));
+                if(headers.length){ rows.push(''); rows.push(headers.join(',')); }
+                tbl.querySelectorAll('tbody tr').forEach(tr=>{
+                    const cols = Array.from(tr.querySelectorAll('td')).map(td=> td.querySelector('input,select,textarea')?.value || td.textContent.trim());
+                    rows.push(cols.map(v=>`"${(v||'').toString().replaceAll('"','""')}"`).join(','));
+                });
+            });
+            const csv = rows.join('\n');
+            const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `${hash}.csv`; a.click();
+            URL.revokeObjectURL(url);
+        },
+        exportAllToJSON(){
+            const blob = new Blob([JSON.stringify(this.data, null, 2)], {type:'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = '8d-data.json'; a.click();
+            URL.revokeObjectURL(url);
+        },
+        printCurrent(){
+            const w = window.open('', '_blank');
+            const title = document.title;
+            const html = document.getElementById('content-container').innerHTML;
+            w.document.write(`<!doctype html><html><head><title>${title}</title><link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css\"></head><body><main class=\"container\">${html}</main><script>setTimeout(()=>window.print(), 200);<\\/script></body></html>`);
+            w.document.close();
+        },
         handleSave(id) {
             const disciplineData = this.data[id];
             if (!disciplineData) return;
@@ -329,6 +452,7 @@
                 }
             }
             
+            if(!this.validate(id)) return;
             disciplineData.lastUpdated = new Date().toISOString();
             this.saveData();
             this.populateForm(id);
@@ -377,22 +501,52 @@
             const container = document.getElementById('app-container');
             const isCollapsed = container.classList.toggle('sidebar-collapsed');
             localStorage.setItem('sidebarCollapsed', isCollapsed);
+            this.updateSidebarToggleUI(isCollapsed);
         },
 
         applySidebarState() {
-            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed) {
                 document.getElementById('app-container').classList.add('sidebar-collapsed');
             }
+            this.updateSidebarToggleUI(isCollapsed);
         },
 
+        renderStatusBadge(status){
+            const map = {
+              'pending': '<span class="px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">Pending</span>',
+              'in-progress': '<span class="px-2 py-0.5 rounded-full bg-amber-500 text-white">In Progress</span>',
+              'completed': '<span class="px-2 py-0.5 rounded-full bg-emerald-500 text-white">Completed</span>'
+            };
+            return map[status] || map['pending'];
+        },
+        updateProgressSummary(){
+            const done = disciplines.filter(d=>this.data[d.id]?.status==='completed').length;
+            const total = disciplines.length;
+            const el = document.getElementById('progress-summary');
+            if(el) el.textContent = `Progress: ${done}/${total} steps completed`;
+        },
         updateStepperStatusColors() {
             disciplines.forEach(d => {
                 const link = document.getElementById(`nav-${d.id}`);
                 if(link && this.data[d.id]) {
                     link.classList.remove('status-pending', 'status-in-progress', 'status-completed');
-                    link.classList.add(`status-${this.data[d.id].status}`);
+                    const st = this.data[d.id].status;
+                    link.classList.add(`status-${st}`);
+                    const badgeHost = document.getElementById(`badge-${d.id}`);
+                    if(badgeHost) badgeHost.innerHTML = this.renderStatusBadge(st);
                 }
             });
+            this.updateProgressSummary();
+        },
+
+        updateSidebarToggleUI(isCollapsed){
+            const btn = document.getElementById('sidebar-toggle-btn');
+            const icon = document.getElementById('toggle-btn-icon');
+            const label = btn ? btn.querySelector('.sidebar-text') : null;
+            if(label) label.textContent = isCollapsed ? 'Expand' : 'Collapse';
+            if(btn) btn.setAttribute('aria-expanded', (!isCollapsed).toString());
+            if(icon) icon.setAttribute('aria-hidden','true');
         }
     };
 

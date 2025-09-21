@@ -1,0 +1,51 @@
+<section class="container">
+  <link rel="stylesheet" href="/assets/8d.css">
+  <div class="card header toolbar">
+    <div>
+      <div class="h-title">D5 — Select & Verify Corrective Actions ✅</div>
+      <div class="h-sub">Choose permanent solutions and verify them.</div>
+    </div>
+    <div class="controls">
+      <div class="timestamp">Last updated: <span id="d5-timestamp">Never</span></div>
+      <select id="d5-status-select" class="input select-compact status-select" data-id="d5">
+        <option value="pending">Pending</option>
+        <option value="in-progress">In Progress</option>
+        <option value="completed">Completed</option>
+      </select>
+      <button class="btn btn-primary save-btn" data-id="d5"><i class="fas fa-save"></i> Save</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">5A. Selection & Verification of Corrective Action</div>
+    <table class="table dynamic-table">
+      <thead><tr><th>Action (PCA)</th><th>Root Cause</th><th>Target Date</th><th>Responsibility</th><th>Mistake Proof</th><th>Status</th><th></th></tr></thead>
+      <tbody></tbody>
+      <tfoot><tr><td colspan="7"><button class="add-row-btn btn btn-ghost">Add PCA</button></td></tr></tfoot>
+      <template>
+        <tr>
+          <td><input class="input"/></td>
+          <td><input class="input"/></td>
+          <td><input class="input" type="date"/></td>
+          <td><input class="input"/></td>
+          <td><input type="checkbox"/></td>
+          <td><input class="input"/></td>
+          <td><button class="remove-row-btn btn btn-danger">Remove</button></td>
+        </tr>
+      </template>
+    </table>
+
+    <div class="mt-small">
+      <label class="label">5B. Correction Action Images / Documents</label>
+      <input class="preview-file" type="file" multiple />
+    </div>
+
+    <div class="mt-small">
+      <label class="label">5C. Selected Permanent Corrective Action</label>
+      <textarea id="d5-selectedPCA" class="input"></textarea>
+    </div>
+  </div>
+
+  <script src="/assets/8d-forms.js"></script>
+  <script>window.__init8D && window.__init8D(document);</script>
+</section>
