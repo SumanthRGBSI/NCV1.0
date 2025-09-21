@@ -1,0 +1,67 @@
+<section class="container">
+  <div class="card header">
+    <div>
+      <div class="h-title">D4 — Root Cause Analysis 🔬</div>
+      <div class="h-sub">Identify and verify the true root cause of the problem.</div>
+    </div>
+    <div class="controls">
+      <div class="timestamp">Last updated: <span id="d4-timestamp">Never</span></div>
+      <select id="d4-status-select" class="input" style="width:160px">
+        <option value="pending">Pending</option>
+        <option value="in-progress">In Progress</option>
+        <option value="completed">Completed</option>
+      </select>
+      <button class="btn btn-primary save-btn" data-id="d4"><i class="fas fa-save"></i> Save</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="controls flex-between">
+      <div class="section-title">4A. Cause & Effect (Fishbone)</div>
+      <div class="small">Launch a simple brainstorming panel</div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <button class="btn btn-ghost" id="launch-fishbone">Open Fishbone Tool</button>
+      </div>
+      <div class="col">
+        <label class="label">4B. 5 Why Analysis (Occurrence)</label>
+        <textarea id="d4-fiveWhyOccurrence" class="input" placeholder="Start with the problem and ask why 5 times..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Verification & Finalization</div>
+    <table class="table dynamic-table">
+      <thead><tr><th>Action</th><th>Responsibility</th><th>Target Date</th><th>Status</th><th></th></tr></thead>
+      <tbody></tbody>
+      <tfoot><tr><td colspan="5"><button class="add-row-btn btn btn-ghost">Add Verification Action</button></td></tr></tfoot>
+      <template><tr><td><input class="input"/></td><td><input class="input"/></td><td><input class="input" type="date"/></td><td><input class="input"/></td><td><button class="remove-row-btn btn btn-danger">Remove</button></td></tr></template>
+    </table>
+
+    <label class="label" style="margin-top:0.75rem">4D. Summary of Root Cause Verifications</label>
+    <textarea id="d4-verificationSummary" class="input"></textarea>
+
+    <div class="small" style="margin-top:0.75rem">4E. Final Root Cause</div>
+    <table class="table dynamic-table">
+      <thead><tr><th>Root Cause</th><th>Category</th><th></th></tr></thead>
+      <tbody></tbody>
+      <tfoot><tr><td colspan="3"><button class="add-row-btn btn btn-ghost">Add Root Cause</button></td></tr></tfoot>
+      <template><tr><td><input class="input"/></td><td><select class="input"><option>Process</option><option>Design</option><option>Materials</option><option>Human</option><option>Other</option></select></td><td><button class="remove-row-btn btn btn-danger">Remove</button></td></tr></template>
+    </table>
+
+    <div style="margin-top:0.75rem">
+      <label class="label">4F. Documents</label>
+      <input class="preview-file" type="file" multiple />
+    </div>
+  </div>
+
+  <script src="/assets/8d-forms.js"></script>
+  <script>
+    window.__init8D && window.__init8D(document);
+    document.getElementById('launch-fishbone')?.addEventListener('click', ()=>{
+      alert('Fishbone brainstorming: Consider 6Ms — Man, Machine, Material, Method, Measurement, Mother Nature. Use the Root Cause table to capture ideas.');
+    });
+  </script>
+</section>

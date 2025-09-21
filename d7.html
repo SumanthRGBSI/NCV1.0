@@ -1,0 +1,43 @@
+<section class="container">
+  <div class="card header">
+    <div>
+      <div class="h-title">D7 — Prevent Recurrence 🛡️</div>
+      <div class="h-sub">Systemic changes to prevent recurrence.</div>
+    </div>
+    <div class="controls">
+      <div class="timestamp">Last updated: <span id="d7-timestamp">Never</span></div>
+      <select id="d7-status-select" class="input" style="width:160px">
+        <option value="pending">Pending</option>
+        <option value="in-progress">In Progress</option>
+        <option value="completed">Completed</option>
+      </select>
+      <button class="btn btn-primary save-btn" data-id="d7"><i class="fas fa-save"></i> Save</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Prevention Action / Document Standardization</div>
+    <table class="table dynamic-table">
+      <thead><tr><th>Action</th><th>Type</th><th>Available</th><th>Responsible</th><th>Target Date</th><th>Status</th><th>History</th><th>Revised RPN</th><th>Documents</th><th></th></tr></thead>
+      <tbody></tbody>
+      <tfoot><tr><td colspan="10"><button class="add-row-btn btn btn-ghost">Add Preventive Action</button></td></tr></tfoot>
+      <template>
+        <tr>
+          <td><input class="input"/></td>
+          <td><select class="input"><option>Prevent</option><option>Detect</option></select></td>
+          <td><input type="checkbox"/></td>
+          <td><input class="input"/></td>
+          <td><input class="input" type="date"/></td>
+          <td><input class="input"/></td>
+          <td><input class="input"/></td>
+          <td><input class="input" type="number"/></td>
+          <td><input class="preview-file" type="file"/></td>
+          <td><button class="remove-row-btn btn btn-danger">Remove</button></td>
+        </tr>
+      </template>
+    </table>
+  </div>
+
+  <script src="/assets/8d-forms.js"></script>
+  <script>window.__init8D && window.__init8D(document);</script>
+</section>

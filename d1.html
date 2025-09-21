@@ -1,0 +1,97 @@
+<section class="container">
+  <div class="card header">
+    <div>
+      <div class="h-title">D1 — Identify Team 👥</div>
+      <div class="h-sub">Assemble the right team to solve the problem. Minimal clicks — add members quickly.</div>
+    </div>
+    <div class="controls">
+      <div class="timestamp">Last updated: <span id="d1-timestamp">Never</span></div>
+      <select id="d1-status-select" class="input" style="width:160px">
+        <option value="pending">Pending</option>
+        <option value="in-progress">In Progress</option>
+        <option value="completed">Completed</option>
+      </select>
+      <button class="btn btn-primary save-btn" data-id="d1"><i class="fas fa-save"></i> Save</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Key Point of Contact</div>
+    <div class="row">
+      <div class="col">
+        <label class="label">Name</label>
+        <input id="d1-teamLeader" class="input" placeholder="Full name of primary contact" />
+      </div>
+      <div class="col">
+        <label class="label">Title</label>
+        <input id="d1-teamLeaderTitle" class="input" placeholder="Job title" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <label class="label">Email</label>
+        <input id="d1-teamLeaderEmail" class="input" placeholder="name@company.com" />
+      </div>
+      <div class="col">
+        <label class="label">Phone Number</label>
+        <input id="d1-teamLeaderPhone" class="input" placeholder="(555) 555-5555" />
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Team Members (Champion)</div>
+    <div class="row">
+      <div class="col">
+        <label class="label">Champion Name</label>
+        <input id="d1-sponsor" class="input" placeholder="Full name of champion" />
+      </div>
+      <div class="col">
+        <label class="label">Title</label>
+        <input id="d1-sponsorTitle" class="input" placeholder="Champion job title" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <label class="label">Email</label>
+        <input id="d1-sponsorEmail" class="input" placeholder="email@company.com" />
+      </div>
+      <div class="col">
+        <label class="label">Phone</label>
+        <input id="d1-sponsorPhone" class="input" placeholder="(555) 555-5555" />
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Team Members</div>
+    <div class="small">Add general team members quickly</div>
+    <div class="row" style="margin-top:0.75rem">
+      <div class="col">
+        <input id="d1-new-member" class="input" placeholder="Full name — role (e.g., Jane Doe — QA Lead)" />
+      </div>
+      <div class="col" style="flex:0 0 160px;display:flex;gap:0.5rem">
+        <button id="d1-add-member-btn" class="btn btn-primary">Add Member</button>
+        <button id="d1-clear-members" class="btn btn-ghost">Clear</button>
+      </div>
+    </div>
+    <div id="d1-members-list" class="dynamic-list" style="margin-top:0.75rem"></div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Notes & Contact Visibility</div>
+    <textarea id="d1-notes" class="input" placeholder="Any notes about the team, availability, or constraints..."></textarea>
+  </div>
+
+  <script src="/assets/8d-forms.js"></script>
+  <script>
+    // Ensure global init when content injected
+    window.__init8D && window.__init8D(document);
+    // wire clear members
+    document.addEventListener('click', (e)=>{
+      if(e.target && e.target.id === 'd1-clear-members'){
+        document.getElementById('d1-members-list').innerHTML='';
+      }
+    });
+  </script>
+</section>

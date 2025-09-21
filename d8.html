@@ -1,0 +1,53 @@
+<section class="container">
+  <div class="card header">
+    <div>
+      <div class="h-title">D8 — Team Recognition 🎉</div>
+      <div class="h-sub">Congratulate the team and formally close the project.</div>
+    </div>
+    <div class="controls">
+      <div class="timestamp">Last updated: <span id="d8-timestamp">Never</span></div>
+      <select id="d8-status-select" class="input" style="width:160px">
+        <option value="pending">Pending</option>
+        <option value="in-progress">In Progress</option>
+        <option value="completed">Completed</option>
+      </select>
+      <button class="btn btn-primary save-btn" data-id="d8"><i class="fas fa-save"></i> Save</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Acknowledge Contributions</div>
+    <table class="table dynamic-table">
+      <thead><tr><th>Name</th><th>Title</th><th>Responsibility</th><th>Achievements</th><th></th></tr></thead>
+      <tbody></tbody>
+      <tfoot><tr><td colspan="5"><button class="add-row-btn btn btn-ghost">Add Recognition</button></td></tr></tfoot>
+      <template><tr><td><input class="input"/></td><td><input class="input"/></td><td><input class="input"/></td><td><input class="input"/></td><td><button class="remove-row-btn btn btn-danger">Remove</button></td></tr></template>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Final Sign-off</div>
+    <div class="row">
+      <div class="col">
+        <label class="label">Approved By - Name</label>
+        <input id="d8-approvedName" class="input" />
+      </div>
+      <div class="col">
+        <label class="label">Approved By - Date</label>
+        <input id="d8-approvedDate" class="input" type="date" />
+      </div>
+    </div>
+    <div class="row" style="margin-top:0.5rem">
+      <div class="col"><label class="label">Submitted By - Name</label><input id="d8-submittedName" class="input"/></div>
+      <div class="col"><label class="label">Submitted By - Date</label><input id="d8-submittedDate" class="input" type="date"/></div>
+    </div>
+
+    <div style="margin-top:0.75rem">
+      <label class="label">Documents (final signed report)</label>
+      <input class="preview-file" type="file" />
+    </div>
+  </div>
+
+  <script src="/assets/8d-forms.js"></script>
+  <script>window.__init8D && window.__init8D(document);</script>
+</section>
