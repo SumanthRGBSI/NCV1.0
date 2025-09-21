@@ -13,6 +13,7 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',
 .row{display:flex;gap:1rem;margin-bottom:0.75rem}
 .col{flex:1;min-width:0}
 .label{display:block;font-size:0.85rem;color:var(--muted);margin-bottom:0.35rem}
+.label[for][data-required]::after{content:' *';color:#ef4444}
 .input,textarea,select{width:100%;padding:0.6rem;border:1px solid #e6e9ef;border-radius:8px;background:white;font-size:0.95rem}
 textarea{min-height:100px;resize:vertical}
 .btn{display:inline-flex;align-items:center;gap:0.5rem;padding:0.55rem 0.9rem;border-radius:8px;border:0;cursor:pointer;transition:transform .05s ease,box-shadow .2s} .btn:active{transform:scale(0.98)}
