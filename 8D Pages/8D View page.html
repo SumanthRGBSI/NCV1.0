@@ -554,5 +554,251 @@
         app.init();
     });
     </script>
+<script>
+(function(){
+  function $(id){return document.getElementById(id)}
+  function qsa(sel, ctx=document){return Array.from((ctx||document).querySelectorAll(sel))}
+  function createEl(html){ const t=document.createElement('template'); t.innerHTML=html.trim(); return t.content.firstChild; }
+  function nowISO(){return new Date().toISOString()}
+
+  function ensureStyle(){
+    if(document.getElementById('extras-style')) return;
+    const s=document.createElement('style');
+    s.id='extras-style';
+    s.textContent = `
+      .card[data-collapsed="true"] > *:not(.header){ display:none }
+      .disabled-ui { opacity:0.6; pointer-events:none }
+      #autosave-indicator { min-width:140px }
+    `;
+    document.head.appendChild(s);
+  }
+
+  function injectToolbarExtras(){
+    const bar = $('content-toolbar');
+    if(!bar || $('quick-jump')) return;
+    const right = bar.querySelector('.flex.gap-2');
+    const extras = createEl(`
+      <div class="hidden md:flex items-center gap-2 flex-wrap">
+        <select id="quick-jump" class="px-2 py-2 bg-white border border-gray-200 rounded-lg text-sm">
+          <option value="">Jump to…</option>
+          <option value="d1">D1</option><option value="d2">D2</option><option value="d3">D3</option><option value="d4">D4</option><option value="d5">D5</option><option value="d6">D6</option><option value="d7">D7</option><option value="d8">D8</option>
+        </select>
+        <button id="save-all" class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> Save All</button>
+        <select id="view-role" class="px-2 py-2 bg-white border border-gray-200 rounded-lg text-sm">
+          <option>Admin</option>
+          <option>Team Member</option>
+          <option>Viewer</option>
+        </select>
+        <select id="overall-status" class="px-2 py-2 bg-white border border-gray-200 rounded-lg text-sm">
+          <option value="Open">Open</option>
+          <option value="In Review">In Review</option>
+          <option value="Closed">Closed</option>
+          <option value="Archived">Archived</option>
+        </select>
+        <input id="global-assignee" class="px-2 py-2 bg-white border border-gray-200 rounded-lg text-sm" placeholder="Assignee" />
+        <input id="global-team" class="px-2 py-2 bg-white border border-gray-200 rounded-lg text-sm" placeholder="Team" />
+        <a id="nc-link" href="../NC Listing Page.html" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm" title="Open NC Report"><i class="fa-solid fa-link mr-1"></i> NC Report</a>
+        <button id="show-audit" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm"><i class="fa-solid fa-clock-rotate-left mr-1"></i> Audit</button>
+      </div>`);
+    right.parentNode.insertBefore(extras, right);
+
+    // Add autosave indicator next to progress
+    const progress = $('progress-summary');
+    if(progress && !$('autosave-indicator')){
+      progress.insertAdjacentHTML('afterend', '<span id="autosave-indicator" class="ml-3 text-xs text-gray-500"></span>');
+    }
+  }
+
+  function patchApp(){
+    if(!window.app) return;
+    const app = window.app;
+
+    // Meta & audit
+    if(!app.data) app.data = {};
+    if(!app.data.meta) app.data.meta = { overallStatus:'Open', assignee:'', team:'', role: localStorage.getItem('8d-role')||'Admin' };
+    if(!app.data.audit) app.data.audit = [];
+
+    const origLoadData = app.loadData.bind(app);
+    app.loadData = function(){
+      origLoadData();
+      if(!this.data.meta) this.data.meta = { overallStatus:'Open', assignee:'', team:'', role: localStorage.getItem('8d-role')||'Admin' };
+      if(!this.data.audit) this.data.audit = [];
+    };
+
+    const origSaveData = app.saveData.bind(app);
+    app.saveData = function(reason){
+      try{
+        if(reason){ this.data.audit.push({ ts: nowISO(), userRole: this.data.meta.role, reason }); }
+      }catch(e){}
+      origSaveData();
+      const ind = $('autosave-indicator');
+      if(ind){ ind.textContent = 'All changes saved'; }
+      this.updateStepperStatusColors();
+    };
+
+    // Prefer same-directory HTML first
+    app.loadDisciplineContent = async function(id){
+      const container = $('content-container');
+      container.classList.add('loading');
+      try{
+        const base = window.location.pathname.replace(/[^\/]*$/, '');
+        const tryPaths = [ base + id + '.html', '/' + id + '.html', './' + id + '.html', id + '.html' ];
+        let response = null;
+        for (const p of tryPaths){
+          try{ response = await fetch(encodeURI(p)); if(response && response.ok) break; }catch(_){/* ignore */}
+        }
+        if(!response || !response.ok){ throw new Error('Not found: '+id+'.html'); }
+        const html = await response.text();
+        container.innerHTML = html;
+        Array.from(container.querySelectorAll('link[rel="stylesheet"]')).forEach(link=>{ if(!document.querySelector(`link[href="${link.href}"]`)){ document.head.appendChild(link.cloneNode()); } link.remove(); });
+        const scripts = Array.from(container.querySelectorAll('script'));
+        for(const oldScript of scripts){
+          try{
+            if(oldScript.src){ if(!document.querySelector(`script[src="${oldScript.src}"]`)){ const s=document.createElement('script'); s.src=oldScript.src; s.async=false; document.body.appendChild(s);} }
+            else{ const code = oldScript.textContent||''; if(code.trim()) new Function(code)(); }
+          }catch(e){ console.warn('Injected script error', e); } finally { oldScript.remove(); }
+        }
+        if(window.__init8D) window.__init8D(container);
+        this.populateForm(id);
+        markValidationForCurrent(id);
+        setupPageSpecificUI(id);
+      }catch(err){
+        console.error(err);
+        container.innerHTML = `<div class="bg-white p-8 rounded-lg shadow-lg text-center"><h2 class="text-2xl font-bold text-red-600">Error</h2><p class="mt-2 text-gray-600">Could not load content for ${id.toUpperCase()}.</p></div>`;
+      }finally{ container.classList.remove('loading'); }
+    };
+
+    const origInit = app.init.bind(app);
+    app.init = function(){
+      this.loadData();
+      origInit();
+      ensureStyle();
+      injectToolbarExtras();
+      bindGlobalControls(this);
+      applyRoleUI();
+      // Initial autosave indicator
+      const ind = $('autosave-indicator'); if(ind) ind.textContent = '';
+      // Periodic autosave checkpoint
+      setInterval(()=>{ this.saveData('interval-autosave'); }, 180000);
+    };
+
+    const origUpdateStepper = app.updateStepperStatusColors.bind(app);
+    app.updateStepperStatusColors = function(){
+      origUpdateStepper();
+      (window.disciplines||[]).forEach(d=>{
+        const warn = this.data[d.id]?.hasWarnings;
+        const link = $('nav-'+d.id);
+        if(!link) return;
+        const content = link.querySelector('.step-content');
+        if(!content) return;
+        let icon = content.querySelector('.warn-icon');
+        if(warn){
+          if(!icon){ icon = createEl('<span class="warn-icon text-amber-600 ml-2" title="Validation issues"><i class="fa-solid fa-triangle-exclamation"></i></span>'); content.appendChild(icon); }
+        } else if(icon){ icon.remove(); }
+      });
+      const ind = $('autosave-indicator'); if(ind && ind.textContent==='Saving…'){ ind.textContent='All changes saved'; }
+    };
+
+    // Inline validation tracker
+    function markValidationForCurrent(id){
+      const container = $('content-container');
+      let ok = true; qsa('[data-required]', container).forEach(el=>{ const val=(el.value||'').trim(); if(!val){ ok=false; } });
+      app.data[id].hasWarnings = !ok;
+      app.saveData('validation-scan-'+id);
+    }
+
+    // Auto-save on edits (keyed inputs like id="dX-foo")
+    const containerEl = $('content-container');
+    let saveTimer = null;
+    containerEl.addEventListener('input', (e)=>{
+      const id = (location.hash||'#d1').replace('#','');
+      const t = e.target;
+      if(!(t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t instanceof HTMLSelectElement)) return;
+      if(!app.data[id]) return;
+      const m = t.id && t.id.startsWith(id+'-') ? t.id.slice((id+'-').length) : null;
+      if(m){ app.data[id].fields[m] = t.value; app.data[id].lastUpdated = nowISO(); }
+      const ind = $('autosave-indicator'); if(ind){ ind.textContent = 'Saving…'; }
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(()=> app.saveData('field-change-'+id), 500);
+    });
+
+    // Also validate on blur for required fields
+    containerEl.addEventListener('blur', (e)=>{
+      const t=e.target; if(t && t.hasAttribute && t.hasAttribute('data-required')){ const id=(location.hash||'#d1').replace('#',''); markValidationForCurrent(id); }
+    }, true);
+
+    function bindGlobalControls(appRef){
+      // Quick jump
+      $('quick-jump')?.addEventListener('change', (e)=>{ const v=e.target.value; if(v){ location.hash = '#'+v; e.target.value=''; }});
+      // Save all
+      $('save-all')?.addEventListener('click', ()=>{
+        const activeInputs = qsa('#content-container input, #content-container textarea, #content-container select');
+        activeInputs.forEach(i=> i.dispatchEvent(new Event('input', {bubbles:true})));
+        appRef.saveData('save-all');
+      });
+      // Role
+      const roleSel = $('view-role'); if(roleSel){ roleSel.value = appRef.data.meta.role||'Admin'; roleSel.addEventListener('change',()=>{ appRef.data.meta.role = roleSel.value; localStorage.setItem('8d-role', roleSel.value); appRef.saveData('role-change'); applyRoleUI(); }); }
+      // Overall status
+      const os = $('overall-status'); if(os){ os.value = appRef.data.meta.overallStatus||'Open'; os.addEventListener('change',()=>{ appRef.data.meta.overallStatus=os.value; appRef.saveData('overall-status'); }); }
+      // Assignee/team
+      const asg = $('global-assignee'); const team = $('global-team');
+      if(asg){ asg.value = appRef.data.meta.assignee||''; asg.addEventListener('input',()=>{ appRef.data.meta.assignee=asg.value; appRef.saveData('assignee'); }); }
+      if(team){ team.value = appRef.data.meta.team||''; team.addEventListener('input',()=>{ appRef.data.meta.team=team.value; appRef.saveData('team'); }); }
+      // Audit button
+      $('show-audit')?.addEventListener('click', showAuditLog);
+    }
+
+    function applyRoleUI(){
+      const role = app.data.meta.role||'Admin';
+      const container = $('content-container');
+      const toolbar = $('content-toolbar');
+      // Reset
+      qsa('input,select,textarea,button', container).forEach(el=>{ el.disabled=false; el.classList.remove('disabled-ui'); });
+      qsa('#overall-status, #global-assignee, #global-team', toolbar).forEach(el=>{ el.disabled=false; el.classList.remove('disabled-ui'); });
+      if(role === 'Viewer'){
+        qsa('input,select,textarea,button', container).forEach(el=>{ el.disabled=true; el.classList.add('disabled-ui'); });
+        qsa('#overall-status, #global-assignee, #global-team', toolbar).forEach(el=>{ el.disabled=true; el.classList.add('disabled-ui'); });
+      } else if(role === 'Team Member'){
+        qsa('#overall-status, #global-assignee, #global-team', toolbar).forEach(el=>{ el.disabled=true; el.classList.add('disabled-ui'); });
+      }
+    }
+
+    function setupPageSpecificUI(id){
+      // Expand/Collapse controls for D3
+      if(id === 'd3' && !$('expand-all')){
+        const barRight = $('content-toolbar')?.querySelector('.flex.gap-2');
+        if(barRight){
+          const ex = createEl('<button id="expand-all" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm">Expand All</button>');
+          const col = createEl('<button id="collapse-all" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm">Collapse All</button>');
+          barRight.parentNode.insertBefore(ex, barRight);
+          barRight.parentNode.insertBefore(col, barRight);
+          const cards = qsa('#content-container .card');
+          ex.addEventListener('click', ()=> cards.forEach(c=> c.removeAttribute('data-collapsed')));
+          col.addEventListener('click', ()=> cards.forEach(c=> c.setAttribute('data-collapsed','true')));
+        }
+      } else if(id !== 'd3'){
+        $('expand-all')?.remove(); $('collapse-all')?.remove();
+      }
+      applyRoleUI();
+    }
+
+    function showAuditLog(){
+      const modal = createEl('<div id="audit-modal" class="modal-overlay"></div>');
+      const card = createEl('<div class="card modal-card"></div>');
+      const head = createEl('<div class="flex-between"><div class="h-title">Audit Trail</div><button class="icon-btn" id="audit-close" aria-label="Close">✕</button></div>');
+      const list = createEl('<div class="mt-small" style="max-height:60vh;overflow:auto"></div>');
+      const logs = (app.data.audit||[]).slice().reverse();
+      list.innerHTML = logs.length ? `<table class="table"><thead><tr><th>When</th><th>Who</th><th>What</th></tr></thead><tbody>${logs.map(l=>`<tr><td>${new Date(l.ts).toLocaleString()}</td><td>${l.userRole||''}</td><td>${l.reason||''}</td></tr>`).join('')}</tbody></table>` : '<div class="small text-gray-600">No entries yet.</div>';
+      card.appendChild(head); card.appendChild(list); modal.appendChild(card); document.body.appendChild(modal);
+      modal.addEventListener('click', (e)=>{ if(e.target.id==='audit-modal' || e.target.id==='audit-close'){ modal.remove(); }});
+    }
+
+    ensureStyle();
+    injectToolbarExtras();
+    // If app already initialized, bind controls; otherwise our patched init will do it
+    if(window.app && window.disciplines && $('stepper-nav').children.length){ bindGlobalControls(window.app); applyRoleUI(); }
+  })();
+})();
+</script>
 </body>
 </html>
