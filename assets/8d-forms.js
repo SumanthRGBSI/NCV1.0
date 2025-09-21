@@ -369,5 +369,7 @@
     renderTeamCards(ctx);
     // init D6 gantt if present
     initD6Gantt(ctx);
+    // render lucide icons in injected content
+    try{ if(window.lucide && window.lucide.createIcons) window.lucide.createIcons(); }catch(e){}
   }
 })();
