@@ -267,19 +267,28 @@
             { key: 'status', label: 'Status', sortable: true }, { key: 'supplierName', label: 'Supplier Name', sortable: true }, { key: 'plantName', label: 'Plant Name', sortable: true }, { key: 'name', label: 'Name', sortable: true }, { key: 'partName', label: 'Part Name', sortable: true }, { key: 'partNumber', label: 'Part Number', sortable: false }, { key: 'incidentDate', label: 'Incident Date', sortable: true }, { key: 'defectCategory', label: 'Defect Category', sortable: true }, { key: 'defectName', label: 'Defect Name', sortable: true }, { key: 'incidentNumber', label: 'Incident Number', sortable: true }, { key: 'isFieldConcern', label: 'Is Field Concern', sortable: true }, { key: 'age', label: 'Age (Days)', sortable: true }, { key: 'coordinator', label: 'Coordinator', sortable: true }, { key: 'repeatNCStatus', label: 'Repeat NC Status', sortable: true }, { key: 'incidentCategory', label: 'Incident Category', sortable: true }, { key: 'incidentType', label: 'Incident Type', sortable: true }, { key: 'description', label: 'Description', sortable: false }, { key: 'totalNCParts', label: 'Total NC Parts', sortable: true }, { key: 'supplierCode', label: 'Supplier Code', sortable: true }, { key: 'rpn', label: 'RPN', sortable: true }, { key: 'commodity', label: 'Commodity', sortable: true }, { key: 'priority', label: 'Priority', sortable: true }, { key: 'prrStatus', label: 'PRR Status', sortable: true },
         ];
 
-        // Initialize column visibility and order state
+        // Initialize column visibility and order state (with persistence)
         const initialVisibleKeys = ['status', 'supplierName', 'name', 'partName', 'incidentDate', 'defectCategory', 'age', 'priority'];
         const initialColumnVisibility = {};
         ALL_COLUMNS.forEach(c => {
             initialColumnVisibility[c.key] = initialVisibleKeys.includes(c.key);
         });
 
+        // load saved column state
+        const savedColumnState = (function(){ try{ return JSON.parse(localStorage.getItem('nc_column_state')||'null'); }catch(e){return null;} })();
+        let initialOrder = ALL_COLUMNS.map(c => c.key);
+        let initialVisibility = initialColumnVisibility;
+        if(savedColumnState && savedColumnState.order && Array.isArray(savedColumnState.order)){
+          initialOrder = savedColumnState.order;
+        }
+        if(savedColumnState && savedColumnState.visibility){ initialVisibility = Object.assign({}, initialColumnVisibility, savedColumnState.visibility); }
+
         let state = {
             currentTab: 'my',
             data: [],
             filteredData: [],
-            allColumnsOrdered: ALL_COLUMNS.map(c => c.key),
-            columnVisibility: initialColumnVisibility,
+            allColumnsOrdered: initialOrder,
+            columnVisibility: initialVisibility,
             sortConfig: { key: 'incidentDate', direction: 'desc' },
             currentPage: 1,
             rowsPerPage: 10,
@@ -396,9 +405,71 @@
             if (tableBody) tableBody.innerHTML = '';
             if (tableBody) tableBody.classList.toggle('hidden', paginatedData.length === 0);
             if (emptyState) emptyState.classList.toggle('hidden', paginatedData.length > 0);
-            
+
             paginatedData.forEach(item => {
                 const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 group';
+                const isClosed = ['Closed', 'Cancelled'].includes(item.status);
+                const isDraft = item.status === 'Draft';
+                const isOpen = item.status === 'Open';
+
+                let cellsHTML = `
+                    <td class="sticky left-0 bg-white group-hover:bg-gray-50 z-10 whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium">
+                        <div class="flex items-center space-x-2">
+                             <button class="p-1.5 text-gray-400 hover:text-green-600 ${isClosed ? 'opacity-50 cursor-not-allowed' : ''}" data-tooltip="Edit" ${isClosed ? 'disabled' : ''}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pointer-events-none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            </button>
+                            <button class="p-1.5 text-gray-400 hover:text-blue-600" data-tooltip="View">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pointer-events-none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </button>
+                            <div class="relative">
+                                <button class="linkage-btn p-1.5 rounded-full transition-all duration-200 ${isDraft || isOpen || item.linkages.count === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-blue-500 hover:bg-blue-100 hover:text-blue-700'}" data-linkages='${JSON.stringify(item.linkages)}' data-tooltip="View Linkages" ${isDraft || isOpen ? 'disabled' : ''}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd" /></svg>
+                                </button>
+                                ${item.linkages.count > 1 && !isOpen ? `<span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white pointer-events-none">${item.linkages.count}</span>` : ''}
+                            </div>
+                        </div>
+                    </td>
+                `;
+
+                const editableKeys = ['name','partNumber','coordinator','incidentDate'];
+
+                state.allColumnsOrdered.forEach(key => {
+                    if (!state.columnVisibility[key]) return; // Skip hidden columns
+                    const cellValue = item[key];
+                    let cellContent = cellValue ?? '-';
+                    if (key === 'status') {
+                        cellContent = `<span class="status-badge ${getStatusClass(item.status)}">${item.status}</span>`;
+                    } else if (typeof cellValue === 'boolean') {
+                        cellContent = cellValue ? 'Yes' : 'No';
+                    } else if (['supplierName', 'partName', 'description'].includes(key) && cellValue) {
+                         cellContent = `<div class="truncate-cell" data-tooltip="${cellValue}">${cellValue}</div>`;
+                    }
+                    // make some fields inline-editable
+                    if(editableKeys.includes(key) && cellValue !== undefined){
+                      cellContent = `<div class="editable" contenteditable="true" data-id="${item.id}" data-key="${key}">${String(cellValue)}</div>`;
+                    }
+                    cellsHTML += `<td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">${cellContent}</td>`;
+                });
+
+                tr.innerHTML = cellsHTML;
+                if (tableBody) tableBody.appendChild(tr);
+            });
+            handleTableScroll();
+            // wire inline edit save (debounced)
+            if(DOMElements.tableBody){
+              let editTimer = null;
+              DOMElements.tableBody.addEventListener('input', (e)=>{
+                const tgt = e.target.closest('.editable'); if(!tgt) return;
+                clearTimeout(editTimer);
+                editTimer = setTimeout(()=>{
+                  const id = tgt.dataset.id; const key = tgt.dataset.key; const val = tgt.textContent.trim();
+                  const idx = state.data.findIndex(d=>d.id==id);
+                  if(idx>=0){ state.data[idx][key] = val; state.filteredData = state.filteredData.map(fd=> fd.id==id? Object.assign({},fd,{[key]:val}):fd); saveStateToStorage(); }
+                }, 600);
+              });
+            }
+        }
                 tr.className = 'hover:bg-gray-50 group';
                 const isClosed = ['Closed', 'Cancelled'].includes(item.status);
                 const isDraft = item.status === 'Draft';
@@ -670,6 +741,7 @@
                     if (e.target.classList.contains('column-toggle')) {
                         const key = e.target.dataset.key;
                         state.columnVisibility[key] = e.target.checked;
+                        saveColumnState();
                         updateView();
                     }
                 });
@@ -698,6 +770,7 @@
                     if (draggedElement) {
                         const newOrder = Array.from(dragContainer.children).map(child => child.dataset.key);
                         state.allColumnsOrdered = newOrder;
+                        saveColumnState();
                         updateView();
                     }
                 });
@@ -839,16 +912,31 @@
                 DOMElements.customTooltip.style.display = 'none'; 
             }
         }
+        // persist column state
+        function saveColumnState(){
+          try{ localStorage.setItem('nc_column_state', JSON.stringify({ order: state.allColumnsOrdered, visibility: state.columnVisibility })); }catch(e){}
+        }
+        // persist general state snapshot (for inline edits etc)
+        function saveStateToStorage(){
+          try{ localStorage.setItem('nc_listing_data', JSON.stringify({ filters: state.filters, columns: state.columnVisibility, order: state.allColumnsOrdered })); }catch(e){}
+        }
     </script>
   <script src="assets/app-shell.js" defer></script>
   <script>
-    // Bridge global search from app shell to this page's table search
+    // Bridge global search from app shell to this page's table search and read ?q param
     window.__globalSearch = function(q){
       try{
         var inp = document.getElementById('globalSearch');
         if(inp){ inp.value = q || ''; inp.dispatchEvent(new Event('input', {bubbles:true})); }
       }catch(e){}
     };
+    // apply query param on load
+    (function(){
+      try{
+        const params = new URLSearchParams(location.search);
+        const q = params.get('q'); if(q){ window.__globalSearch(q); }
+      }catch(e){}
+    })();
   </script>
 </body>
 </html>
