@@ -12,6 +12,8 @@
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Design System -->
+  <link rel="stylesheet" href="assets/design-system.css">
   
   <!-- Custom Configuration for Tailwind -->
   <script>
@@ -105,9 +107,24 @@
   <template id="dashboard-page"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in text-center"><h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">NC Dashboard</h2><p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">Charts and stats about all NC reports would live here.</p></div></template>
 
   <!-- 8D Group Templates -->
-  <template id="8d_view-page"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in text-center"><h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">View 8D Report</h2><p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">Details of a specific 8D report would be displayed here.</p></div></template><a href="8D Pages/8D View page.html" class="btn btn-primary">8D View Page</a></div></div></template>
-  <template id="8d_create-page"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in text-center"><h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Create 8D Report</h2><p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">A form to create a new 8D report would be here.</p></div></template>
-  <template id="8d_edit-page"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in text-center"><h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Edit 8D Report</h2><p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">A form to edit an existing 8D report would be here.</p></div></template>
+  <template id="8d_view-page">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in text-center">
+      <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">View 8D Report</h2>
+      <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">Details of a specific 8D report would be displayed here.</p>
+    </div>
+  </template>
+  <template id="8d_create-page">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in text-center">
+      <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Create 8D Report</h2>
+      <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">A form to create a new 8D report would be here.</p>
+    </div>
+  </template>
+  <template id="8d_edit-page">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in text-center">
+      <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Edit 8D Report</h2>
+      <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">A form to edit an existing 8D report would be here.</p>
+    </div>
+  </template>
 
   <!-- CAPA Group Templates -->
   <template id="capa_view-page"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-fade-in text-center"><h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">View CAPA</h2><p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">Details of a specific CAPA would be displayed here.</p></div></template>
@@ -305,6 +322,6 @@
     });
   </script>
 
+  <script src="assets/app-shell.js" defer></script>
 </body>
 </html>
-

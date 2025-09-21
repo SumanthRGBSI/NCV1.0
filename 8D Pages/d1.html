@@ -12,7 +12,7 @@
         <option value="in-progress">In Progress</option>
         <option value="completed">Completed</option>
       </select>
-      <button class="btn btn-primary save-btn" data-id="d1"><i class="fas fa-save"></i> Save</button>
+      <button class="btn btn-primary save-btn" data-id="d1" aria-label="Save D1"><i data-lucide="save"></i> Save</button>
     </div>
   </div>
 
@@ -24,14 +24,14 @@
     <table class="table dynamic-table" id="d1-kpoc-table">
       <thead><tr><th>Name</th><th>Title</th><th>Email</th><th>Phone Number</th><th></th></tr></thead>
       <tbody></tbody>
-      <tfoot><tr><td colspan="5"><button type="button" class="add-row-btn btn btn-ghost"><i class="fa-solid fa-plus"></i> Add Contact</button></td></tr></tfoot>
+      <tfoot><tr><td colspan="5"><button type="button" class="add-row-btn btn btn-ghost"><i data-lucide="plus"></i> Add Contact</button></td></tr></tfoot>
       <template>
         <tr>
           <td><input class="input contact-name" list="contact-directory" placeholder="Full name of primary contact" /></td>
           <td><input class="input contact-title" placeholder="Job title" /></td>
           <td><input class="input contact-email" placeholder="name@company.com" /></td>
           <td><input class="input contact-phone" placeholder="(555) 555-5555" /></td>
-          <td><button type="button" class="remove-row-btn btn btn-danger" aria-label="Remove"><i class="fa-solid fa-trash"></i></button></td>
+          <td><button type="button" class="remove-row-btn btn btn-danger" aria-label="Remove"><i data-lucide="trash-2"></i></button></td>
         </tr>
       </template>
     </table>
@@ -43,14 +43,14 @@
     <table class="table dynamic-table" id="d1-champions-table">
       <thead><tr><th>Name</th><th>Title</th><th>Email</th><th>Phone Number</th><th></th></tr></thead>
       <tbody></tbody>
-      <tfoot><tr><td colspan="5"><button type="button" class="add-row-btn btn btn-ghost"><i class="fa-solid fa-plus"></i> Add Champion</button></td></tr></tfoot>
+      <tfoot><tr><td colspan="5"><button type="button" class="add-row-btn btn btn-ghost"><i data-lucide="plus"></i> Add Champion</button></td></tr></tfoot>
       <template>
         <tr>
           <td><input class="input contact-name" list="contact-directory" placeholder="Full name" /></td>
           <td><input class="input contact-title" placeholder="Job title" /></td>
           <td><input class="input contact-email" placeholder="name@company.com" /></td>
           <td><input class="input contact-phone" placeholder="(555) 555-5555" /></td>
-          <td><button type="button" class="remove-row-btn btn btn-danger" aria-label="Remove"><i class="fa-solid fa-trash"></i></button></td>
+          <td><button type="button" class="remove-row-btn btn btn-danger" aria-label="Remove"><i data-lucide="trash-2"></i></button></td>
         </tr>
       </template>
     </table>
@@ -78,7 +78,7 @@
         </thead>
         <tbody></tbody>
         <tfoot>
-          <tr><td colspan="6"><button type="button" class="add-row-btn btn btn-ghost"><i class="fa-solid fa-plus"></i> Add Team Member</button></td></tr>
+          <tr><td colspan="6"><button type="button" class="add-row-btn btn btn-ghost"><i data-lucide="plus"></i> Add Team Member</button></td></tr>
         </tfoot>
         <template>
           <tr>
@@ -97,12 +97,12 @@
             <td><input class="input contact-title" placeholder="Job title" /></td>
             <td><input class="input contact-email" placeholder="name@company.com" /></td>
             <td><input class="input contact-phone" placeholder="(555) 555-5555" /></td>
-            <td><button type="button" class="remove-row-btn btn btn-danger" aria-label="Remove"><i class="fa-solid fa-trash"></i></button></td>
+            <td><button type="button" class="remove-row-btn btn btn-danger" aria-label="Remove"><i data-lucide="trash-2"></i></button></td>
           </tr>
         </template>
       </table>
       <div class="mt-small">
-        <button id="d1-schedule-meeting" class="btn btn-ghost"><i class="fa-solid fa-calendar-days"></i> Schedule Meeting</button>
+        <button id="d1-schedule-meeting" class="btn btn-ghost" aria-label="Schedule meeting"><i data-lucide="calendar"></i> Schedule Meeting</button>
       </div>
     </div>
   </div>

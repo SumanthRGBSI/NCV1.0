@@ -90,7 +90,7 @@
       if(input && input.value.trim()){
         const div = document.createElement('div');
         div.className = 'list-item';
-        div.innerHTML = `<div class="kv">${input.value.trim()}</div><button type="button" class="btn btn-ghost remove-member" aria-label="Remove"><i class="fa-solid fa-trash"></i></button>`;
+        div.innerHTML = `<div class="kv">${input.value.trim()}</div><button type="button" class="btn btn-ghost remove-member" aria-label="Remove"><i data-lucide="trash-2"></i></button>`;
         list.appendChild(div);
         input.value='';
         renderOrgChart(container);
@@ -302,6 +302,38 @@
     num.addEventListener('input', sync); sync();
   }
 
+  // Gantt for D6
+  function initD6Gantt(container){
+    const host = qs('#d6-impl', container);
+    if(!host) return;
+    function render(){
+      let ganttHost = qs('#d6-gantt', container);
+      if(!ganttHost){ ganttHost = document.createElement('div'); ganttHost.id='d6-gantt'; ganttHost.style.padding='.75rem'; ganttHost.style.border='1px solid #eef2f7'; ganttHost.style.borderRadius='8px'; ganttHost.className='mt-small'; host.parentElement.insertBefore(ganttHost, host.nextSibling); }
+      const rows = Array.from(host.querySelectorAll('tbody tr'));
+      const dates = rows.map(r=> r.querySelector('input[type="date"]')?.value).filter(Boolean).map(d=> new Date(d));
+      if(dates.length===0){ ganttHost.innerHTML = '<div class="small text-gray-500">No target dates to show Gantt.</div>'; return; }
+      const min = new Date(Math.min(...dates.map(d=>d.getTime())));
+      const max = new Date(Math.max(...dates.map(d=>d.getTime())));
+      const range = Math.max(1, (max-min)/(1000*60*60*24));
+      // build bars
+      ganttHost.innerHTML = '';
+      rows.forEach((r, idx)=>{
+        const action = r.querySelector('.impl-action')?.value || r.querySelector('td')?.textContent?.trim() || ('Action '+(idx+1));
+        const dateVal = r.querySelector('input[type="date"]')?.value;
+        const bar = document.createElement('div');
+        bar.style.display='flex'; bar.style.alignItems='center'; bar.style.gap='8px'; bar.style.marginBottom='6px';
+        const label = document.createElement('div'); label.style.width='180px'; label.style.fontSize='13px'; label.style.color='#0f172a'; label.textContent = action;
+        const timeline = document.createElement('div'); timeline.style.flex='1'; timeline.style.position='relative'; timeline.style.height='14px'; timeline.style.background='#f8fafc'; timeline.style.border='1px solid #eef2f7'; timeline.style.borderRadius='6px';
+        if(dateVal){ const d = new Date(dateVal); const days = (d - min)/(1000*60*60*24); const pct = Math.max(0, Math.min(100, (days / range) * 100)); const dot = document.createElement('div'); dot.style.position='absolute'; dot.style.left = pct + '%'; dot.style.transform='translateX(-50%)'; dot.style.top='50%'; dot.style.width='10px'; dot.style.height='10px'; dot.style.borderRadius='50%'; dot.style.background = 'var(--brand-primary)'; dot.style.boxShadow='0 2px 6px rgba(2,6,23,0.12)'; timeline.appendChild(dot); }
+        bar.appendChild(label); bar.appendChild(timeline); ganttHost.appendChild(bar);
+      });
+    }
+    // watch for changes
+    host.addEventListener('input', ()=> setTimeout(render, 200));
+    host.addEventListener('click', ()=> setTimeout(render, 250));
+    render();
+  }
+
   // Boot
   document.addEventListener('DOMContentLoaded', ()=>{
     initDynamicTables(document);
@@ -335,5 +367,9 @@
     initRichText(ctx, 'd2-situationBefore');
     renderOrgChart(ctx);
     renderTeamCards(ctx);
+    // init D6 gantt if present
+    initD6Gantt(ctx);
+    // render lucide icons in injected content
+    try{ if(window.lucide && window.lucide.createIcons) window.lucide.createIcons(); }catch(e){}
   }
 })();

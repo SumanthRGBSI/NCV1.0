@@ -12,14 +12,14 @@
         <option value="in-progress">In Progress</option>
         <option value="completed">Completed</option>
       </select>
-      <button class="btn btn-primary save-btn" data-id="d7"><i class="fas fa-save"></i> Save</button>
+      <button class="btn btn-primary save-btn" data-id="d7" aria-label="Save D7"><i data-lucide="save"></i> Save</button>
     </div>
   </div>
 
   <div class="card">
     <div class="section-title">Preventive Actions</div>
     <table id="d7-prevent" class="table dynamic-table table-alt">
-      <thead><tr><th title="Describe the action">Action <i class="fa-regular fa-circle-question"></i></th><th title="Prevent or Detect?">Type <i class="fa-regular fa-circle-question"></i></th><th title="Is it available yet?">Available <i class="fa-regular fa-circle-question"></i></th><th>Owner</th><th>Due Date</th><th>Status</th><th>History</th><th>Severity</th><th>Occurrence</th><th>Detection</th><th>Revised RPN</th><th>Document Link</th><th>Documents</th><th></th></tr></thead>
+      <thead><tr><th title="Describe the action">Action <i data-lucide="help-circle"></i></th><th title="Prevent or Detect?">Type <i data-lucide="help-circle"></i></th><th title="Is it available yet?">Available <i data-lucide="help-circle"></i></th><th>Owner</th><th>Due Date</th><th>Status</th><th>History</th><th>Severity</th><th>Occurrence</th><th>Detection</th><th>Revised RPN</th><th>Document Link</th><th>Documents</th><th></th></tr></thead>
       <tbody></tbody>
       <tfoot><tr><td colspan="14"><button class="add-row-btn btn btn-ghost">+ New Preventive Action</button></td></tr></tfoot>
       <template>
@@ -36,7 +36,7 @@
           <td><input class="input rpn-d" type="number" min="1" max="10"/></td>
           <td><input class="input rpn" type="number" disabled /></td>
           <td><input class="input" placeholder="https:// or DOC-123"/></td>
-          <td><div class="controls"><i class="fa-regular fa-file-lines"></i> <input class="preview-file" type="file"/></div></td>
+          <td><div class="controls"><i data-lucide="file-text"></i> <input class="preview-file" type="file"/></div></td>
           <td><button class="remove-row-btn btn btn-danger">Remove</button></td>
         </tr>
       </template>

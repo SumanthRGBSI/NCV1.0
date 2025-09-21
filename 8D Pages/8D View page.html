@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>8D Problem-Solving Interface</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/design-system.css">
+    <!-- FontAwesome removed; using Lucide icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -135,7 +136,7 @@
         <nav id="sidebar" class="w-1/3 lg:w-1/4 bg-white p-6 shadow-lg flex flex-col transition-all duration-300">
             <div class="flex items-center mb-2">
                 <div class="bg-blue-600 p-2 rounded-lg">
-                    <i class="fas fa-sitemap text-white fa-lg"></i>
+                    <i data-lucide="sitemap" class="text-white fa-lg"></i>
                 </div>
                 <div class="ml-3 sidebar-text">
                     <h1 class="text-xl font-bold text-gray-800">8D Process</h1>
@@ -151,7 +152,7 @@
 
             <div class="mt-auto pt-6 border-t">
                 <button id="sidebar-toggle-btn" class="w-full flex items-center p-3 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">
-                    <i id="toggle-btn-icon" class="fas fa-chevron-left transition-transform duration-300"></i>
+                    <i id="toggle-btn-icon" data-lucide="chevron-left" class="transition-transform duration-300"></i>
                     <span class="ml-4 font-semibold sidebar-text">Collapse</span>
                 </button>
             </div>
@@ -162,9 +163,9 @@
             <div id="content-toolbar" class="flex items-center justify-between mb-4">
               <div class="text-xs text-gray-600" id="progress-summary"></div>
               <div class="flex gap-2">
-                <button id="export-csv" class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold focus-ring"><i class="fa-solid fa-file-csv mr-1"></i> Export CSV</button>
-                <button id="export-json" class="px-3 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 text-sm focus-ring"><i class="fa-solid fa-code mr-1"></i> Export JSON</button>
-                <button id="print-pdf" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring"><i class="fa-solid fa-print mr-1"></i> Print / PDF</button>
+                <button id="export-csv" class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold focus-ring"><i data-lucide="file-text" class="mr-1"></i> Export CSV</button>
+                <button id="export-json" class="px-3 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 text-sm focus-ring"><i data-lucide="code" class="mr-1"></i> Export JSON</button>
+                <button id="print-pdf" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring"><i data-lucide="printer" class="mr-1"></i> Print / PDF</button>
               </div>
             </div>
             <div id="content-container">
@@ -187,14 +188,14 @@
     ];
 
     const stepIcons = {
-        d1: 'fa-users',
-        d2: 'fa-notes-medical',
-        d3: 'fa-shield-halved',
-        d4: 'fa-magnifying-glass',
-        d5: 'fa-list-check',
-        d6: 'fa-screwdriver-wrench',
-        d7: 'fa-ban',
-        d8: 'fa-trophy'
+        d1: 'users',
+        d2: 'file-text',
+        d3: 'shield-check',
+        d4: 'search',
+        d5: 'check-square',
+        d6: 'tool',
+        d7: 'ban',
+        d8: 'award'
     };
 
     function getInitialData() {
@@ -257,11 +258,11 @@
                     <div class="step flex items-center mb-4">
                         <div class="step-circle z-10">
                             <span class="step-abbr">${d.id.toUpperCase()}</span>
-                            <i class="fa-solid ${icon} step-icon-circle"></i>
+                            <i data-lucide="${icon}" class="step-icon-circle"></i>
                         </div>
                         <div class="ml-4 p-3 rounded-lg w-full step-content font-semibold text-gray-600 flex justify-between items-center">
-                            <span class="flex items-center gap-2"><i class="fa-solid ${icon} text-gray-500"></i> ${d.title} <span class="inline-flex items-center gap-1 text-xs font-medium" id="badge-${d.id}">${badge}</span></span>
-                            <i class="fas fa-chevron-right step-arrow"></i>
+                            <span class="flex items-center gap-2"><i data-lucide="${icon}" class="text-gray-500"></i> ${d.title} <span class="inline-flex items-center gap-1 text-xs font-medium" id="badge-${d.id}">${badge}</span></span>
+                            <i data-lucide="chevron-right" class="step-arrow"></i>
                         </div>
                     </div>
                 </a>`;
@@ -502,9 +503,9 @@
             if(saveBtn) {
                 const originalHTML = saveBtn.innerHTML;
                 saveBtn.disabled = true;
-                saveBtn.innerHTML = `<i class=\"fa-solid fa-spinner fa-spin mr-2\"></i> Saving...`;
+                saveBtn.innerHTML = `<i data-lucide=\"loader\" class=\"lucide-spin mr-2\"></i> Saving...`;
                 setTimeout(() => {
-                    saveBtn.innerHTML = `<i class=\"fas fa-check mr-2\"></i> Saved!`;
+                    saveBtn.innerHTML = `<i data-lucide=\"check\" class=\"mr-2\"></i> Saved!`;
                     setTimeout(() => {
                         saveBtn.innerHTML = originalHTML;
                         saveBtn.disabled = false;
@@ -519,7 +520,7 @@
             list.innerHTML = this.data.d1.fields.members.map((member, index) => `
                 <div class="flex items-center justify-between bg-gray-100 p-2 rounded">
                     <span class="text-gray-800 break-all">${member}</span>
-                    <button type="button" class="remove-member-btn text-red-500 hover:text-red-700 ml-2" data-index="${index}"><i class="fas fa-times-circle"></i></button>
+                    <button type="button" class="remove-member-btn text-red-500 hover:text-red-700 ml-2" data-index="${index}"><i data-lucide="x-circle"></i></button>
                 </div>
             `).join('');
         },
@@ -660,7 +661,7 @@
           <option value="">Jump to…</option>
           <option value="d1">D1</option><option value="d2">D2</option><option value="d3">D3</option><option value="d4">D4</option><option value="d5">D5</option><option value="d6">D6</option><option value="d7">D7</option><option value="d8">D8</option>
         </select>
-        <button id="save-all" class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> Save All</button>
+        <button id="save-all" class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"><i data-lucide="cloud-upload" class="mr-1"></i> Save All</button>
         <select id="view-role" class="px-2 py-2 bg-white border border-gray-200 rounded-lg text-sm">
           <option>Admin</option>
           <option>Team Member</option>
@@ -674,8 +675,8 @@
         </select>
         <input id="global-assignee" class="px-2 py-2 bg-white border border-gray-200 rounded-lg text-sm" placeholder="Assignee" />
         <input id="global-team" class="px-2 py-2 bg-white border border-gray-200 rounded-lg text-sm" placeholder="Team" />
-        <a id="nc-link" href="../NC Listing Page.html" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring" title="Open NC Report"><i class="fa-solid fa-link mr-1"></i> NC Report</a>
-        <button id="show-audit" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring"><i class="fa-solid fa-clock-rotate-left mr-1"></i> Audit</button>
+        <a id="nc-link" href="../NC Listing Page.html" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring" title="Open NC Report"><i data-lucide="link" class="mr-1"></i> NC Report</a>
+        <button id="show-audit" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring"><i data-lucide="clock" class="mr-1"></i> Audit</button>
       </div>`);
     right.parentNode.insertBefore(extras, right);
 
@@ -771,7 +772,7 @@
         if(!content) return;
         let icon = content.querySelector('.warn-icon');
         if(warn){
-          if(!icon){ icon = createEl('<span class="warn-icon text-amber-600 ml-2" title="Validation issues"><i class="fa-solid fa-triangle-exclamation"></i></span>'); content.appendChild(icon); }
+          if(!icon){ icon = createEl('<span class="warn-icon text-amber-600 ml-2" title="Validation issues"><i data-lucide="alert-triangle"></i></span>'); content.appendChild(icon); }
         } else if(icon){ icon.remove(); }
       });
       const ind = $('autosave-indicator'); if(ind && ind.textContent==='Saving…'){ ind.textContent='All changes saved'; }
@@ -878,5 +879,6 @@
   })();
 })();
 </script>
+  <script src="assets/app-shell.js" defer></script>
 </body>
 </html>
