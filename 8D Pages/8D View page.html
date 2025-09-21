@@ -248,7 +248,7 @@
                 let lastError = null;
                 for (const p of tryPaths) {
                     try {
-                        response = await fetch(encodeURI(p));
+                        response = await fetch(p);
                         if (response && response.ok) break;
                         lastError = new Error(`Not found at ${p}`);
                     } catch (fetchErr) {
@@ -645,7 +645,7 @@
         const tryPaths = [ base + id + '.html', '/' + id + '.html', './' + id + '.html', id + '.html' ];
         let response = null;
         for (const p of tryPaths){
-          try{ response = await fetch(encodeURI(p)); if(response && response.ok) break; }catch(_){/* ignore */}
+          try{ response = await fetch(p); if(response && response.ok) break; }catch(_){/* ignore */}
         }
         if(!response || !response.ok){ throw new Error('Not found: '+id+'.html'); }
         const html = await response.text();
