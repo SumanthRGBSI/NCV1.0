@@ -18,10 +18,10 @@
 
   <div class="card">
     <div class="section-title">Prevention Action / Document Standardization</div>
-    <table class="table dynamic-table">
-      <thead><tr><th>Action</th><th>Type</th><th>Available</th><th>Responsible</th><th>Target Date</th><th>Status</th><th>History</th><th>Revised RPN</th><th>Documents</th><th></th></tr></thead>
+    <table id="d7-prevent" class="table dynamic-table">
+      <thead><tr><th>Action</th><th>Type</th><th>Available</th><th>Responsible</th><th>Target Date</th><th>Status</th><th>History</th><th>Severity</th><th>Occurrence</th><th>Detection</th><th>Revised RPN</th><th>Document Link (URL/ID)</th><th>Documents</th><th></th></tr></thead>
       <tbody></tbody>
-      <tfoot><tr><td colspan="10"><button class="add-row-btn btn btn-ghost">Add Preventive Action</button></td></tr></tfoot>
+      <tfoot><tr><td colspan="14"><button class="add-row-btn btn btn-ghost">Add Preventive Action</button></td></tr></tfoot>
       <template>
         <tr>
           <td><input class="input"/></td>
@@ -31,12 +31,39 @@
           <td><input class="input" type="date"/></td>
           <td><input class="input"/></td>
           <td><input class="input"/></td>
-          <td><input class="input" type="number"/></td>
+          <td><input class="input rpn-s" type="number" min="1" max="10"/></td>
+          <td><input class="input rpn-o" type="number" min="1" max="10"/></td>
+          <td><input class="input rpn-d" type="number" min="1" max="10"/></td>
+          <td><input class="input rpn" type="number" disabled /></td>
+          <td><input class="input" placeholder="https:// or DOC-123"/></td>
           <td><input class="preview-file" type="file"/></td>
           <td><button class="remove-row-btn btn btn-danger">Remove</button></td>
         </tr>
       </template>
     </table>
+
+    <div class="mt-small">
+      <div class="section-title">Standardization Checklist</div>
+      <div class="small">Consider: FMEA, Control Plan, SOPs, Training Materials, Work Instructions, Drawings</div>
+      <div class="controls mt-xs">
+        <input id="d7-new-std" class="input" placeholder="Add checklist item" />
+        <button id="d7-add-std" class="btn btn-ghost">Add</button>
+      </div>
+      <div id="d7-std-list" class="dynamic-list mt-small"></div>
+    </div>
+
+    <div class="mt-small">
+      <button id="d7-track-read" class="btn btn-ghost">Track Read & Understood</button>
+    </div>
+
+    <div class="mt-small">
+      <div class="section-title">Similar Parts/Processes</div>
+      <div class="controls mt-xs">
+        <input id="d7-similar" class="input" placeholder="Add similar part/process" />
+        <button id="d7-add-similar" class="btn btn-ghost">Add</button>
+      </div>
+      <div id="d7-similar-list" class="dynamic-list mt-small"></div>
+    </div>
   </div>
 
   <script src="/assets/8d-forms.js"></script>
