@@ -442,14 +442,32 @@
             }
         },
 
+        renderStatusBadge(status){
+            const map = {
+              'pending': '<span class="px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">Pending</span>',
+              'in-progress': '<span class="px-2 py-0.5 rounded-full bg-amber-500 text-white">In Progress</span>',
+              'completed': '<span class="px-2 py-0.5 rounded-full bg-emerald-500 text-white">Completed</span>'
+            };
+            return map[status] || map['pending'];
+        },
+        updateProgressSummary(){
+            const done = disciplines.filter(d=>this.data[d.id]?.status==='completed').length;
+            const total = disciplines.length;
+            const el = document.getElementById('progress-summary');
+            if(el) el.textContent = `Progress: ${done}/${total} steps completed`;
+        },
         updateStepperStatusColors() {
             disciplines.forEach(d => {
                 const link = document.getElementById(`nav-${d.id}`);
                 if(link && this.data[d.id]) {
                     link.classList.remove('status-pending', 'status-in-progress', 'status-completed');
-                    link.classList.add(`status-${this.data[d.id].status}`);
+                    const st = this.data[d.id].status;
+                    link.classList.add(`status-${st}`);
+                    const badgeHost = document.getElementById(`badge-${d.id}`);
+                    if(badgeHost) badgeHost.innerHTML = this.renderStatusBadge(st);
                 }
             });
+            this.updateProgressSummary();
         }
     };
 
