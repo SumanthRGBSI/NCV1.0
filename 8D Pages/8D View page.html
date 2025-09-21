@@ -313,11 +313,18 @@
             document.getElementById('content-container').addEventListener('click', (e) => {
                 const target = e.target.closest('.save-btn, #d1-add-member-btn, .remove-member-btn');
                 if (!target) return;
-                
+
                 if (target.matches('.save-btn')) this.handleSave(target.dataset.id);
                 if (target.matches('#d1-add-member-btn')) this.addTeamMember();
                 if (target.matches('.remove-member-btn')) this.removeTeamMember(target.dataset.index);
             });
+
+            const csvBtn = document.getElementById('export-csv');
+            const jsonBtn = document.getElementById('export-json');
+            const printBtn = document.getElementById('print-pdf');
+            if(csvBtn) csvBtn.addEventListener('click', ()=> this.exportCurrentToCSV());
+            if(jsonBtn) jsonBtn.addEventListener('click', ()=> this.exportAllToJSON());
+            if(printBtn) printBtn.addEventListener('click', ()=> this.printCurrent());
 
             document.getElementById('content-container').addEventListener('change', (e) => {
                 if (e.target.matches('.status-select')) {
