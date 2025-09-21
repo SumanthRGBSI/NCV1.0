@@ -18,17 +18,26 @@
 
   <div class="card">
     <div class="section-title">5A. Selection & Verification of Corrective Action</div>
-    <table class="table dynamic-table">
-      <thead><tr><th>Action (PCA)</th><th>Root Cause</th><th>Target Date</th><th>Responsibility</th><th>Mistake Proof</th><th>Status</th><th></th></tr></thead>
+    <table id="d5-actions" class="table dynamic-table">
+      <thead><tr><th>Action (PCA)</th><th>Root Cause</th><th>Target Date</th><th>Responsibility</th><th>Mistake Proof Level</th><th>Estimated Cost</th><th>Expected Benefit</th><th>Status</th><th></th></tr></thead>
       <tbody></tbody>
-      <tfoot><tr><td colspan="7"><button class="add-row-btn btn btn-ghost">Add PCA</button></td></tr></tfoot>
+      <tfoot><tr><td colspan="9"><button class="add-row-btn btn btn-ghost">Add PCA</button></td></tr></tfoot>
       <template>
         <tr>
+          <td><input class="input pca-action"/></td>
+          <td><select class="input pca-root"><option value="">Select Root Cause</option></select></td>
+          <td><input class="input pca-date" type="date"/></td>
           <td><input class="input"/></td>
-          <td><input class="input"/></td>
-          <td><input class="input" type="date"/></td>
-          <td><input class="input"/></td>
-          <td><input type="checkbox"/></td>
+          <td>
+            <select class="input">
+              <option>Detection</option>
+              <option>Warning</option>
+              <option>Control</option>
+              <option>Shutdown</option>
+            </select>
+          </td>
+          <td><input class="input" type="number" placeholder="$"/></td>
+          <td><input class="input" placeholder="Benefit"/></td>
           <td><input class="input"/></td>
           <td><button class="remove-row-btn btn btn-danger">Remove</button></td>
         </tr>
@@ -36,7 +45,7 @@
     </table>
 
     <div class="mt-small">
-      <label class="label">5B. Correction Action Images / Documents</label>
+      <label class="label">5B. Corrective Action Images / Documents</label>
       <input class="preview-file" type="file" multiple />
     </div>
 
@@ -44,6 +53,20 @@
       <label class="label">5C. Selected Permanent Corrective Action</label>
       <textarea id="d5-selectedPCA" class="input"></textarea>
     </div>
+
+    <div class="mt-small">
+      <div class="section-title">Timeline (Gantt)</div>
+      <div id="d5-gantt" class="card" style="padding:.5rem"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Verification Checklist</div>
+    <div class="controls mt-xs">
+      <input id="d5-new-check" class="input" placeholder="Add checklist item" />
+      <button id="d5-add-check" class="btn btn-ghost">Add</button>
+    </div>
+    <div id="d5-checklist" class="dynamic-list mt-small"></div>
   </div>
 
   <script src="/assets/8d-forms.js"></script>
