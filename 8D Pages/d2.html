@@ -19,9 +19,16 @@
   <div class="card">
     <div class="section-title">Problem Definition</div>
     <label class="label" for="d2-problemStatement">2A. Problem Description</label>
-    <textarea id="d2-problemStatement" class="input" data-required placeholder="Full story of the problem..."></textarea>
+    <div id="d2-problemStatement-toolbar" class="controls mt-xs">
+      <button class="btn btn-ghost rt-bold" data-target="d2-problemStatement">B</button>
+      <button class="btn btn-ghost rt-italic" data-target="d2-problemStatement"><i>I</i></button>
+      <button class="btn btn-ghost rt-ul" data-target="d2-problemStatement">• List</button>
+      <button class="btn btn-ghost rt-ol" data-target="d2-problemStatement">1. List</button>
+    </div>
+    <textarea id="d2-problemStatement" class="input" data-required placeholder="Full story of the problem..." style="display:none"></textarea>
+    <div id="d2-problemStatement-editor" class="input" contenteditable="true" style="min-height:120px"></div>
 
-    <div class="row">
+    <div class="row mt-small">
       <div class="col">
         <label class="label" for="d2-impactCustomer">2C. Impact on Customer</label>
         <input id="d2-impactCustomer" class="input" placeholder="How customers are affected" />
@@ -32,12 +39,29 @@
       </div>
     </div>
 
+    <div class="row mt-small">
+      <div class="col">
+        <label class="label" for="d2-partName">Part Name</label>
+        <input id="d2-partName" class="input" placeholder="Part name" />
+      </div>
+      <div class="col">
+        <label class="label" for="d2-partNumber">Part Number</label>
+        <div class="controls">
+          <input id="d2-partNumber" class="input" placeholder="123-ABC" />
+          <a id="d2-part-link" class="btn btn-ghost" href="../Mapping.html" target="_blank">Part Info</a>
+        </div>
+      </div>
+    </div>
+
     <div class="section-title mt-small">2D. Problem Description Images / Documents</div>
-    <div class="file-block card">
+    <div class="file-block card drop-zone" id="d2-evidence-zone">
       <label class="label">Upload images or documents</label>
       <div class="file-input">
         <input class="preview-file" type="file" id="d2-evidence" />
         <div class="file-preview small"></div>
+      </div>
+      <div class="mt-xs">
+        <button class="btn btn-ghost annotate-btn" data-for="#d2-evidence">Annotate</button>
       </div>
     </div>
   </div>
@@ -79,16 +103,42 @@
       </template>
     </table>
 
+    <div class="small mt-small">Is / Is Not Analysis</div>
+    <table class="table dynamic-table" id="d2-isisnot">
+      <thead><tr><th>Is</th><th>Is Not</th><th>Distinction</th><th>Cause of Distinction</th><th></th></tr></thead>
+      <tbody></tbody>
+      <tfoot><tr><td colspan="5"><button type="button" class="add-row-btn btn btn-ghost">Add Row</button></td></tr></tfoot>
+      <template>
+        <tr>
+          <td><input class="input" placeholder="What it is" /></td>
+          <td><input class="input" placeholder="What it is not" /></td>
+          <td><input class="input" placeholder="Difference" /></td>
+          <td><input class="input" placeholder="Reason for difference" /></td>
+          <td><button type="button" class="remove-row-btn btn btn-danger">Remove</button></td>
+        </tr>
+      </template>
+    </table>
+
     <div class="row mt-small">
       <div class="col">
         <label class="label" for="d2-situationBefore">2G. Situation Before Countermeasure</label>
-        <textarea id="d2-situationBefore" class="input"></textarea>
+        <div id="d2-situationBefore-toolbar" class="controls mt-xs">
+          <button class="btn btn-ghost rt-bold" data-target="d2-situationBefore">B</button>
+          <button class="btn btn-ghost rt-italic" data-target="d2-situationBefore"><i>I</i></button>
+          <button class="btn btn-ghost rt-ul" data-target="d2-situationBefore">• List</button>
+          <button class="btn btn-ghost rt-ol" data-target="d2-situationBefore">1. List</button>
+        </div>
+        <textarea id="d2-situationBefore" class="input" style="display:none"></textarea>
+        <div id="d2-situationBefore-editor" class="input" contenteditable="true" style="min-height:120px"></div>
       </div>
       <div class="col">
         <label class="label" for="d2-before-graphs">2H. Situation Before (Graphs / Images)</label>
-        <div class="file-block">
+        <div class="file-block drop-zone" id="d2-before-zone">
           <input class="preview-file" id="d2-before-graphs" type="file" />
           <div class="file-preview small"></div>
+          <div class="mt-xs">
+            <button class="btn btn-ghost annotate-btn" data-for="#d2-before-graphs">Annotate</button>
+          </div>
         </div>
       </div>
     </div>

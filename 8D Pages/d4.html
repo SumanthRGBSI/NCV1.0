@@ -24,10 +24,11 @@
     <div class="row">
       <div class="col">
         <button class="btn btn-ghost" id="launch-fishbone">Open Fishbone Tool</button>
+        <button class="btn btn-ghost" id="launch-5whys">Start 5 Whys Guide</button>
       </div>
       <div class="col">
         <label class="label">4B. 5 Why Analysis (Occurrence)</label>
-        <textarea id="d4-fiveWhyOccurrence" class="input" placeholder="Start with the problem and ask why 5 times..."></textarea>
+        <div id="d4-fivewhys" class="dynamic-list"></div>
       </div>
     </div>
   </div>
@@ -84,11 +85,21 @@
     <textarea id="d4-verificationSummary" class="input"></textarea>
 
     <div class="small mt-small">4E. Final Root Cause</div>
-    <table class="table dynamic-table">
-      <thead><tr><th>Root Cause</th><th>Category</th><th></th></tr></thead>
+    <table id="d4-root-causes" class="table dynamic-table">
+      <thead><tr><th>Root Cause</th><th>Category</th><th>Likelihood (1-5)</th><th>Severity (1-5)</th><th>Score</th><th>Link to D5</th><th></th></tr></thead>
       <tbody></tbody>
-      <tfoot><tr><td colspan="3"><button class="add-row-btn btn btn-ghost">Add Root Cause</button></td></tr></tfoot>
-      <template><tr><td><input class="input"/></td><td><select class="input"><option>Process</option><option>Design</option><option>Materials</option><option>Human</option><option>Other</option></select></td><td><button class="remove-row-btn btn btn-danger">Remove</button></td></tr></template>
+      <tfoot><tr><td colspan="7"><button class="add-row-btn btn btn-ghost">Add Root Cause</button></td></tr></tfoot>
+      <template>
+        <tr>
+          <td><input class="input rc-text"/></td>
+          <td><select class="input"><option>Process</option><option>Design</option><option>Materials</option><option>Human</option><option>Other</option></select></td>
+          <td><select class="input rc-like"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+          <td><select class="input rc-sev"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+          <td><input class="input rc-score" type="number" disabled /></td>
+          <td><button type="button" class="btn btn-ghost rc-link">Link</button></td>
+          <td><button class="remove-row-btn btn btn-danger">Remove</button></td>
+        </tr>
+      </template>
     </table>
 
     <div class="mt-small">
