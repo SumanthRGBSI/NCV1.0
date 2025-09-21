@@ -20,6 +20,22 @@
     <label class="label">3A. Supplier description of problem / POV</label>
     <textarea id="d3-supplierDescription" class="input"></textarea>
 
+    <div class="small mt-small">3B. Immediate Actions &amp; Responsibility</div>
+    <table id="d3-actions" class="table dynamic-table table-alt">
+      <thead><tr><th>Action</th><th>Responsibility</th><th>Target Date</th><th>Status</th><th></th></tr></thead>
+      <tbody></tbody>
+      <tfoot><tr><td colspan="5"><button class="add-row-btn btn btn-ghost">Add Action</button></td></tr></tfoot>
+      <template>
+        <tr>
+          <td><input class="input" placeholder="Describe action"/></td>
+          <td><input class="input" placeholder="Owner"/></td>
+          <td><input class="input" type="date"/></td>
+          <td><select class="input"><option>Assigned</option><option>In Progress</option><option>Done</option></select></td>
+          <td><button class="remove-row-btn btn btn-danger">Remove</button></td>
+        </tr>
+      </template>
+    </table>
+
     <div class="small mt-small">3B. Immediate Actions (Kanban)</div>
     <div class="controls mt-xs">
       <input id="d3-new-action" class="input" placeholder="Add action and press Enter" />
