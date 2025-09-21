@@ -55,10 +55,10 @@
   // Add member quick-add for D1 if present
   function initD1QuickAdd(container){
     const add = qs('#d1-add-member-btn', container);
-    if(!add) return;
+    const list = qs('#d1-members-list', container);
+    if(!add || !list) return;
     add.addEventListener('click', ()=>{
       const input = qs('#d1-new-member', container);
-      const list = qs('#d1-members-list', container);
       if(input && input.value.trim()){
         const div = document.createElement('div');
         div.className = 'list-item';
@@ -68,7 +68,7 @@
       }
     });
     // delegate remove
-    list && list.addEventListener('click', (e)=>{
+    list.addEventListener('click', (e)=>{
       if(e.target.closest('.remove-member')) e.target.closest('.list-item').remove();
     });
   }
