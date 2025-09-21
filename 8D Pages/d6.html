@@ -18,17 +18,25 @@
 
   <div class="card">
     <div class="section-title">6A. Implementation Tracking</div>
-    <table class="table dynamic-table">
+    <div class="controls mt-xs"><button id="d6-import-d5" class="btn btn-ghost">Import from D5</button></div>
+    <table id="d6-impl" class="table dynamic-table">
       <thead><tr><th>Permanent Corrective Action</th><th>Target Date</th><th>Error Proofing Type</th><th>Level</th><th>Score</th><th>Responsibility</th><th>Effectiveness</th><th>Status</th><th></th></tr></thead>
       <tbody></tbody>
       <tfoot><tr><td colspan="9"><button class="add-row-btn btn btn-ghost">Add Implementation</button></td></tr></tfoot>
       <template>
         <tr>
-          <td><input class="input"/></td>
+          <td><input class="input impl-action"/></td>
           <td><input class="input" type="date"/></td>
-          <td><input class="input"/></td>
-          <td><input class="input"/></td>
-          <td><input class="input" type="number"/></td>
+          <td>
+            <select class="input impl-etype">
+              <option>Detection</option>
+              <option>Warning</option>
+              <option>Control</option>
+              <option>Shutdown</option>
+            </select>
+          </td>
+          <td><input class="input impl-level" type="number" min="1" max="5"/></td>
+          <td><input class="input impl-score" type="number" disabled /></td>
           <td><input class="input"/></td>
           <td><input class="input"/></td>
           <td><input class="input"/></td>
@@ -45,7 +53,21 @@
 
     <div class="mt-small">
       <label class="label">6D. Situation After (Graphs / Images)</label>
-      <input class="preview-file" type="file" multiple />
+      <input id="d6-after-graphs" class="preview-file" type="file" multiple />
+    </div>
+
+    <div class="mt-small">
+      <div class="section-title">Before vs After Comparison</div>
+      <div class="row">
+        <div class="col">
+          <div class="small">Before (from D2)</div>
+          <div id="d6-compare-before" class="card" style="padding:.5rem"></div>
+        </div>
+        <div class="col">
+          <div class="small">After (D6)</div>
+          <div id="d6-compare-after" class="card" style="padding:.5rem"></div>
+        </div>
+      </div>
     </div>
 
     <div class="mt-small">
@@ -58,6 +80,8 @@
           <tr><td><input class="input"/></td><td><select class="input"><option>Yes</option><option>No</option></select></td><td><input class="input"/></td><td><button class="remove-row-btn btn btn-danger">Remove</button></td></tr>
         </template>
       </table>
+      <div class="controls mt-xs"><button id="d6-approve" class="btn btn-primary"><i class="fa-solid fa-check"></i> Manager Sign-off</button></div>
+      <div id="d6-approval-status" class="small mt-xs"></div>
     </div>
 
     <div class="mt-small">
