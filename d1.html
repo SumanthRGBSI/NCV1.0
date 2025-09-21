@@ -1,4 +1,5 @@
 <section class="container">
+  <link rel="stylesheet" href="/assets/8d.css">
   <div class="card header">
     <div>
       <div class="h-title">D1 — Identify Team 👥</div>
@@ -6,7 +7,7 @@
     </div>
     <div class="controls">
       <div class="timestamp">Last updated: <span id="d1-timestamp">Never</span></div>
-      <select id="d1-status-select" class="input" style="width:160px">
+      <select id="d1-status-select" class="input select-compact">
         <option value="pending">Pending</option>
         <option value="in-progress">In Progress</option>
         <option value="completed">Completed</option>
@@ -66,7 +67,7 @@
   <div class="card">
     <div class="section-title">Team Members</div>
     <div class="small">Add general team members quickly</div>
-    <div class="row" style="margin-top:0.75rem">
+    <div class="row mt-small">
       <div class="col">
         <input id="d1-new-member" class="input" placeholder="Full name — role (e.g., Jane Doe — QA Lead)" />
       </div>
@@ -75,7 +76,7 @@
         <button id="d1-clear-members" class="btn btn-ghost">Clear</button>
       </div>
     </div>
-    <div id="d1-members-list" class="dynamic-list" style="margin-top:0.75rem"></div>
+    <div id="d1-members-list" class="dynamic-list mt-small"></div>
   </div>
 
   <div class="card">
@@ -85,9 +86,7 @@
 
   <script src="/assets/8d-forms.js"></script>
   <script>
-    // Ensure global init when content injected
     window.__init8D && window.__init8D(document);
-    // wire clear members
     document.addEventListener('click', (e)=>{
       if(e.target && e.target.id === 'd1-clear-members'){
         document.getElementById('d1-members-list').innerHTML='';
