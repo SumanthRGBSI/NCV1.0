@@ -35,3 +35,4 @@ textarea{min-height:100px;resize:vertical}
 @media (max-width:800px){.row{flex-direction:column}}
 .select-compact{width:160px}
 .mt-small{margin-top:0.75rem}
+.col-fixed{flex:0 0 160px;display:flex;gap:0.5rem}
