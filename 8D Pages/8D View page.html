@@ -270,7 +270,8 @@
               if(disciplines.some(d=> d.id===id)){
                 if(!this.data[id]) return;
                 const m = t.id && t.id.startsWith(id+'-') ? t.id.slice((id+'-').length) : null;
-                if(m){ this.data[id].fields[m] = t.value; this.data[id].lastUpdated = new Date().toISOString(); }
+                if(m){ const val = (t.type === 'checkbox') ? (t.checked ? 'true' : 'false') : t.value; this.data[id].fields[m] = val; }
+                this.data[id].lastUpdated = new Date().toISOString();
               }
               this._dirty = true; this.updateSaveFab(true);
               const ind = document.getElementById('autosave-indicator'); if(ind){ ind.textContent = 'Saving…'; }
@@ -371,6 +372,7 @@
         updateStepperProgressLine(){ const nav = document.getElementById('stepper-nav'); const line = document.getElementById('stepper-progress'); if(!nav || !line) return; const steps = Array.from(nav.querySelectorAll('.step')); if(!steps.length) { line.style.height = '0px'; return; } let lastIdx = -1; disciplines.forEach((d, i)=>{ if(app.data[d.id]?.status === 'completed') lastIdx = i; }); if(lastIdx < 0){ line.style.height = '0px'; return; } const targetStep = steps[Math.min(lastIdx, steps.length-1)]; const navTop = nav.getBoundingClientRect().top; const stepRect = targetStep.getBoundingClientRect(); const center = stepRect.top - navTop + (stepRect.height/2); const offsetTop = 20; const h = Math.max(0, center - offsetTop); line.style.height = h + 'px'; }
     };
 
+    window.app = app;
     document.addEventListener('DOMContentLoaded', () => { app.init(); });
     </script>
 
