@@ -503,7 +503,7 @@
             if(saveBtn) {
                 const originalHTML = saveBtn.innerHTML;
                 saveBtn.disabled = true;
-                saveBtn.innerHTML = `<i class=\"fa-solid fa-spinner fa-spin mr-2\"></i> Saving...`;
+                saveBtn.innerHTML = `<i data-lucide=\"loader\" class=\"lucide-spin mr-2\"></i> Saving...`;
                 setTimeout(() => {
                     saveBtn.innerHTML = `<i class=\"fas fa-check mr-2\"></i> Saved!`;
                     setTimeout(() => {
