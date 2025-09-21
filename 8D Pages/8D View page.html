@@ -104,6 +104,28 @@
         #app-container.sidebar-collapsed .step { justify-content: center; }
         #app-container.sidebar-collapsed #toggle-btn-icon { transform: rotate(180deg); }
         #app-container.sidebar-collapsed main#main-panel { flex: 1 1 auto; width: auto; }
+            /* Tooltips for steps */
+        .step-link{ position: relative; }
+        .step-link[data-tooltip]:hover::after { content: attr(data-tooltip); position: absolute; left: 3.75rem; top: 50%; transform: translateY(-50%); background: #111827; color: #fff; padding: 0.5rem 0.6rem; border-radius: 0.5rem; box-shadow: 0 4px 18px rgba(0,0,0,0.2); width: 16rem; font-size: 0.75rem; line-height: 1.1; z-index: 50; }
+        .step-link[data-tooltip]:hover::before { content: ''; position: absolute; left: 3.4rem; top: 50%; transform: translateY(-50%); border-width: 6px; border-style: solid; border-color: transparent #111827 transparent transparent; }
+
+        /* Animated progress line */
+        #stepper-nav { position: relative; }
+        #stepper-progress { position: absolute; left: 1.25rem; top: 1.25rem; width: 2px; height: 0; background-color: #10b981; z-index: 2; transition: height 0.4s ease; }
+
+        /* Collapsed: show icons in the circle, hide text */
+        .step-abbr{ display:inline; }
+        .step-icon-circle{ display:none; }
+        #app-container.sidebar-collapsed .step-abbr{ display:none; }
+        #app-container.sidebar-collapsed .step-icon-circle{ display:inline-flex; }
+
+        /* Focus ring for accessibility */
+        a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.45); border-color: #93c5fd; }
+
+        /* Skeleton loading */
+        .skeleton{ position:relative; overflow:hidden; background:#f3f4f6; }
+        .skeleton::after{ content:''; position:absolute; inset:0; background: linear-gradient(90deg, rgba(243,244,246,0) 0%, rgba(209,213,219,.7) 50%, rgba(243,244,246,0) 100%); transform:translateX(-100%); animation: sk 1.2s infinite; }
+        @keyframes sk{ to { transform: translateX(100%); } }
     </style>
 </head>
 <body class="antialiased">
