@@ -211,7 +211,7 @@
     if(!ed || !tb) return;
     // load existing value
     ed.innerHTML = (ta.value||'');
-    function sync(){ ta.value = ed.innerHTML; }
+    function sync(){ ta.value = ed.innerHTML; ta.dispatchEvent(new Event('input', {bubbles:true})); }
     ed.addEventListener('input', sync);
     tb.addEventListener('click', (e)=>{
       const btn = e.target.closest('button'); if(!btn) return;
