@@ -237,21 +237,27 @@
 
         renderStepper() {
             const nav = document.getElementById('stepper-nav');
-            nav.innerHTML = disciplines.map(d => {
+            const stepsHtml = disciplines.map(d => {
                 const status = (this.data[d.id]?.status) || 'pending';
                 const badge = this.renderStatusBadge(status);
+                const icon = (typeof stepIcons !== 'undefined' && stepIcons[d.id]) ? stepIcons[d.id] : 'fa-circle-dot';
                 return `
-                <a href="#${d.id}" id="nav-${d.id}" data-id="${d.id}" class="step-link block">
+                <a href="#${d.id}" id="nav-${d.id}" data-id="${d.id}" class="step-link block focus-ring" data-tooltip="${d.shortDesc}">
                     <div class="step flex items-center mb-4">
-                        <div class="step-circle z-10">${d.id.toUpperCase()}</div>
+                        <div class="step-circle z-10">
+                            <span class="step-abbr">${d.id.toUpperCase()}</span>
+                            <i class="fa-solid ${icon} step-icon-circle"></i>
+                        </div>
                         <div class="ml-4 p-3 rounded-lg w-full step-content font-semibold text-gray-600 flex justify-between items-center">
-                            <span class="flex items-center gap-2">${d.title} <span class="inline-flex items-center gap-1 text-xs font-medium" id="badge-${d.id}">${badge}</span></span>
+                            <span class="flex items-center gap-2"><i class="fa-solid ${icon} text-gray-500"></i> ${d.title} <span class="inline-flex items-center gap-1 text-xs font-medium" id="badge-${d.id}">${badge}</span></span>
                             <i class="fas fa-chevron-right step-arrow"></i>
                         </div>
                     </div>
                 </a>`;
             }).join('');
+            nav.innerHTML = `<div id=\"stepper-progress\"></div>` + stepsHtml;
             this.updateProgressSummary();
+            this.updateStepperProgressLine && this.updateStepperProgressLine();
         },
         
         async loadDisciplineContent(id) {
