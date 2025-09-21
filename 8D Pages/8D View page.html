@@ -132,13 +132,13 @@
             data[d.id] = { status: 'pending', lastUpdated: null, fields: {}, checklist: {} };
         });
         data.d1.fields = { teamLeader: '', sponsor: '', members: [] };
-        data.d2.fields = { problemStatement: '', who: '', what: '', when: '', where: '', why: '', how: '', howMany: '' };
-        data.d3.fields = { containmentActions: '', verification: '' };
-        data.d4.fields = { rootCause: '', verificationMethod: '' };
-        data.d5.fields = { correctiveAction: '', verificationPlan: '' };
-        data.d6.fields = { implementationPlan: '', validationResults: '' };
+        data.d2.fields = { briefStatement: '', problemStatement: '', impactCustomer: '', who: '', what: '', when: '', where: '', why: '', how: '', howMany: '' };
+        data.d3.fields = { supplierDescription: '', actionNotes: '' };
+        data.d4.fields = { rootCause: '', verificationMethod: '', verificationSummary: '' };
+        data.d5.fields = { correctiveAction: '', verificationPlan: '', selectedPCA: '' };
+        data.d6.fields = { proof: '', situationAfter: '' };
         data.d7.fields = { preventiveActions: '', responsiblePerson: '', completionDate: '' };
-        data.d8.fields = { recognitionSummary: '', teamFeedback: '' };
+        data.d8.fields = { recognitionSummary: '', teamFeedback: '', approvedName: '', approvedDate: '', submittedName: '', submittedDate: '' };
         return data;
     }
 
@@ -224,8 +224,8 @@
                 for (const oldScript of scripts) {
                     try { if (oldScript.src) { if (!document.querySelector(`script[src="${oldScript.src}"]`)) { const s = document.createElement('script'); s.src = oldScript.src; s.async = false; document.body.appendChild(s); } } else { const code = oldScript.textContent || ''; if (code.trim()) { try { new Function(code)(); } catch (inlineErr) { const s = document.createElement('script'); s.textContent = code; document.body.appendChild(s); } } } } catch (e) { console.warn('Error executing injected script:', e); } finally { oldScript.remove(); }
                 }
-                if (window.__init8D) window.__init8D(container);
                 this.populateForm(id);
+                if (window.__init8D) window.__init8D(container);
             } catch (error) {
                 console.error('Failed to fetch discipline content:', error);
                 container.innerHTML = `<div class="bg-white p-8 rounded-lg shadow-lg text-center"><h2 class="text-2xl font-bold text-red-600">Error</h2><p class="mt-2 text-gray-600">Could not load content for ${id.toUpperCase()}.</p></div>`;
@@ -444,7 +444,7 @@
     const origUpdate = app.updateStepperStatusColors.bind(app);
     app.updateStepperStatusColors = function(){ origUpdate(); (window.disciplines||[]).forEach(d=>{ const warn = this.data[d.id]?.hasWarnings; const link = $('nav-'+d.id); if(!link) return; const content = link.querySelector('.step-content'); if(!content) return; let icon = content.querySelector('.warn-icon'); if(warn){ if(!icon){ icon = createEl('<span class="warn-icon text-amber-600 ml-2" title="Validation issues"><i data-lucide="alert-triangle"></i></span>'); content.appendChild(icon); } } else if(icon){ icon.remove(); } }); const ind=$('autosave-indicator'); if(ind && ind.textContent==='Saving…'){ ind.textContent='All changes saved'; } };
 
-    function markValidationForCurrent(id){ const container = $('content-container'); let ok = true; qsa('[data-required]', container).forEach(el=>{ const val=(el.value||'').trim(); if(!val){ ok=false; el.classList.add('invalid'); el.setAttribute('aria-invalid','true'); } else { el.classList.remove('invalid'); el.removeAttribute('aria-invalid'); } }); app.data[id].hasWarnings = !ok; app.saveData('validation-scan-'+id); }
+    function markValidationForCurrent(id){ const container = $('content-container'); let ok = true; qsa('[data-required]', container).forEach(el=>{ const tag = el.tagName; if(tag!=='INPUT' && tag!=='TEXTAREA' && tag!=='SELECT') return; const val=(el.value||'').trim(); if(!val){ ok=false; el.classList.add('invalid'); el.setAttribute('aria-invalid','true'); } else { el.classList.remove('invalid'); el.removeAttribute('aria-invalid'); } }); app.data[id].hasWarnings = !ok; app.saveData('validation-scan-'+id); }
 
     const containerEl = $('content-container'); let saveTimer=null;
     containerEl.addEventListener('input', (e)=>{ const id=(location.hash||'#dashboard').replace('#',''); const t=e.target; if(t && t.hasAttribute && t.hasAttribute('data-required')){ markValidationForCurrent(id); } app._dirty=true; app.updateSaveFab(true); clearTimeout(saveTimer); saveTimer=setTimeout(()=> app.saveData('field-change-'+id), 600); });
