@@ -44,3 +44,5 @@ textarea{min-height:100px;resize:vertical}
 .select-compact{width:160px}
 .mt-small{margin-top:0.75rem}
 .col-fixed{flex:0 0 160px;display:flex;gap:0.5rem}
+.modal-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.45);z-index:50}
+.modal-card{max-width:900px;width:90%}
