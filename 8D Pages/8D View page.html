@@ -240,10 +240,25 @@
             } else {
                 this.data = getInitialData();
             }
+            // Attempt to hydrate from backend if available (non-blocking)
+            try{
+              if(window.DataStore && typeof window.DataStore.get==='function'){
+                window.DataStore.get('8d-data-v2').then((cloud)=>{
+                  if(cloud && typeof cloud === 'object'){
+                    this.data = cloud;
+                    this.renderStepper();
+                    this.handleRouting();
+                    this.updateStepperStatusColors();
+                  }
+                }).catch(()=>{});
+              }
+            }catch(_){ /* ignore */ }
         },
 
-        saveData() {
+        saveData(reason) {
             localStorage.setItem('8d-data-v2', JSON.stringify(this.data));
+            // Best-effort sync to backend
+            try{ if(window.DataStore && typeof window.DataStore.set==='function'){ window.DataStore.set('8d-data-v2', this.data); } }catch(_){ }
             this.updateStepperStatusColors();
         },
 
@@ -879,6 +894,7 @@
   })();
 })();
 </script>
+  <script src="assets/data-store.js" defer></script>
   <script src="assets/app-shell.js" defer></script>
 </body>
 </html>
