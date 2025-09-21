@@ -497,18 +497,19 @@
             this.saveData();
             this.populateForm(id);
 
-            // Show feedback
+            // Micro-interaction feedback
             const saveBtn = document.querySelector(`.save-btn[data-id="${id}"]`);
             if(saveBtn) {
-                const originalText = saveBtn.innerHTML;
-                saveBtn.innerHTML = `<i class="fas fa-check mr-2"></i> Saved!`;
-                saveBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
-                saveBtn.classList.add('bg-blue-600');
+                const originalHTML = saveBtn.innerHTML;
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = `<i class=\"fa-solid fa-spinner fa-spin mr-2\"></i> Saving...`;
                 setTimeout(() => {
-                    saveBtn.innerHTML = originalText;
-                    saveBtn.classList.add('bg-green-600', 'hover:bg-green-700');
-                    saveBtn.classList.remove('bg-blue-600');
-                }, 2000);
+                    saveBtn.innerHTML = `<i class=\"fas fa-check mr-2\"></i> Saved!`;
+                    setTimeout(() => {
+                        saveBtn.innerHTML = originalHTML;
+                        saveBtn.disabled = false;
+                    }, 1200);
+                }, 400);
             }
         },
         
