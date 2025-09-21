@@ -274,6 +274,7 @@
         async loadDisciplineContent(id) {
             const container = document.getElementById('content-container');
             container.classList.add('loading');
+            this.showSkeleton && this.showSkeleton(container);
             try {
                 // Try multiple candidate paths (root, same directory, relative) to be resilient across hosts
                 const tryPaths = [];
@@ -679,6 +680,7 @@
     app.loadDisciplineContent = async function(id){
       const container = $('content-container');
       container.classList.add('loading');
+            this.showSkeleton && this.showSkeleton(container);
       try{
         const base = window.location.pathname.replace(/[^\/]*$/, '');
         const tryPaths = [ base + id + '.html', '/' + id + '.html', './' + id + '.html', id + '.html' ];
