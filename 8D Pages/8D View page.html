@@ -772,7 +772,7 @@
         if(!content) return;
         let icon = content.querySelector('.warn-icon');
         if(warn){
-          if(!icon){ icon = createEl('<span class="warn-icon text-amber-600 ml-2" title="Validation issues"><i class="fa-solid fa-triangle-exclamation"></i></span>'); content.appendChild(icon); }
+          if(!icon){ icon = createEl('<span class="warn-icon text-amber-600 ml-2" title="Validation issues"><i data-lucide="alert-triangle"></i></span>'); content.appendChild(icon); }
         } else if(icon){ icon.remove(); }
       });
       const ind = $('autosave-indicator'); if(ind && ind.textContent==='Saving…'){ ind.textContent='All changes saved'; }
