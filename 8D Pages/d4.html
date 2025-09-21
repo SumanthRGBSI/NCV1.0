@@ -12,23 +12,36 @@
         <option value="in-progress">In Progress</option>
         <option value="completed">Completed</option>
       </select>
-      <button class="btn btn-primary save-btn" data-id="d4"><i class="fas fa-save"></i> Save</button>
     </div>
   </div>
 
   <div class="card">
-    <div class="controls flex-between">
-      <div class="section-title">4A. Cause & Effect (Fishbone)</div>
-      <div class="small">Brainstorm potential causes across the 6Ms</div>
-    </div>
-    <div class="row">
-      <div class="col">
-        <button class="btn btn-ghost" id="launch-fishbone">Open Fishbone Tool</button>
-        <button class="btn btn-ghost" id="launch-5whys">Start 5 Whys Guide</button>
+    <div class="section-title">4A. Root Cause Tools</div>
+    <div class="tabs" data-tabs>
+      <div class="tabs-nav">
+        <button class="tab active" data-tab="fishbone">Fishbone</button>
+        <button class="tab" data-tab="whys">5 Whys</button>
+        <button class="tab" data-tab="causes">Potential Causes</button>
       </div>
-      <div class="col">
-        <label class="label">4B. 5 Why Analysis (Occurrence)</label>
-        <div id="d4-fivewhys" class="dynamic-list"></div>
+      <div class="tabs-panels">
+        <div class="tab-panel active" data-panel="fishbone">
+          <div class="small">Click a bone to add a cause; edit in the table below.</div>
+          <div id="d4-fishbone-canvas" class="mt-small"></div>
+          <table id="d4-fishbone-table" class="table dynamic-table mt-small">
+            <thead><tr><th>Category</th><th>Potential Cause</th><th>Evidence/Notes</th><th></th></tr></thead>
+            <tbody></tbody>
+            <tfoot><tr><td colspan="4"><button class="add-row-btn btn btn-ghost">Add Cause</button></td></tr></tfoot>
+            <template><tr><td><select class="input"><option>Man</option><option>Machine</option><option>Method</option><option>Material</option><option>Measurement</option><option>Environment</option></select></td><td><input class="input d4-cause-text"/></td><td><input class="input"/></td><td><button class="remove-row-btn btn btn-danger">Remove</button></td></tr></template>
+          </table>
+        </div>
+        <div class="tab-panel" data-panel="whys">
+          <div id="d4-fivewhys" class="dynamic-list"></div>
+          <div class="mt-small"><input id="d4-why-target" class="input" placeholder="Link to potential cause text"/><button id="d4-start-whys" class="btn btn-ghost">Start 5 Whys</button></div>
+        </div>
+        <div class="tab-panel" data-panel="causes">
+          <div class="small">Collected potential causes</div>
+          <div id="d4-cause-list" class="dynamic-list mt-small"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -113,59 +126,5 @@
   <script src="/assets/8d-forms.js"></script>
   <script>
     window.__init8D && window.__init8D(document);
-    document.getElementById('launch-fishbone')?.addEventListener('click', ()=>{
-      const modal = document.createElement('div');
-      modal.innerHTML = `
-        <div id="fb-modal" class="modal-overlay">
-          <div class="card modal-card">
-            <div class="flex-between">
-              <div class="h-title">Fishbone Brainstorm</div>
-              <div class="controls"><button class="icon-btn" id="fb-close" aria-label="Close">✕</button></div>
-            </div>
-            <div class="small mt-small">Use the 6M tabs to focus your brainstorming.</div>
-            <div class="controls mt-xs" id="fb-tabs">
-              <button class="btn btn-ghost fb-tab" data-cat="Man">Man</button>
-              <button class="btn btn-ghost fb-tab" data-cat="Machine">Machine</button>
-              <button class="btn btn-ghost fb-tab" data-cat="Method">Method</button>
-              <button class="btn btn-ghost fb-tab" data-cat="Material">Material</button>
-              <button class="btn btn-ghost fb-tab" data-cat="Measurement">Measurement</button>
-              <button class="btn btn-ghost fb-tab" data-cat="Environment">Environment</button>
-            </div>
-            <table class="table dynamic-table" id="fb-table">
-              <thead><tr><th>Category</th><th>Potential Cause</th><th>Evidence/Notes</th><th></th></tr></thead>
-              <tbody></tbody>
-              <tfoot><tr><td colspan="4"><button class="add-row-btn btn btn-ghost">Add Cause</button></td></tr></tfoot>
-              <template><tr><td><select class="input"><option>Man</option><option>Machine</option><option>Method</option><option>Material</option><option>Measurement</option><option>Environment</option></select></td><td><input class="input"/></td><td><input class="input"/></td><td><button class="remove-row-btn btn btn-danger">Remove</button></td></tr></template>
-            </table>
-          </div>
-        </div>`;
-      document.body.appendChild(modal);
-      window.__init8D && window.__init8D(document.getElementById('fb-modal'));
-      const tabs = modal.querySelectorAll('.fb-tab');
-      tabs.forEach(btn=> btn.addEventListener('click', ()=>{
-        const cat = btn.dataset.cat;
-        const sel = modal.querySelectorAll('#fb-table tbody tr select');
-        sel.forEach(s=>{ if(s && s.value!==cat) s.value = cat; });
-      }));
-      modal.addEventListener('click', (e)=>{ if(e.target.id==='fb-modal' || e.target.id==='fb-close'){ modal.remove(); } });
-    });
-
-    document.getElementById('launch-5whys')?.addEventListener('click', ()=>{
-      const host = document.getElementById('d4-fivewhys');
-      if(!host) return;
-      host.innerHTML = '';
-      for(let i=1;i<=5;i++){
-        const wrap = document.createElement('div');
-        wrap.className = 'row mt-xs';
-        wrap.innerHTML = `<div class="col"><label class="label">Why ${i}</label><input class="input why-input" data-idx="${i}" ${i>1?'disabled':''} placeholder="Enter reason ${i}"></div>`;
-        host.appendChild(wrap);
-      }
-      const inputs = host.querySelectorAll('.why-input');
-      inputs.forEach(inp=> inp.addEventListener('input', ()=>{
-        const idx = parseInt(inp.dataset.idx,10);
-        const next = host.querySelector(`.why-input[data-idx="${idx+1}"]`);
-        if(next){ next.disabled = inp.value.trim().length === 0; }
-      }));
-    });
   </script>
 </section>

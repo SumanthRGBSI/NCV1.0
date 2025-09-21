@@ -12,13 +12,11 @@
         <option value="in-progress">In Progress</option>
         <option value="completed">Completed</option>
       </select>
-      <button class="btn btn-primary save-btn" data-id="d6" aria-label="Save D6"><i data-lucide="save"></i> Save</button>
     </div>
   </div>
 
   <div class="card">
     <div class="section-title">6A. Implementation Tracking</div>
-    <div class="controls mt-xs"><button id="d6-import-d5" class="btn btn-ghost">Import from D5</button></div>
     <table id="d6-impl" class="table dynamic-table">
       <thead><tr><th>Permanent Corrective Action</th><th>Target Date</th><th>Error Proofing Type</th><th>Level</th><th>Score</th><th>Responsibility</th><th>Effectiveness</th><th>Status</th><th></th></tr></thead>
       <tbody></tbody>
@@ -44,6 +42,22 @@
         </tr>
       </template>
     </table>
+
+    <div class="card mt-small">
+      <div class="section-title">KPI Dashboard</div>
+      <div class="row mt-small">
+        <div class="col">
+          <label class="label">Defect Rate (Before / After)</label>
+          <div class="controls"><input id="kpi-def-before" class="input" type="number" placeholder="Before"/><input id="kpi-def-after" class="input" type="number" placeholder="After"/></div>
+          <div id="kpi-def-chart" class="mt-xs" style="height:12px;background:#f1f5f9;border-radius:8px;position:relative"><div id="kpi-def-bar" style="position:absolute;left:0;top:0;bottom:0;background:var(--success);width:0%;border-radius:8px"></div></div>
+        </div>
+        <div class="col">
+          <label class="label">RPN (Before / After)</label>
+          <div class="controls"><input id="kpi-rpn-before" class="input" type="number" placeholder="Before"/><input id="kpi-rpn-after" class="input" type="number" placeholder="After"/></div>
+          <div id="kpi-rpn-chart" class="mt-xs" style="height:12px;background:#f1f5f9;border-radius:8px;position:relative"><div id="kpi-rpn-bar" style="position:absolute;left:0;top:0;bottom:0;background:var(--success);width:0%;border-radius:8px"></div></div>
+        </div>
+      </div>
+    </div>
 
     <label class="label mt-small">6B. Proof of Effectiveness</label>
     <textarea id="d6-proof" class="input"></textarea>
@@ -72,7 +86,7 @@
 
     <div class="mt-small">
       <div class="section-title">6E. Improvement Verification</div>
-      <table class="table dynamic-table">
+      <table id="d6-verify" class="table dynamic-table">
         <thead><tr><th>Element</th><th>YES/NO</th><th>Comments</th><th></th></tr></thead>
         <tbody></tbody>
         <tfoot><tr><td colspan="4"><button class="add-row-btn btn btn-ghost">Add Verification Item</button></td></tr></tfoot>
