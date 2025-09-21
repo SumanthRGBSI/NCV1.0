@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Non-Conformities Listing</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/design-system.css">
     <style>
         /* Custom scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -839,6 +840,15 @@
             }
         }
     </script>
+  <script src="assets/app-shell.js" defer></script>
+  <script>
+    // Bridge global search from app shell to this page's table search
+    window.__globalSearch = function(q){
+      try{
+        var inp = document.getElementById('globalSearch');
+        if(inp){ inp.value = q || ''; inp.dispatchEvent(new Event('input', {bubbles:true})); }
+      }catch(e){}
+    };
+  </script>
 </body>
 </html>
-
