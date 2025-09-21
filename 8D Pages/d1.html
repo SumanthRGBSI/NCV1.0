@@ -3,7 +3,7 @@
   <div class="card header toolbar">
     <div>
       <div class="h-title">D1 — Identify Team 👥</div>
-      <div class="h-sub">Assemble the right team to solve the problem. Minimal clicks — add members quickly.</div>
+      <div class="h-sub">Assemble the right team. Search, add, and tag roles quickly.</div>
     </div>
     <div class="controls">
       <div class="timestamp">Last updated: <span id="d1-timestamp">Never</span></div>
@@ -12,123 +12,104 @@
         <option value="in-progress">In Progress</option>
         <option value="completed">Completed</option>
       </select>
-      <button class="btn btn-primary save-btn" data-id="d1" aria-label="Save D1"><i data-lucide="save"></i> Save</button>
     </div>
   </div>
 
   <datalist id="contact-directory"></datalist>
 
   <div class="card">
-    <div class="section-title">Key Point of Contact</div>
-    <div class="hint">Add one or more primary contacts for this 8D.</div>
-    <table class="table dynamic-table" id="d1-kpoc-table">
-      <thead><tr><th>Name</th><th>Title</th><th>Email</th><th>Phone Number</th><th></th></tr></thead>
-      <tbody></tbody>
-      <tfoot><tr><td colspan="5"><button type="button" class="add-row-btn btn btn-ghost"><i data-lucide="plus"></i> Add Contact</button></td></tr></tfoot>
-      <template>
-        <tr>
-          <td><input class="input contact-name" list="contact-directory" placeholder="Full name of primary contact" /></td>
-          <td><input class="input contact-title" placeholder="Job title" /></td>
-          <td><input class="input contact-email" placeholder="name@company.com" /></td>
-          <td><input class="input contact-phone" placeholder="(555) 555-5555" /></td>
-          <td><button type="button" class="remove-row-btn btn btn-danger" aria-label="Remove"><i data-lucide="trash-2"></i></button></td>
-        </tr>
-      </template>
-    </table>
-  </div>
-
-  <div class="card">
-    <div class="section-title">Team Members (Champion)</div>
-    <div class="hint">Add one or more champions/sponsors for escalation and authority.</div>
-    <table class="table dynamic-table" id="d1-champions-table">
-      <thead><tr><th>Name</th><th>Title</th><th>Email</th><th>Phone Number</th><th></th></tr></thead>
-      <tbody></tbody>
-      <tfoot><tr><td colspan="5"><button type="button" class="add-row-btn btn btn-ghost"><i data-lucide="plus"></i> Add Champion</button></td></tr></tfoot>
-      <template>
-        <tr>
-          <td><input class="input contact-name" list="contact-directory" placeholder="Full name" /></td>
-          <td><input class="input contact-title" placeholder="Job title" /></td>
-          <td><input class="input contact-email" placeholder="name@company.com" /></td>
-          <td><input class="input contact-phone" placeholder="(555) 555-5555" /></td>
-          <td><button type="button" class="remove-row-btn btn btn-danger" aria-label="Remove"><i data-lucide="trash-2"></i></button></td>
-        </tr>
-      </template>
-    </table>
-  </div>
-
-  <div class="card">
-    <div class="section-title">Team Members</div>
-    <div class="hint">Capture detailed member data or use quick-add for notes.</div>
+    <div class="section-title sticky-section-title">Team</div>
     <div class="row mt-small">
       <div class="col">
-        <input id="d1-new-member" class="input" placeholder="e.g., John Doe - Quality Engineer" />
+        <input id="d1-person-search" class="input" list="contact-directory" placeholder="Search directory and press Add…" />
       </div>
       <div class="col col-fixed">
-        <button id="d1-add-member-btn" class="btn btn-primary">Add</button>
+        <button id="d1-add-person" class="btn btn-primary">Add</button>
         <button id="d1-add-me" class="btn btn-ghost">Add Me</button>
-        <button id="d1-clear-members" class="btn btn-ghost">Clear</button>
       </div>
     </div>
-    <div id="d1-members-list" class="dynamic-list mt-small soft-list"></div>
 
-    <div class="mt-small">
-      <table class="table dynamic-table" id="d1-team-table">
-        <thead>
-          <tr><th>Name</th><th>Role</th><th>Title</th><th>Email</th><th>Phone Number</th><th></th></tr>
-        </thead>
-        <tbody></tbody>
-        <tfoot>
-          <tr><td colspan="6"><button type="button" class="add-row-btn btn btn-ghost"><i data-lucide="plus"></i> Add Team Member</button></td></tr>
-        </tfoot>
-        <template>
-          <tr>
-            <td><input class="input contact-name" list="contact-directory" placeholder="Full name" /></td>
-            <td>
-              <select class="input member-role">
-                <option>Team Lead</option>
-                <option>Quality Engineer</option>
-                <option>Design Engineer</option>
-                <option>Sponsor</option>
-                <option>Operator</option>
-                <option>Supplier</option>
-                <option>Other</option>
-              </select>
-            </td>
-            <td><input class="input contact-title" placeholder="Job title" /></td>
-            <td><input class="input contact-email" placeholder="name@company.com" /></td>
-            <td><input class="input contact-phone" placeholder="(555) 555-5555" /></td>
-            <td><button type="button" class="remove-row-btn btn btn-danger" aria-label="Remove"><i data-lucide="trash-2"></i></button></td>
-          </tr>
-        </template>
-      </table>
-      <div class="mt-small">
-        <button id="d1-schedule-meeting" class="btn btn-ghost" aria-label="Schedule meeting"><i data-lucide="calendar"></i> Schedule Meeting</button>
+    <table id="d1-team-unified" class="table table-alt">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Roles</th>
+          <th>Title</th>
+          <th>Contact</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="5"><button type="button" class="add-row-btn btn btn-ghost"><i data-lucide="plus"></i> Add Member</button></td>
+        </tr>
+      </tfoot>
+    </table>
+    <template id="d1-row-template">
+      <tr>
+        <td>
+          <input class="input contact-name" list="contact-directory" placeholder="Full name" />
+        </td>
+        <td>
+          <select class="input member-roles" multiple>
+            <option>Team Lead</option>
+            <option>Sponsor</option>
+            <option>Champion</option>
+            <option>KPOC</option>
+            <option>Quality Engineer</option>
+            <option>Design Engineer</option>
+            <option>Operator</option>
+            <option>Supplier</option>
+            <option>Other</option>
+          </select>
+        </td>
+        <td>
+          <input class="input contact-title" placeholder="Job title" />
+        </td>
+        <td>
+          <div class="controls">
+            <button type="button" class="btn btn-ghost contact-pop" title="View contact"><i data-lucide="contact"></i> Details</button>
+            <input class="input contact-email" placeholder="name@company.com" style="display:none" />
+            <input class="input contact-phone" placeholder="(555) 555-5555" style="display:none" />
+          </div>
+        </td>
+        <td>
+          <button type="button" class="remove-row-btn btn btn-danger" aria-label="Remove"><i data-lucide="trash-2"></i></button>
+        </td>
+      </tr>
+    </template>
+  </div>
+
+  <div class="card">
+    <div class="section-title sticky-section-title">Visuals</div>
+    <div class="row mt-small">
+      <div class="col">
+        <div class="section-title">Team Cards</div>
+        <div id="d1-team-cards" class="team-cards-grid mt-small"></div>
+      </div>
+      <div class="col">
+        <div class="section-title">Team Org Chart</div>
+        <div id="d1-org-chart" class="mt-small"></div>
       </div>
     </div>
-  </div>
-
-  <div class="card">
-    <div class="section-title">Team Cards</div>
-    <div id="d1-team-cards" class="team-cards-grid mt-small"></div>
-  </div>
-
-  <div class="card">
-    <div class="section-title">Team Org Chart</div>
-    <div id="d1-org-chart" class="mt-small"></div>
-  </div>
-
-  <div class="card">
-    <div class="section-title">Notes & Contact Visibility</div>
-    <textarea id="d1-notes" class="input" placeholder="Any notes about the team, availability, or constraints..."></textarea>
   </div>
 
   <script src="/assets/8d-forms.js"></script>
   <script>
     window.__init8D && window.__init8D(document);
-    document.addEventListener('click', (e)=>{
-      if(e.target && e.target.id === 'd1-clear-members'){
-        document.getElementById('d1-members-list').innerHTML='';
-      }
-    });
+    (function(){
+      function qs(s, c=document){return c.querySelector(s)}
+      function qsa(s, c=document){return Array.from((c||document).querySelectorAll(s))}
+      function addRow(){ const tpl = qs('#d1-row-template'); const tbody = qs('#d1-team-unified tbody'); if(!tpl||!tbody) return; tbody.appendChild(tpl.content.firstElementChild.cloneNode(true)); }
+      document.addEventListener('click', (e)=>{
+        if(e.target.closest('.add-row-btn')){ addRow(); }
+        if(e.target.closest('#d1-add-person')){ addRow(); const v = qs('#d1-person-search').value.trim(); if(v){ const last = qs('#d1-team-unified tbody tr:last-child'); last.querySelector('.contact-name').value = v; last.querySelector('.contact-email').value = (v.split(' ')[0]||'').toLowerCase()+'.'+(v.split(' ')[1]||'').toLowerCase()+'@example.com'; }
+          qs('#d1-person-search').value=''; window.__init8D && window.__init8D(document); }
+        if(e.target.closest('.contact-pop')){ const tr = e.target.closest('tr'); const name = tr.querySelector('.contact-name')?.value||''; const email= tr.querySelector('.contact-email')?.value||''; const phone= tr.querySelector('.contact-phone')?.value||''; const modal=document.createElement('div'); modal.className='modal-overlay'; const card=document.createElement('div'); card.className='card modal-card'; card.innerHTML = `<div class="flex-between"><div class="h-title">${name||'Contact'}</div><button class="icon-btn" id="pop-close">✕</button></div><div class="mt-small"><div class="small">Email: ${email||'-'}</div><div class="small">Phone: ${phone||'-'}</div></div>`; modal.appendChild(card); document.body.appendChild(modal); modal.addEventListener('click', (ev)=>{ if(ev.target.id==='pop-close'||ev.target===modal) modal.remove(); }); }
+      });
+      // Seed one row
+      if(!qs('#d1-team-unified tbody tr')) addRow();
+    })();
   </script>
 </section>
