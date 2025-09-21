@@ -316,6 +316,7 @@
     initRichText(document, 'd2-problemStatement');
     initRichText(document, 'd2-situationBefore');
     renderOrgChart(document);
+    renderTeamCards(document);
   });
 
   // Also re-init when content is injected
