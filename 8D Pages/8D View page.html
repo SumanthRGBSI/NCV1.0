@@ -488,9 +488,11 @@
         },
 
         applySidebarState() {
-            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed) {
                 document.getElementById('app-container').classList.add('sidebar-collapsed');
             }
+            this.updateSidebarToggleUI(isCollapsed);
         },
 
         renderStatusBadge(status){
