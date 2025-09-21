@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>8D Problem-Solving Interface</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="assets/design-system.css">
-    <link rel="stylesheet" href="assets/8d.css">
+    <link rel="stylesheet" href="/assets/design-system.css">
+    <link rel="stylesheet" href="/assets/8d.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -148,6 +148,11 @@
         return data;
     }
 
+    function ensureCoreStyles(){
+      const need = ['/assets/8d.css','/assets/design-system.css'];
+      need.forEach(href=>{ if(!document.querySelector(`link[rel="stylesheet"][href="${href}"]`)){ const l=document.createElement('link'); l.rel='stylesheet'; l.href=href; document.head.appendChild(l); }});
+    }
+
     const app = {
         data: {}, _dirty:false,
         init() {
@@ -155,6 +160,7 @@
             this.renderStepper();
             this.attachEventListeners();
             this.applySidebarState();
+            ensureCoreStyles();
             this.handleRouting();
             this.updateStepperStatusColors();
         },
@@ -225,7 +231,8 @@
                 if (!response || !response.ok) { console.warn('Fetch attempts failed:', tryPaths, lastError); throw new Error(`File not found: ${id}.html.`); }
                 const html = await response.text();
                 container.innerHTML = html;
-                Array.from(container.querySelectorAll('link[rel="stylesheet"]')).forEach(link=>{ if(!document.querySelector(`link[href="${link.getAttribute('href')}"]`)){ document.head.appendChild(link.cloneNode()); } link.remove(); });
+                ensureCoreStyles();
+                Array.from(container.querySelectorAll('link[rel="stylesheet"]')).forEach(link=>{ const href = link.getAttribute('href'); if(href && !document.querySelector(`link[rel="stylesheet"][href="${href}"]`)){ const l = document.createElement('link'); l.rel='stylesheet'; l.href=href; document.head.appendChild(l); } link.remove(); });
                 const scripts = Array.from(container.querySelectorAll('script'));
                 for (const oldScript of scripts) {
                     try { if (oldScript.src) { if (!document.querySelector(`script[src="${oldScript.src}"]`)) { const s = document.createElement('script'); s.src = oldScript.src; s.async = false; document.body.appendChild(s); } } else { const code = oldScript.textContent || ''; if (code.trim()) { try { new Function(code)(); } catch (inlineErr) { const s = document.createElement('script'); s.textContent = code; document.body.appendChild(s); } } } } catch (e) { console.warn('Error executing injected script:', e); } finally { oldScript.remove(); }
