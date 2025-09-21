@@ -106,3 +106,15 @@ tr.risk-yes{background:#fff1f2}
 .avatar{width:40px;height:40px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;background:#e5e7eb;color:#374151;font-weight:700}
 .card-title{font-weight:700;color:#0f172a}
 .card-sub{font-size:0.85rem;color:#64748b}
+
+/* Tabs */
+.tabs{display:block}
+.tabs-nav{display:flex;gap:.5rem;border-bottom:1px solid var(--border);margin-bottom:.5rem}
+.tab{border:1px solid var(--border);background:#fff;border-bottom:none;padding:.4rem .75rem;border-top-left-radius:10px;border-top-right-radius:10px;color:#334155;cursor:pointer}
+.tab.active{background:#f8fafc;color:#0f172a}
+.tabs-panels{border:1px solid var(--border);border-radius:0 0 12px 12px;border-top:none;padding:.75rem}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* Sticky section title utility */
+.sticky-section-title{position:sticky;top:8px;background:var(--card);z-index:5;padding-top:4px}
