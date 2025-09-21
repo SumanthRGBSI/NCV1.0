@@ -38,6 +38,10 @@ textarea{min-height:120px;resize:vertical;line-height:1.5}
 .controls{display:flex;gap:0.5rem;align-items:center}
 .file-input{display:flex;gap:0.5rem;align-items:center}
 .file-input input[type=file]{display:inline-block}
+/* Styled file inputs to match .input appearance */
+input[type=file].input, .file-input input[type=file]{border:1px solid var(--border); border-radius:12px; background:#fff; font-size:0.95rem; padding:0.45rem 0.75rem;}
+.file-input input[type=file]::-webkit-file-upload-button{border:1px solid var(--border); background:#fff; border-radius:10px; padding:0.35rem 0.6rem; margin-right:.5rem; cursor:pointer}
+.file-input input[type=file]::file-selector-button{border:1px solid var(--border); background:#fff; border-radius:10px; padding:0.35rem 0.6rem; margin-right:.5rem; cursor:pointer}
 .dynamic-list{display:flex;flex-direction:column;gap:0.5rem}
 .list-item{display:flex;justify-content:space-between;align-items:center;padding:0.6rem;border-radius:12px;background:var(--glass)}
 .kv{font-weight:700;color:#0f172a}
