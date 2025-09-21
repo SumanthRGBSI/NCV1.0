@@ -807,6 +807,54 @@
             updateSummary(); // Populate initial auto-filled values
         });
     </script>
+  <script src="assets/data-store.js" defer></script>
+  <script>
+    (function(){
+      function getSaveDraftBtn(){
+        const btns = Array.from(document.querySelectorAll('button')); return btns.find(b=> (b.textContent||'').trim()==='Save as Draft');
+      }
+      function collectFormData(){
+        const form = document.getElementById('ncForm'); const data={}; if(!form) return data;
+        const fields = form.querySelectorAll('input, select, textarea');
+        fields.forEach(el=>{ const key = el.name || el.id || ''; if(!key) return; if(el.type==='checkbox') data[key]= !!el.checked; else data[key]= el.value; });
+        return data;
+      }
+      function populateFormData(data){
+        if(!data || typeof data!=='object') return; const form = document.getElementById('ncForm'); if(!form) return;
+        const fields = form.querySelectorAll('input, select, textarea');
+        fields.forEach(el=>{ const key = el.name || el.id || ''; if(!key) return; if(!(key in data)) return; if(el.type==='checkbox') el.checked = !!data[key]; else el.value = data[key]; });
+        const evt = new Event('input', { bubbles:true }); fields.forEach(el=> el.dispatchEvent(evt));
+      }
+      function toast(msg){
+        const t=document.createElement('div'); t.textContent=msg; t.style.position='fixed'; t.style.right='16px'; t.style.bottom='16px'; t.style.background='#111827'; t.style.color='#fff'; t.style.padding='10px 12px'; t.style.borderRadius='8px'; t.style.boxShadow='0 8px 20px rgba(0,0,0,0.2)'; t.style.zIndex=60; document.body.appendChild(t); setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=> t.remove(), 320); }, 1500);
+      }
+      function addDraftBanner(){
+        const host = document.querySelector('.max-w-7xl .p-6.border-b'); if(!host || document.getElementById('draft-banner')) return;
+        const div = document.createElement('div'); div.id='draft-banner'; div.className='mt-3 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2'; div.innerHTML='<strong>Draft loaded.</strong> This NC has not been submitted.'; host.appendChild(div);
+      }
+
+      document.addEventListener('DOMContentLoaded', async function(){
+        try{ if(window.DataStore && window.DataStore.init) await window.DataStore.init(); }catch(_){ }
+        // Wire Save as Draft
+        const btn = getSaveDraftBtn(); if(btn){
+          btn.addEventListener('click', async ()=>{
+            const data = collectFormData(); const num = data.ncNumber || 'NC-DRAFT';
+            try{
+              if(window.DataStore){ await window.DataStore.set('nc-draft-'+num, data); await window.DataStore.set('nc-draft-latest', { key:'nc-draft-'+num, data }); }
+              else { localStorage.setItem('nc-draft-'+num, JSON.stringify(data)); localStorage.setItem('nc-draft-latest', JSON.stringify({ key:'nc-draft-'+num, data })); }
+              toast('Draft saved');
+            }catch(_){ toast('Could not save draft'); }
+          });
+        }
+        // Auto-load latest draft if present
+        try{
+          let latest = null; if(window.DataStore){ latest = await window.DataStore.get('nc-draft-latest'); }
+          if(!latest){ const raw = localStorage.getItem('nc-draft-latest'); latest = raw? JSON.parse(raw): null; }
+          if(latest && latest.data){ populateFormData(latest.data); addDraftBanner(); }
+        }catch(_){ }
+      });
+    })();
+  </script>
   <script src="assets/app-shell.js" defer></script>
 </body>
 </html>

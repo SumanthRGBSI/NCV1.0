@@ -95,7 +95,7 @@
 
         /* Sidebar collapse styles */
         #sidebar {
-            transition: width 0.3s ease-in-out, padding 0.3s ease-in-out;
+            transition: width 0.3s ease-in-out, padding 0.3s ease-in-out, background-color 0.3s ease-in-out;
         }
         main#main-panel { transition: width 0.3s ease-in-out, flex 0.3s ease-in-out; }
         #app-container.sidebar-collapsed #sidebar { width: 6rem; padding-left: 0.75rem; padding-right: 0.75rem; }
@@ -105,7 +105,9 @@
         #app-container.sidebar-collapsed .step { justify-content: center; }
         #app-container.sidebar-collapsed #toggle-btn-icon { transform: rotate(180deg); }
         #app-container.sidebar-collapsed main#main-panel { flex: 1 1 auto; width: auto; }
-            /* Tooltips for steps */
+        /* Ensure main panel uses full width on desktop */
+        #app-container #main-panel { flex: 1 1 auto; width: auto; max-width: none; }
+        /* Tooltips for steps */
         .step-link{ position: relative; }
         .step-link[data-tooltip]:hover::after { content: attr(data-tooltip); position: absolute; left: 3.75rem; top: 50%; transform: translateY(-50%); background: #111827; color: #fff; padding: 0.5rem 0.6rem; border-radius: 0.5rem; box-shadow: 0 4px 18px rgba(0,0,0,0.2); width: 16rem; font-size: 0.75rem; line-height: 1.1; z-index: 50; }
         .step-link[data-tooltip]:hover::before { content: ''; position: absolute; left: 3.4rem; top: 50%; transform: translateY(-50%); border-width: 6px; border-style: solid; border-color: transparent #111827 transparent transparent; }
@@ -240,10 +242,25 @@
             } else {
                 this.data = getInitialData();
             }
+            // Attempt to hydrate from backend if available (non-blocking)
+            try{
+              if(window.DataStore && typeof window.DataStore.get==='function'){
+                window.DataStore.get('8d-data-v2').then((cloud)=>{
+                  if(cloud && typeof cloud === 'object'){
+                    this.data = cloud;
+                    this.renderStepper();
+                    this.handleRouting();
+                    this.updateStepperStatusColors();
+                  }
+                }).catch(()=>{});
+              }
+            }catch(_){ /* ignore */ }
         },
 
-        saveData() {
+        saveData(reason) {
             localStorage.setItem('8d-data-v2', JSON.stringify(this.data));
+            // Best-effort sync to backend
+            try{ if(window.DataStore && typeof window.DataStore.set==='function'){ window.DataStore.set('8d-data-v2', this.data); } }catch(_){ }
             this.updateStepperStatusColors();
         },
 
@@ -360,13 +377,15 @@
             window.addEventListener('hashchange', this.handleRouting.bind(this));
             document.getElementById('sidebar-toggle-btn').addEventListener('click', this.toggleSidebar.bind(this));
 
-            document.getElementById('content-container').addEventListener('click', (e) => {
-                const target = e.target.closest('.save-btn, #d1-add-member-btn, .remove-member-btn');
+            const contentEl = document.getElementById('content-container');
+            contentEl.addEventListener('click', (e) => {
+                const target = e.target.closest('.save-btn, #d1-add-member-btn, .remove-member-btn, .remove-row-btn');
                 if (!target) return;
 
                 if (target.matches('.save-btn')) this.handleSave(target.dataset.id);
                 if (target.matches('#d1-add-member-btn')) this.addTeamMember();
                 if (target.matches('.remove-member-btn')) this.removeTeamMember(target.dataset.index);
+                if (target.matches('.remove-row-btn')) { if(!confirm('Remove this item?')){ e.preventDefault(); e.stopImmediatePropagation(); return; } }
             });
 
             const csvBtn = document.getElementById('export-csv');
@@ -879,6 +898,7 @@
   })();
 })();
 </script>
+  <script src="assets/data-store.js" defer></script>
   <script src="assets/app-shell.js" defer></script>
 </body>
 </html>
