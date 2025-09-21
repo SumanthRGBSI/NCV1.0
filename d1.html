@@ -18,26 +18,21 @@
 
   <div class="card">
     <div class="section-title">Key Point of Contact</div>
-    <div class="row">
-      <div class="col">
-        <label class="label" for="d1-teamLeader">Name</label>
-        <input id="d1-teamLeader" class="input" data-required placeholder="Full name of primary contact" />
-      </div>
-      <div class="col">
-        <label class="label" for="d1-teamLeaderTitle">Title</label>
-        <input id="d1-teamLeaderTitle" class="input" placeholder="Job title" />
-      </div>
-    </div>
-    <div class="row">
-      <div class="col">
-        <label class="label" for="d1-teamLeaderEmail">Email</label>
-        <input id="d1-teamLeaderEmail" class="input" data-required placeholder="name@company.com" />
-      </div>
-      <div class="col">
-        <label class="label" for="d1-teamLeaderPhone">Phone Number</label>
-        <input id="d1-teamLeaderPhone" class="input" placeholder="(555) 555-5555" />
-      </div>
-    </div>
+    <div class="hint">Add one or more primary contacts for this 8D.</div>
+    <table class="table dynamic-table" id="d1-kpoc-table">
+      <thead><tr><th>Name</th><th>Title</th><th>Email</th><th>Phone Number</th><th></th></tr></thead>
+      <tbody></tbody>
+      <tfoot><tr><td colspan="5"><button type="button" class="add-row-btn btn btn-ghost">Add Contact</button></td></tr></tfoot>
+      <template>
+        <tr>
+          <td><input class="input" placeholder="Full name of primary contact" /></td>
+          <td><input class="input" placeholder="Job title" /></td>
+          <td><input class="input" placeholder="name@company.com" /></td>
+          <td><input class="input" placeholder="(555) 555-5555" /></td>
+          <td><button type="button" class="remove-row-btn btn btn-danger">Remove</button></td>
+        </tr>
+      </template>
+    </table>
   </div>
 
   <div class="card">
