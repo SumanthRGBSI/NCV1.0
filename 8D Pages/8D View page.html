@@ -236,10 +236,27 @@
             const container = document.getElementById('content-container');
             container.classList.add('loading');
             try {
-                // In a real app, this would be a fetch. For this self-contained example,
-                // we'll check if a file exists or show an error.
-                const response = await fetch('/' + id + '.html');
-                if (!response.ok) {
+                // Try multiple candidate paths (root, same directory, relative) to be resilient across hosts
+                const tryPaths = [];
+                const base = window.location.pathname.replace(/[^\/]*$/, ''); // directory of current page
+                tryPaths.push('/' + id + '.html'); // root
+                tryPaths.push(base + id + '.html'); // same directory as view page
+                tryPaths.push('./' + id + '.html'); // relative
+                tryPaths.push(id + '.html');
+
+                let response = null;
+                let lastError = null;
+                for (const p of tryPaths) {
+                    try {
+                        response = await fetch(encodeURI(p));
+                        if (response && response.ok) break;
+                        lastError = new Error(`Not found at ${p}`);
+                    } catch (fetchErr) {
+                        lastError = fetchErr;
+                    }
+                }
+                if (!response || !response.ok) {
+                   console.warn('Fetch attempts failed:', tryPaths, lastError);
                    throw new Error(`File not found: ${id}.html. Please create this file.`);
                 }
                 const html = await response.text();
