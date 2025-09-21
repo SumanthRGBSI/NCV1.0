@@ -578,7 +578,7 @@
                     if(badgeHost) badgeHost.innerHTML = this.renderStatusBadge(st);
                 }
             });
-            this.updateProgressSummary();
+            this.updateProgressSummary(); this.updateStepperProgressLine && this.updateStepperProgressLine();
         },
 
         updateSidebarToggleUI(isCollapsed){
