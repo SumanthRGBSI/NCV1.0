@@ -3,7 +3,7 @@
   <div class="card header toolbar">
     <div>
       <div class="h-title">D2 — Problem Description 📝</div>
-      <div class="h-sub">Thoroughly define and document the problem. Attach visuals and audit the current process.</div>
+      <div class="h-sub">Define the problem clearly. Add context, files, and complete analyses.</div>
     </div>
     <div class="controls">
       <div class="timestamp">Last updated: <span id="d2-timestamp">Never</span></div>
@@ -12,132 +12,127 @@
         <option value="in-progress">In Progress</option>
         <option value="completed">Completed</option>
       </select>
-      <button class="btn btn-primary save-btn" data-id="d2" aria-label="Save D2"><i data-lucide="save"></i> Save</button>
     </div>
   </div>
 
-  <div class="card">
-    <div class="section-title">Problem Definition</div>
-    <label class="label" for="d2-problemStatement">2A. Problem Description</label>
-    <div id="d2-problemStatement-toolbar" class="controls mt-xs">
-      <button class="btn btn-ghost rt-bold" data-target="d2-problemStatement">B</button>
-      <button class="btn btn-ghost rt-italic" data-target="d2-problemStatement"><i>I</i></button>
-      <button class="btn btn-ghost rt-ul" data-target="d2-problemStatement">• List</button>
-      <button class="btn btn-ghost rt-ol" data-target="d2-problemStatement">1. List</button>
-    </div>
-    <textarea id="d2-problemStatement" class="input" data-required placeholder="Full story of the problem..." style="display:none"></textarea>
-    <div id="d2-problemStatement-editor" class="input" contenteditable="true" style="min-height:120px"></div>
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <div class="section-title sticky-section-title">Problem Definition</div>
+        <label class="label" for="d2-briefStatement" data-required>2A. Concise Statement</label>
+        <input id="d2-briefStatement" class="input" placeholder="One-sentence problem statement" data-required />
 
-    <div class="row mt-small">
-      <div class="col">
-        <label class="label" for="d2-impactCustomer">2C. Impact on Customer</label>
-        <input id="d2-impactCustomer" class="input" placeholder="How customers are affected" />
-      </div>
-      <div class="col">
-        <label class="label" for="d2-briefStatement">2B. Problem Statement (concise)</label>
-        <input id="d2-briefStatement" class="input" data-required placeholder="One-sentence problem statement" />
+        <label class="label mt-small" for="d2-problemStatement">2B. Full Description</label>
+        <div id="d2-problemStatement-toolbar" class="controls mt-xs">
+          <button class="btn btn-ghost rt-bold" data-target="d2-problemStatement">B</button>
+          <button class="btn btn-ghost rt-italic" data-target="d2-problemStatement"><i>I</i></button>
+          <button class="btn btn-ghost rt-ul" data-target="d2-problemStatement">• List</button>
+          <button class="btn btn-ghost rt-ol" data-target="d2-problemStatement">1. List</button>
+        </div>
+        <textarea id="d2-problemStatement" class="input" style="display:none"></textarea>
+        <div id="d2-problemStatement-editor" class="input" contenteditable="true" style="min-height:140px"></div>
+
+        <div class="row mt-small">
+          <div class="col"><label class="label" for="d2-impactCustomer">2C. Impact</label><input id="d2-impactCustomer" class="input" placeholder="How customers are affected" /></div>
+          <div class="col"><label class="label" for="d2-who">Who</label><input id="d2-who" class="input" /></div>
+        </div>
+        <div class="row">
+          <div class="col"><label class="label" for="d2-what">What</label><input id="d2-what" class="input" /></div>
+          <div class="col"><label class="label" for="d2-when">When</label><input id="d2-when" class="input" /></div>
+        </div>
+        <div class="row">
+          <div class="col"><label class="label" for="d2-where">Where</label><input id="d2-where" class="input" /></div>
+          <div class="col"><label class="label" for="d2-why">Why</label><input id="d2-why" class="input" /></div>
+        </div>
       </div>
     </div>
-
-    <div class="row mt-small">
-      <div class="col">
-        <label class="label" for="d2-partName">Part Name</label>
-        <input id="d2-partName" class="input" placeholder="Part name" />
-      </div>
-      <div class="col">
-        <label class="label" for="d2-partNumber">Part Number</label>
+    <div class="col">
+      <div class="card">
+        <div class="section-title sticky-section-title">Part Information</div>
         <div class="controls">
-          <input id="d2-partNumber" class="input" placeholder="123-ABC" />
-          <a id="d2-part-link" class="btn btn-ghost" href="../Mapping.html" target="_blank">Part Info</a>
+          <input id="d2-partSearch" class="input" placeholder="Search part by name/number" />
         </div>
+        <div id="d2-partCard" class="mt-small small"></div>
       </div>
-    </div>
-
-    <div class="section-title mt-small">2D. Problem Description Images / Documents</div>
-    <div class="file-block card drop-zone" id="d2-evidence-zone">
-      <label class="label">Upload images or documents</label>
-      <div class="file-input">
-        <input class="preview-file" type="file" id="d2-evidence" />
-        <div class="file-preview small"></div>
-      </div>
-      <div class="mt-xs">
-        <button class="btn btn-ghost annotate-btn" data-for="#d2-evidence">Annotate</button>
+      <div class="card">
+        <div class="section-title sticky-section-title">Files & Images</div>
+        <div class="file-block card drop-zone" id="d2-evidence-zone">
+          <label class="label">Upload images or documents</label>
+          <div class="file-input">
+            <input class="preview-file" type="file" id="d2-evidence" />
+            <div class="file-preview small"></div>
+          </div>
+          <div class="mt-xs">
+            <button class="btn btn-ghost annotate-btn" data-for="#d2-evidence">Annotate</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
   <div class="card">
-    <div class="section-title">Current Process & Situation Analysis <span class="badge badge-in-progress">Multiple entries supported</span></div>
-
-    <div class="small">2E. Current Process Audit</div>
-    <table class="table dynamic-table" id="d2-process-audit">
-      <thead><tr><th>Process Step</th><th>Potential Root Cause</th><th>Action (Y/N)</th><th></th></tr></thead>
-      <tbody></tbody>
-      <tfoot><tr><td colspan="4"><button type="button" class="add-row-btn btn btn-ghost">Add Row</button></td></tr></tfoot>
-      <template>
-        <tr>
-          <td><input class="input" placeholder="Step (e.g., Assembly)" /></td>
-          <td><input class="input" placeholder="Possible cause" /></td>
-          <td>
-            <select class="input"><option>Yes</option><option>No</option></select>
-          </td>
-          <td><button type="button" class="remove-row-btn btn btn-danger">Remove</button></td>
-        </tr>
-      </template>
-    </table>
-
-    <div class="small mt-small">2F. Current Process Control Documentary</div>
-    <table class="table dynamic-table" id="d2-docs">
-      <thead><tr><th>Document</th><th>Reviewed (Y/N)</th><th>Current RPN</th><th></th></tr></thead>
-      <tbody></tbody>
-      <tfoot><tr><td colspan="4"><button type="button" class="add-row-btn btn btn-ghost">Add Document</button></td></tr></tfoot>
-      <template>
-        <tr>
-          <td><input class="input" placeholder="Document name (PFMEA, Control Plan)" /></td>
-          <td>
-            <select class="input"><option>Yes</option><option>No</option></select>
-          </td>
-          <td><input class="input" placeholder="Current RPN" type="number" /></td>
-          <td><button type="button" class="remove-row-btn btn btn-danger">Remove</button></td>
-        </tr>
-      </template>
-    </table>
-
-    <div class="small mt-small">Is / Is Not Analysis</div>
-    <table class="table dynamic-table" id="d2-isisnot">
-      <thead><tr><th>Is</th><th>Is Not</th><th>Distinction</th><th>Cause of Distinction</th><th></th></tr></thead>
-      <tbody></tbody>
-      <tfoot><tr><td colspan="5"><button type="button" class="add-row-btn btn btn-ghost">Add Row</button></td></tr></tfoot>
-      <template>
-        <tr>
-          <td><input class="input" placeholder="What it is" /></td>
-          <td><input class="input" placeholder="What it is not" /></td>
-          <td><input class="input" placeholder="Difference" /></td>
-          <td><input class="input" placeholder="Reason for difference" /></td>
-          <td><button type="button" class="remove-row-btn btn btn-danger">Remove</button></td>
-        </tr>
-      </template>
-    </table>
-
-    <div class="row mt-small">
-      <div class="col">
-        <label class="label" for="d2-situationBefore">2G. Situation Before Countermeasure</label>
-        <div id="d2-situationBefore-toolbar" class="controls mt-xs">
-          <button class="btn btn-ghost rt-bold" data-target="d2-situationBefore">B</button>
-          <button class="btn btn-ghost rt-italic" data-target="d2-situationBefore"><i>I</i></button>
-          <button class="btn btn-ghost rt-ul" data-target="d2-situationBefore">• List</button>
-          <button class="btn btn-ghost rt-ol" data-target="d2-situationBefore">1. List</button>
-        </div>
-        <textarea id="d2-situationBefore" class="input" style="display:none"></textarea>
-        <div id="d2-situationBefore-editor" class="input" contenteditable="true" style="min-height:120px"></div>
+    <div class="tabs" data-tabs>
+      <div class="tabs-nav">
+        <button class="tab active" data-tab="audit">Process Audit</button>
+        <button class="tab" data-tab="docs">Control Documentary</button>
+        <button class="tab" data-tab="isnot">Is / Is Not</button>
       </div>
-      <div class="col">
-        <label class="label" for="d2-before-graphs">2H. Situation Before (Graphs / Images)</label>
-        <div class="file-block drop-zone" id="d2-before-zone">
-          <input class="preview-file" id="d2-before-graphs" type="file" />
-          <div class="file-preview small"></div>
-          <div class="mt-xs">
-            <button class="btn btn-ghost annotate-btn" data-for="#d2-before-graphs">Annotate</button>
+      <div class="tabs-panels">
+        <div class="tab-panel active" data-panel="audit">
+          <div class="small">2E. Current Process Audit</div>
+          <table class="table dynamic-table" id="d2-process-audit">
+            <thead><tr><th>Process Step</th><th>Potential Root Cause</th><th>Action (Y/N)</th><th></th></tr></thead>
+            <tbody></tbody>
+            <tfoot><tr><td colspan="4"><button type="button" class="add-row-btn btn btn-ghost">Add Row</button></td></tr></tfoot>
+            <template>
+              <tr>
+                <td><input class="input" placeholder="Step (e.g., Assembly)" /></td>
+                <td><input class="input" placeholder="Possible cause" /></td>
+                <td><select class="input"><option>Yes</option><option>No</option></select></td>
+                <td><button type="button" class="remove-row-btn btn btn-danger">Remove</button></td>
+              </tr>
+            </template>
+          </table>
+        </div>
+        <div class="tab-panel" data-panel="docs">
+          <div class="small">2F. Current Process Control Documentary</div>
+          <table class="table dynamic-table" id="d2-docs">
+            <thead><tr><th>Document</th><th>Reviewed (Y/N)</th><th>Current RPN</th><th></th></tr></thead>
+            <tbody></tbody>
+            <tfoot><tr><td colspan="4"><button type="button" class="add-row-btn btn btn-ghost">Add Document</button></td></tr></tfoot>
+            <template>
+              <tr>
+                <td><input class="input" placeholder="Document name (PFMEA, Control Plan)" /></td>
+                <td><select class="input"><option>Yes</option><option>No</option></select></td>
+                <td><input class="input" placeholder="Current RPN" type="number" /></td>
+                <td><button type="button" class="remove-row-btn btn btn-danger">Remove</button></td>
+              </tr>
+            </template>
+          </table>
+        </div>
+        <div class="tab-panel" data-panel="isnot">
+          <div class="small">Visual Is / Is Not</div>
+          <div class="row mt-small">
+            <div class="col">
+              <label class="label" for="d2-is-what">What — IS</label>
+              <textarea id="d2-is-what" class="input"></textarea>
+            </div>
+            <div class="col">
+              <label class="label" for="d2-not-what">What — IS NOT</label>
+              <textarea id="d2-not-what" class="input"></textarea>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col"><label class="label" for="d2-is-where">Where — IS</label><textarea id="d2-is-where" class="input"></textarea></div>
+            <div class="col"><label class="label" for="d2-not-where">Where — IS NOT</label><textarea id="d2-not-where" class="input"></textarea></div>
+          </div>
+          <div class="row">
+            <div class="col"><label class="label" for="d2-is-when">When — IS</label><textarea id="d2-is-when" class="input"></textarea></div>
+            <div class="col"><label class="label" for="d2-not-when">When — IS NOT</label><textarea id="d2-not-when" class="input"></textarea></div>
+          </div>
+          <div class="row">
+            <div class="col"><label class="label" for="d2-is-why">Why — IS</label><textarea id="d2-is-why" class="input"></textarea></div>
+            <div class="col"><label class="label" for="d2-not-why">Why — IS NOT</label><textarea id="d2-not-why" class="input"></textarea></div>
           </div>
         </div>
       </div>
@@ -145,5 +140,14 @@
   </div>
 
   <script src="/assets/8d-forms.js"></script>
-  <script>window.__init8D && window.__init8D(document);</script>
+  <script>
+    window.__init8D && window.__init8D(document);
+    (function(){
+      function qs(s, c=document){return c.querySelector(s)}
+      function renderPartCard(part){ const host = qs('#d2-partCard'); if(!host) return; if(!part){ host.innerHTML = '<div class="small text-gray-500">No part selected.</div>'; return; } host.innerHTML = `<table class="table"><tbody><tr><td><strong>Name</strong></td><td>${part.name||'-'}</td></tr><tr><td><strong>Number</strong></td><td>${part.number||'-'}</td></tr><tr><td><strong>Supplier</strong></td><td>${part.supplier||'-'}</td></tr><tr><td><strong>Rev</strong></td><td>${part.revision||'-'}</td></tr></tbody></table>`; }
+      async function lookupPart(q){ try{ if(window.DataStore){ const idx = await window.DataStore.get('parts-index'); if(Array.isArray(idx)){ const f = idx.find(p=> (p.name||'').toLowerCase().includes(q) || (p.number||'').toLowerCase().includes(q)); return f||null; } } }catch(_){ } return null; }
+      const input = qs('#d2-partSearch'); if(input){ input.addEventListener('change', async ()=>{ const q=(input.value||'').toLowerCase().trim(); const part = q? await lookupPart(q) : null; renderPartCard(part); }); }
+      renderPartCard(null);
+    })();
+  </script>
 </section>
