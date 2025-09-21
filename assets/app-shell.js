@@ -107,7 +107,50 @@
     if(dens){ on(dens, 'click', ()=>{ const next = getDensity()==='compact'?'comfortable':'compact'; setDensity(next); }); }
 
     const search = qs('#ds-global-search');
-    if(search){ on(search, 'keydown', (e)=>{ if(e.key==='Enter'){ const q=search.value.trim(); if(typeof window.__globalSearch==='function'){ window.__globalSearch(q); } else { const h = location.pathname.includes('NC')? 'NC Listing Page.html' : 'index.html'; location.href = h; } } }); }
+    if(search){ on(search, 'keydown', (e)=>{ if(e.key==='Enter'){ const q=search.value.trim(); if(!q) return; // navigate to listing with query param
+                const target = 'NC Listing Page.html?q='+encodeURIComponent(q);
+                if(window.location.pathname.endsWith('NC Listing Page.html')){ // if already on listing, set input
+                  try{ if(typeof window.__globalSearch === 'function'){ window.__globalSearch(q); } else { location.href = target; } }catch(_){ location.href = target; }
+                } else { location.href = target; }
+              } }); }
+
+    // Command palette: Ctrl+K
+    const palette = el(`
+      <div id="ds-cmd-palette" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:60;pointer-events:none">
+        <div style="width:min(720px,90%);pointer-events:auto;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:12px;padding:12px;box-shadow:var(--shadow-lg)">
+          <input id="ds-cmd-input" placeholder="Type a command or search... (e.g. Create New 8D, Go to D1)" style="width:100%;padding:0.7rem;border-radius:8px;border:1px solid var(--gray-300);font-size:1rem" />
+          <div id="ds-cmd-results" style="margin-top:8px;max-height:240px;overflow:auto"></div>
+        </div>
+      </div>
+    `);
+    document.body.appendChild(palette);
+    const cmdInput = qs('#ds-cmd-input'); const cmdHost = qs('#ds-cmd-results');
+    function openPalette(q='') { palette.style.display='flex'; cmdInput.value=q; cmdInput.focus(); renderCmdResults(''); }
+    function closePalette(){ palette.style.display='none'; cmdHost.innerHTML=''; }
+    function renderCmdResults(filter){ const cmds = [
+        {id:'new8d',label:'Create New 8D',action:()=> location.href='8D Pages/8D View page.html#d1'},
+        {id:'nc-list',label:'Open NC Listing',action:()=> location.href='NC Listing Page.html'},
+        {id:'nc-create',label:'Create NC',action:()=> location.href='NC Creation and Edit Page.html'},
+        {id:'goto-d1',label:'Go to D1 - Identify Team',action:()=> location.hash='#d1'},
+        {id:'goto-d2',label:'Go to D2 - Problem Description',action:()=> location.hash='#d2'},
+        {id:'focus-search',label:'Focus Global Search',action:()=> { const s=qs('#ds-global-search'); if(s){ s.focus(); }}},
+        {id:'save-all',label:'Save All (Autosave)',action:()=>{ if(typeof window.app !== 'undefined') window.app.saveData('command-save-all'); if(typeof window.__saveAll==='function') window.__saveAll(); }}
+      ];
+      const out = cmds.filter(c=> c.label.toLowerCase().includes(filter.toLowerCase())).map(c=>`<div class="p-2 cursor-pointer hover:bg-white/60" data-cmd="${c.id}">${c.label}</div>`).join('');
+      cmdHost.innerHTML = out || '<div class="p-2 text-sm text-gray-500">No matches</div>';
+      // wire clicks
+      cmdHost.querySelectorAll('[data-cmd]').forEach(el=> el.addEventListener('click', ()=>{ const id=el.dataset.cmd; const cmd = cmds.find(c=>c.id===id); if(cmd) cmd.action(); closePalette(); }));
+    }
+    on(cmdInput,'input', (e)=> renderCmdResults(e.target.value));
+    // keyboard shortcuts
+    on(document,'keydown', (e)=>{
+      if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); openPalette(); }
+      if(e.key === '/' && (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA')){ e.preventDefault(); const s = qs('#ds-global-search'); if(s){ s.focus(); } }
+      if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); if(typeof window.app !== 'undefined') window.app.saveData('keyboard-save'); if(typeof window.__saveAll==='function') window.__saveAll(); const ind = qs('#autosave-indicator'); if(ind) ind.textContent='Saved'; }
+      if(e.key === 'Escape'){ if(palette.style.display==='flex') closePalette(); }
+    });
+    on(palette,'click', (ev)=>{ if(ev.target === palette) closePalette(); });
+
   }
 
   function init(){
