@@ -334,5 +334,6 @@
     initRichText(ctx, 'd2-problemStatement');
     initRichText(ctx, 'd2-situationBefore');
     renderOrgChart(ctx);
+    renderTeamCards(ctx);
   }
 })();
