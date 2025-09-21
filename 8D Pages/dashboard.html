@@ -53,8 +53,8 @@
         const done = (window.disciplines||[]).filter(d=> app.data[d.id]?.status==='completed').length; const total=(window.disciplines||[]).length; qs('#dash-progress').textContent = `${done} of ${total} completed`;
         const prob = (app.data.d2?.fields?.briefStatement || app.data.d2?.fields?.problemStatement || '').toString(); qs('#dash-problem').innerHTML = prob ? prob : '<span class="small text-gray-500">No problem statement yet.</span>';
         const teamHost = qs('#dash-team'); teamHost.innerHTML='';
-        const team = (app.data.d1?.fields?.teamMembers)||[];
-        if(team.length){ team.slice(0,6).forEach(p=>{ teamHost.appendChild(makeCard(p.name||'', p.title||'Member')); }); }
+        const rows = Array.from(document.querySelectorAll('#d1-team-unified tbody tr'));
+        if(rows.length){ rows.slice(0,6).forEach(r=>{ const name=r.querySelector('.contact-name')?.value||r.querySelector('td')?.textContent||''; const title=r.querySelector('.contact-title')?.value||''; teamHost.appendChild(makeCard(name, title)); }); }
       }
       if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', render); else render();
     })();

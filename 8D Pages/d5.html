@@ -12,13 +12,14 @@
         <option value="in-progress">In Progress</option>
         <option value="completed">Completed</option>
       </select>
+      <button class="btn btn-primary save-btn" data-id="d5" aria-label="Save D5"><i data-lucide="save"></i> Save</button>
     </div>
   </div>
 
   <div class="card">
     <div class="section-title">5A. Selection & Verification of Corrective Action</div>
     <table id="d5-actions" class="table dynamic-table">
-      <thead><tr><th><i data-lucide="move"></i> Action (PCA)</th><th><i data-lucide="layout"></i> Root Cause</th><th><i data-lucide="calendar"></i> Target Date</th><th><i data-lucide="user"></i> Responsibility</th><th><i data-lucide="shield"></i> Mistake Proof</th><th><i data-lucide="dollar-sign"></i> Cost / Benefit</th><th><i data-lucide="paperclip"></i> Files</th><th><i data-lucide="check-square"></i> Verification</th><th></th></tr></thead>
+      <thead><tr><th><i data-lucide="move"></i> Action (PCA)</th><th><i data-lucide="layout"></i> Root Cause</th><th><i data-lucide="calendar"></i> Target Date</th><th><i data-lucide="user"></i> Responsibility</th><th><i data-lucide="shield"></i> Mistake Proof</th><th><i data-lucide="dollar-sign"></i> Estimated Cost</th><th><i data-lucide="trending-up"></i> Expected Benefit</th><th><i data-lucide="check-square"></i> Verification</th><th></th></tr></thead>
       <tbody></tbody>
       <tfoot><tr><td colspan="9"><button class="add-row-btn btn btn-ghost">Add PCA</button></td></tr></tfoot>
       <template>
@@ -28,8 +29,8 @@
           <td><input class="input pca-date" type="date"/></td>
           <td><input class="input"/></td>
           <td class="mistake-proof-cell"><label class="switch"><input type="checkbox" class="mp-check"/><span class="slider"></span></label></td>
-          <td><div class="small"><input class="input pca-cost" type="number" placeholder="$"/></div><div class="small mt-xs"><input class="input pca-benefit" placeholder="Benefit"/></div></td>
-          <td><input class="preview-file pca-file" type="file" multiple /></td>
+          <td><input class="input" type="number" placeholder="$"/></td>
+          <td><input class="input" placeholder="Benefit"/></td>
           <td><select class="input verify-select"><option>Pending</option><option>Verified</option></select></td>
           <td><button class="remove-row-btn btn btn-danger">Remove</button></td>
         </tr>
