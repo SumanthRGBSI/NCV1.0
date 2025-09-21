@@ -71,12 +71,30 @@
     });
   }
 
-  // File previews for image inputs
+  // File previews for image inputs + multi-file listing
   function initFilePreviews(container){
     qsa('.preview-file', container).forEach(inp=>{
       inp.addEventListener('change', (e)=>{
-        const file = e.target.files[0];
-        const preview = e.target.closest('.file-block, .drop-zone')?.querySelector('.file-preview');
+        const input = e.target;
+        // Handle multi-file list
+        if(input.multiple){
+          const host = input.closest('.card, .file-block, .mt-small') || input.parentElement;
+          let list = host?.querySelector('#d5-file-list') || host?.querySelector('.file-list');
+          if(!list){ list = document.createElement('div'); list.className='file-list small mt-xs'; host.appendChild(list); }
+          const files = Array.from(input.files||[]);
+          if(files.length===0){ list.innerHTML=''; return; }
+          list.innerHTML = files.map((f,i)=>`<div class="flex items-center justify-between"><span>${f.name}</span><button type="button" class="btn btn-ghost remove-file" data-index="${i}">Remove</button></div>`).join('');
+          list.addEventListener('click', (ev)=>{
+            const btn = ev.target.closest('.remove-file'); if(!btn) return;
+            const idx = Number(btn.dataset.index);
+            const dt = new DataTransfer();
+            files.forEach((f,i)=>{ if(i!==idx) dt.items.add(f); });
+            input.files = dt.files; input.dispatchEvent(new Event('change',{bubbles:true}));
+          }, { once:true });
+          return;
+        }
+        const file = input.files && input.files[0];
+        const preview = input.closest('.file-block, .drop-zone')?.querySelector('.file-preview');
         if(!file || !preview) return;
         if(file.type.startsWith('image/')){
           const url = URL.createObjectURL(file);
@@ -332,6 +350,58 @@
     Array.from(tbl.querySelectorAll('tbody tr')).forEach(recalcRow);
   }
 
+  // Simple table sorting for dynamic tables
+  function initTableSorting(container){
+    qsa('table.dynamic-table', container).forEach(tbl=>{
+      const thead = tbl.querySelector('thead'); const tbody = tbl.querySelector('tbody'); if(!thead||!tbody) return;
+      thead.querySelectorAll('th').forEach((th, idx)=>{
+        th.style.cursor='pointer';
+        th.addEventListener('click', ()=>{
+          const rows = Array.from(tbody.querySelectorAll('tr'));
+          const dir = th.dataset.sortDir === 'asc' ? 'desc' : 'asc'; th.dataset.sortDir = dir;
+          const getVal = (tr)=>{ const cell = tr.children[idx]; const input = cell?.querySelector('input,select,textarea'); const val = input ? (input.value||'') : (cell?.textContent||''); return (val||'').toString().trim(); };
+          const isNum = rows.every(r=>{ const v=getVal(r); return v==='' || !isNaN(parseFloat(v)); });
+          rows.sort((a,b)=>{
+            const va = getVal(a); const vb = getVal(b);
+            let res = 0;
+            if(isNum){ res = (parseFloat(va)||0) - (parseFloat(vb)||0); }
+            else { res = va.localeCompare(vb, undefined, { numeric:true, sensitivity:'base' }); }
+            return dir==='asc' ? res : -res;
+          });
+          rows.forEach(r=> tbody.appendChild(r));
+        });
+      });
+    });
+  }
+
+  // D6 KPI mini charts
+  function initD6Kpi(container){
+    const defB=qs('#kpi-def-before',container), defA=qs('#kpi-def-after',container), defBar=qs('#kpi-def-bar',container);
+    const rpnB=qs('#kpi-rpn-before',container), rpnA=qs('#kpi-rpn-after',container), rpnBar=qs('#kpi-rpn-bar',container);
+    function upd(b,a,bar){ if(!bar) return; const vb=parseFloat(b?.value||'')||0; const va=parseFloat(a?.value||'')||0; const pct = vb<=0?0: Math.max(0, Math.min(100, ((vb-va)/vb)*100)); bar.style.width = pct+'%'; }
+    function wire(b,a,bar){ if(b) b.addEventListener('input', ()=>upd(b,a,bar)); if(a) a.addEventListener('input', ()=>upd(b,a,bar)); upd(b,a,bar); }
+    wire(defB,defA,defBar); wire(rpnB,rpnA,rpnBar);
+  }
+
+  // D6 before/after compare
+  function initD6Compare(container){
+    const beforeHost = qs('#d6-compare-before', container);
+    const afterHost = qs('#d6-compare-after', container);
+    if(beforeHost){
+      try{
+        const d2 = (window.app && window.app.data && window.app.data.d2 && window.app.data.d2.fields) || {};
+        const items = ['briefStatement','impactCustomer','who','what','when','where','why'].map(k=> d2[k]).filter(Boolean);
+        beforeHost.innerHTML = items.length ? `<ul class="small">${items.map(v=>`<li>• ${v}</li>`).join('')}</ul>` : '<div class="small text-gray-500">No D2 data.</div>';
+      }catch(_){ beforeHost.innerHTML = '<div class="small text-gray-500">No D2 data.</div>'; }
+    }
+    if(afterHost){
+      const proof = qs('#d6-proof', container)?.value||''; const sit = qs('#d6-situationAfter', container)?.value||'';
+      const items = [proof, sit].filter(Boolean);
+      afterHost.innerHTML = items.length ? `<ul class="small">${items.map(v=>`<li>• ${v}</li>`).join('')}</ul>` : '<div class="small text-gray-500">Nothing entered yet.</div>';
+      container.addEventListener('input', (e)=>{ if(e.target && (e.target.id==='d6-proof' || e.target.id==='d6-situationAfter')){ initD6Compare(container); } });
+    }
+  }
+
   // Gantt for D6
   function initD6Gantt(container){
     const host = qs('#d6-impl', container);
@@ -371,6 +441,7 @@
     initStickyTitles(document);
     initFilePreviews(document);
     initDropZones(document);
+    initTableSorting(document);
     initD1QuickAdd(document);
     initContactDirectory(document);
     initAddMe(document);
@@ -380,6 +451,8 @@
     initRichText(document, 'd2-problemStatement');
     initRichText(document, 'd2-situationBefore');
     initD3AutoCalc(document);
+    initD6Kpi(document);
+    initD6Compare(document);
     renderOrgChart(document);
     renderTeamCards(document);
   });
@@ -392,6 +465,7 @@
     initStickyTitles(ctx);
     initFilePreviews(ctx);
     initDropZones(ctx);
+    initTableSorting(ctx);
     initD1QuickAdd(ctx);
     initContactDirectory(ctx);
     initAddMe(ctx);
@@ -401,6 +475,8 @@
     initRichText(ctx, 'd2-problemStatement');
     initRichText(ctx, 'd2-situationBefore');
     initD3AutoCalc(ctx);
+    initD6Kpi(ctx);
+    initD6Compare(ctx);
     renderOrgChart(ctx);
     renderTeamCards(ctx);
     // init D6 gantt if present

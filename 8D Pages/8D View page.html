@@ -33,6 +33,8 @@
         .step-content { transition: border 0.3s, background-color 0.3s, color 0.3s; border: 1px solid transparent; }
         .step-arrow { opacity: 0; transition: opacity 0.3s; color: var(--active-border); }
         #content-container.loading { opacity: 0.5; transition: opacity 0.3s; }
+        #overall-progress-wrap{ height:6px;background:#e5e7eb;border-radius:9999px;overflow:hidden;margin-top:2px; }
+        #overall-progress-bar{ height:100%;width:0%;background:#10b981;transition:width .3s ease; }
         #sidebar { transition: width 0.3s ease-in-out, padding 0.3s ease-in-out, background-color 0.3s ease-in-out; }
         main#main-panel { transition: width 0.3s ease-in-out, flex 0.3s ease-in-out; }
         #app-container.sidebar-collapsed #sidebar { width: 6rem; padding-left: 0.75rem; padding-right: 0.75rem; }
@@ -89,7 +91,10 @@
         </nav>
         <main id="main-panel" class="w-2/3 lg:w-3/4 p-4 md:p-8 overflow-y-auto">
             <div id="content-toolbar" class="flex items-center justify-between mb-3">
-              <div class="text-xs text-gray-600" id="progress-summary"></div>
+              <div class="flex flex-col">
+                <div class="text-xs text-gray-600" id="progress-summary"></div>
+                <div id="overall-progress-wrap"><div id="overall-progress-bar"></div></div>
+              </div>
               <div class="flex items-center gap-2">
                 <div class="relative" id="export-dropdown">
                   <button id="export-toggle" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring"><i data-lucide="download" class="mr-1"></i> Export</button>
@@ -345,7 +350,7 @@
         },
         applySidebarState() { const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true'; if (isCollapsed) { document.getElementById('app-container').classList.add('sidebar-collapsed'); } this.updateSidebarToggleUI(isCollapsed); },
         renderStatusBadge(status){ const map = { 'pending': '<span class="px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">Pending</span>', 'in-progress': '<span class="px-2 py-0.5 rounded-full bg-amber-500 text-white">In Progress</span>', 'completed': '<span class="px-2 py-0.5 rounded-full bg-emerald-500 text-white">Completed</span>' }; return map[status] || map['pending']; },
-        updateProgressSummary(){ const done = disciplines.filter(d=>this.data[d.id]?.status==='completed').length; const total = disciplines.length; const el = document.getElementById('progress-summary'); if(el) el.textContent = `Progress: ${done}/${total} steps completed`; },
+        updateProgressSummary(){ const done = disciplines.filter(d=>this.data[d.id]?.status==='completed').length; const total = disciplines.length; const el = document.getElementById('progress-summary'); if(el) el.textContent = `Progress: ${done}/${total} steps completed`; const bar=document.getElementById('overall-progress-bar'); if(bar){ const pct = Math.max(0, Math.min(100, (done/Math.max(1,total))*100)); bar.style.width = pct+'%'; } },
         updateStepperStatusColors() {
             disciplines.forEach(d => {
                 const link = document.getElementById(`nav-${d.id}`);

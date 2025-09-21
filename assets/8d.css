@@ -30,6 +30,7 @@ textarea{min-height:120px;resize:vertical;line-height:1.5}
 .flex-between{display:flex;justify-content:space-between;align-items:center}
 .table{width:100%;border-collapse:separate;border-spacing:0}
 .table th,.table td{padding:0.75rem 0.85rem;border-bottom:1px solid var(--border);font-size:0.95rem;text-align:left;vertical-align:top}
+.table thead th{position:sticky;top:0;z-index:1}
 .table th{background:#f8fafc;font-weight:700;color:#334155}
 .table td+td,.table th+th{border-left:0}
 .table tbody tr:nth-child(even){background:#fcfdff}
