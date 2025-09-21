@@ -94,6 +94,7 @@
         list.appendChild(div);
         input.value='';
         renderOrgChart(container);
+        renderTeamCards(container);
       }
     });
     // delegate remove
