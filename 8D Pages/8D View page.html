@@ -136,7 +136,7 @@
         <nav id="sidebar" class="w-1/3 lg:w-1/4 bg-white p-6 shadow-lg flex flex-col transition-all duration-300">
             <div class="flex items-center mb-2">
                 <div class="bg-blue-600 p-2 rounded-lg">
-                    <i class="fas fa-sitemap text-white fa-lg"></i>
+                    <i data-lucide="sitemap" class="text-white fa-lg"></i>
                 </div>
                 <div class="ml-3 sidebar-text">
                     <h1 class="text-xl font-bold text-gray-800">8D Process</h1>
@@ -152,7 +152,7 @@
 
             <div class="mt-auto pt-6 border-t">
                 <button id="sidebar-toggle-btn" class="w-full flex items-center p-3 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">
-                    <i id="toggle-btn-icon" class="fas fa-chevron-left transition-transform duration-300"></i>
+                    <i id="toggle-btn-icon" data-lucide="chevron-left" class="transition-transform duration-300"></i>
                     <span class="ml-4 font-semibold sidebar-text">Collapse</span>
                 </button>
             </div>
@@ -188,14 +188,14 @@
     ];
 
     const stepIcons = {
-        d1: 'fa-users',
-        d2: 'fa-notes-medical',
-        d3: 'fa-shield-halved',
-        d4: 'fa-magnifying-glass',
-        d5: 'fa-list-check',
-        d6: 'fa-screwdriver-wrench',
-        d7: 'fa-ban',
-        d8: 'fa-trophy'
+        d1: 'users',
+        d2: 'file-text',
+        d3: 'shield-check',
+        d4: 'search',
+        d5: 'check-square',
+        d6: 'tool',
+        d7: 'ban',
+        d8: 'award'
     };
 
     function getInitialData() {
@@ -505,7 +505,7 @@
                 saveBtn.disabled = true;
                 saveBtn.innerHTML = `<i data-lucide=\"loader\" class=\"lucide-spin mr-2\"></i> Saving...`;
                 setTimeout(() => {
-                    saveBtn.innerHTML = `<i class=\"fas fa-check mr-2\"></i> Saved!`;
+                    saveBtn.innerHTML = `<i data-lucide=\"check\" class=\"mr-2\"></i> Saved!`;
                     setTimeout(() => {
                         saveBtn.innerHTML = originalHTML;
                         saveBtn.disabled = false;
@@ -520,7 +520,7 @@
             list.innerHTML = this.data.d1.fields.members.map((member, index) => `
                 <div class="flex items-center justify-between bg-gray-100 p-2 rounded">
                     <span class="text-gray-800 break-all">${member}</span>
-                    <button type="button" class="remove-member-btn text-red-500 hover:text-red-700 ml-2" data-index="${index}"><i class="fas fa-times-circle"></i></button>
+                    <button type="button" class="remove-member-btn text-red-500 hover:text-red-700 ml-2" data-index="${index}"><i data-lucide="x-circle"></i></button>
                 </div>
             `).join('');
         },
