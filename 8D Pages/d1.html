@@ -24,14 +24,14 @@
     <table class="table dynamic-table" id="d1-kpoc-table">
       <thead><tr><th>Name</th><th>Title</th><th>Email</th><th>Phone Number</th><th></th></tr></thead>
       <tbody></tbody>
-      <tfoot><tr><td colspan="5"><button type="button" class="add-row-btn btn btn-ghost">Add Contact</button></td></tr></tfoot>
+      <tfoot><tr><td colspan="5"><button type="button" class="add-row-btn btn btn-ghost"><i class="fa-solid fa-plus"></i> Add Contact</button></td></tr></tfoot>
       <template>
         <tr>
           <td><input class="input contact-name" list="contact-directory" placeholder="Full name of primary contact" /></td>
           <td><input class="input contact-title" placeholder="Job title" /></td>
           <td><input class="input contact-email" placeholder="name@company.com" /></td>
           <td><input class="input contact-phone" placeholder="(555) 555-5555" /></td>
-          <td><button type="button" class="remove-row-btn btn btn-danger">Remove</button></td>
+          <td><button type="button" class="remove-row-btn btn btn-danger" aria-label="Remove"><i class="fa-solid fa-trash"></i></button></td>
         </tr>
       </template>
     </table>
@@ -43,14 +43,14 @@
     <table class="table dynamic-table" id="d1-champions-table">
       <thead><tr><th>Name</th><th>Title</th><th>Email</th><th>Phone Number</th><th></th></tr></thead>
       <tbody></tbody>
-      <tfoot><tr><td colspan="5"><button type="button" class="add-row-btn btn btn-ghost">Add Champion</button></td></tr></tfoot>
+      <tfoot><tr><td colspan="5"><button type="button" class="add-row-btn btn btn-ghost"><i class="fa-solid fa-plus"></i> Add Champion</button></td></tr></tfoot>
       <template>
         <tr>
           <td><input class="input contact-name" list="contact-directory" placeholder="Full name" /></td>
           <td><input class="input contact-title" placeholder="Job title" /></td>
           <td><input class="input contact-email" placeholder="name@company.com" /></td>
           <td><input class="input contact-phone" placeholder="(555) 555-5555" /></td>
-          <td><button type="button" class="remove-row-btn btn btn-danger">Remove</button></td>
+          <td><button type="button" class="remove-row-btn btn btn-danger" aria-label="Remove"><i class="fa-solid fa-trash"></i></button></td>
         </tr>
       </template>
     </table>
@@ -61,7 +61,7 @@
     <div class="hint">Capture detailed member data or use quick-add for notes.</div>
     <div class="row mt-small">
       <div class="col">
-        <input id="d1-new-member" class="input" placeholder="Quick add: Full name — role (e.g., Jane Doe — QA Lead)" />
+        <input id="d1-new-member" class="input" placeholder="e.g., John Doe - Quality Engineer" />
       </div>
       <div class="col col-fixed">
         <button id="d1-add-member-btn" class="btn btn-primary">Add</button>
@@ -69,7 +69,7 @@
         <button id="d1-clear-members" class="btn btn-ghost">Clear</button>
       </div>
     </div>
-    <div id="d1-members-list" class="dynamic-list mt-small"></div>
+    <div id="d1-members-list" class="dynamic-list mt-small soft-list"></div>
 
     <div class="mt-small">
       <table class="table dynamic-table" id="d1-team-table">
@@ -78,7 +78,7 @@
         </thead>
         <tbody></tbody>
         <tfoot>
-          <tr><td colspan="6"><button type="button" class="add-row-btn btn btn-ghost">Add Team Member</button></td></tr>
+          <tr><td colspan="6"><button type="button" class="add-row-btn btn btn-ghost"><i class="fa-solid fa-plus"></i> Add Team Member</button></td></tr>
         </tfoot>
         <template>
           <tr>
@@ -97,7 +97,7 @@
             <td><input class="input contact-title" placeholder="Job title" /></td>
             <td><input class="input contact-email" placeholder="name@company.com" /></td>
             <td><input class="input contact-phone" placeholder="(555) 555-5555" /></td>
-            <td><button type="button" class="remove-row-btn btn btn-danger">Remove</button></td>
+            <td><button type="button" class="remove-row-btn btn btn-danger" aria-label="Remove"><i class="fa-solid fa-trash"></i></button></td>
           </tr>
         </template>
       </table>
@@ -105,6 +105,11 @@
         <button id="d1-schedule-meeting" class="btn btn-ghost"><i class="fa-solid fa-calendar-days"></i> Schedule Meeting</button>
       </div>
     </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Team Cards</div>
+    <div id="d1-team-cards" class="team-cards-grid mt-small"></div>
   </div>
 
   <div class="card">
