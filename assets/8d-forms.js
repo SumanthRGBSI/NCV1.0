@@ -90,7 +90,7 @@
       if(input && input.value.trim()){
         const div = document.createElement('div');
         div.className = 'list-item';
-        div.innerHTML = `<div class="kv">${input.value.trim()}</div><button type="button" class="btn btn-ghost remove-member" aria-label="Remove"><i class="fa-solid fa-trash"></i></button>`;
+        div.innerHTML = `<div class="kv">${input.value.trim()}</div><button type="button" class="btn btn-ghost remove-member" aria-label="Remove"><i data-lucide="trash-2"></i></button>`;
         list.appendChild(div);
         input.value='';
         renderOrgChart(container);
