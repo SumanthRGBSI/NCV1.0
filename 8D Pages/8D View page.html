@@ -249,18 +249,37 @@
                     link.remove();
                 });
 
-                // Execute any scripts included in the fetched HTML
+                // Execute scripts safely: external scripts are appended once; inline scripts run inside a function scope to avoid redeclaration errors
                 const scripts = Array.from(container.querySelectorAll('script'));
                 for (const oldScript of scripts) {
-                    const s = document.createElement('script');
-                    if (oldScript.src) {
-                        s.src = oldScript.src;
-                        s.async = false;
-                    } else {
-                        s.textContent = oldScript.textContent;
+                    try {
+                        if (oldScript.src) {
+                            // Avoid loading the same external script multiple times
+                            if (!document.querySelector(`script[src="${oldScript.src}"]`)) {
+                                const s = document.createElement('script');
+                                s.src = oldScript.src;
+                                s.async = false;
+                                document.body.appendChild(s);
+                            }
+                        } else {
+                            // Run inline script in a new Function scope to prevent global redeclarations
+                            const code = oldScript.textContent || '';
+                            if (code.trim()) {
+                                try {
+                                    new Function(code)();
+                                } catch (inlineErr) {
+                                    // If the inline script cannot be executed via Function (rare), fallback to appending a script tag
+                                    const s = document.createElement('script');
+                                    s.textContent = code;
+                                    document.body.appendChild(s);
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Error executing injected script:', e);
+                    } finally {
+                        oldScript.remove();
                     }
-                    document.body.appendChild(s);
-                    oldScript.remove();
                 }
 
                 // Initialize form behaviors (shared initializer)
