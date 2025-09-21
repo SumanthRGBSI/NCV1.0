@@ -52,6 +52,44 @@ textarea{min-height:100px;resize:vertical}
 .input:focus-visible, textarea:focus-visible, select:focus-visible{outline:none;border-color:#93c5fd;box-shadow:0 0 0 3px rgba(147,197,253,0.45)}
 .btn-primary:hover{filter:saturate(1.1)}
 
+/* Table visual distinction */
+.table-alt thead th{background:#f3f6fb}
+.table-alt tbody tr:nth-child(even){background:#fafbff}
+
+/* Disabled/read-only emphasis */
+input[disabled], textarea[disabled], select[disabled]{background:#f8fafc;color:#6b7280}
+
+/* Row status colors */
+tr.status-todo{background:#fff7ed}
+tr.status-inprogress{background:#fefce8}
+tr.status-done{background:#ecfdf5}
+
+/* Risk highlight */
+tr.risk-yes{background:#fff1f2}
+
+/* Toggle switch */
+.switch{position:relative;display:inline-block;width:44px;height:24px}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#e5e7eb;transition:.2s;border-radius:999px}
+.slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;top:3px;background:white;transition:.2s;border-radius:50%}
+.switch input:checked + .slider{background:#3b82f6}
+.switch input:checked + .slider:before{transform:translateX(20px)}
+
+/* Stars rating */
+.stars{display:inline-flex;gap:4px}
+.star{color:#d1d5db;background:transparent;border:0;font-size:18px;cursor:pointer}
+.star.active{color:#f59e0b}
+
+/* Drag handle */
+.drag-handle{cursor:grab;margin-right:.4rem;color:#6b7280}
+.drag-handle:active{cursor:grabbing}
+
+/* Status badge */
+.badge-status{display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.75rem}
+.badge-status.planned{background:#e5e7eb;color:#374151}
+.badge-status.inprogress{background:#fde68a;color:#92400e}
+.badge-status.done{background:#bbf7d0;color:#065f46}
+
 /* Soft list styling for quick-added members */
 .soft-list .list-item{background:#f9fafb;padding:0.75rem;border:1px solid #eef2f7}
 

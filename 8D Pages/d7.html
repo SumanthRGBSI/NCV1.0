@@ -17,11 +17,11 @@
   </div>
 
   <div class="card">
-    <div class="section-title">Prevention Action / Document Standardization</div>
-    <table id="d7-prevent" class="table dynamic-table">
-      <thead><tr><th>Action</th><th>Type</th><th>Available</th><th>Responsible</th><th>Target Date</th><th>Status</th><th>History</th><th>Severity</th><th>Occurrence</th><th>Detection</th><th>Revised RPN</th><th>Document Link (URL/ID)</th><th>Documents</th><th></th></tr></thead>
+    <div class="section-title">Preventive Actions</div>
+    <table id="d7-prevent" class="table dynamic-table table-alt">
+      <thead><tr><th title="Describe the action">Action <i class="fa-regular fa-circle-question"></i></th><th title="Prevent or Detect?">Type <i class="fa-regular fa-circle-question"></i></th><th title="Is it available yet?">Available <i class="fa-regular fa-circle-question"></i></th><th>Owner</th><th>Due Date</th><th>Status</th><th>History</th><th>Severity</th><th>Occurrence</th><th>Detection</th><th>Revised RPN</th><th>Document Link</th><th>Documents</th><th></th></tr></thead>
       <tbody></tbody>
-      <tfoot><tr><td colspan="14"><button class="add-row-btn btn btn-ghost">Add Preventive Action</button></td></tr></tfoot>
+      <tfoot><tr><td colspan="14"><button class="add-row-btn btn btn-ghost">+ New Preventive Action</button></td></tr></tfoot>
       <template>
         <tr>
           <td><input class="input"/></td>
@@ -29,28 +29,28 @@
           <td><input type="checkbox"/></td>
           <td><input class="input"/></td>
           <td><input class="input" type="date"/></td>
-          <td><input class="input"/></td>
+          <td><select class="input prevent-status"><option>Planned</option><option>In Progress</option><option>Done</option></select></td>
           <td><input class="input"/></td>
           <td><input class="input rpn-s" type="number" min="1" max="10"/></td>
           <td><input class="input rpn-o" type="number" min="1" max="10"/></td>
           <td><input class="input rpn-d" type="number" min="1" max="10"/></td>
           <td><input class="input rpn" type="number" disabled /></td>
           <td><input class="input" placeholder="https:// or DOC-123"/></td>
-          <td><input class="preview-file" type="file"/></td>
+          <td><div class="controls"><i class="fa-regular fa-file-lines"></i> <input class="preview-file" type="file"/></div></td>
           <td><button class="remove-row-btn btn btn-danger">Remove</button></td>
         </tr>
       </template>
     </table>
+  </div>
 
-    <div class="mt-small">
-      <div class="section-title">Standardization Checklist</div>
-      <div class="small">Consider: FMEA, Control Plan, SOPs, Training Materials, Work Instructions, Drawings</div>
-      <div class="controls mt-xs">
-        <input id="d7-new-std" class="input" placeholder="Add checklist item" />
-        <button id="d7-add-std" class="btn btn-ghost">Add</button>
-      </div>
-      <div id="d7-std-list" class="dynamic-list mt-small"></div>
+  <div class="card">
+    <div class="section-title">Document Standardization & Review</div>
+    <div class="small">Consider: FMEA, Control Plan, SOPs, Training Materials, Work Instructions, Drawings</div>
+    <div class="controls mt-xs">
+      <input id="d7-new-std" class="input" placeholder="Add checklist item" />
+      <button id="d7-add-std" class="btn btn-ghost">Add</button>
     </div>
+    <div id="d7-std-list" class="dynamic-list mt-small"></div>
 
     <div class="mt-small">
       <button id="d7-track-read" class="btn btn-ghost">Track Read & Understood</button>
