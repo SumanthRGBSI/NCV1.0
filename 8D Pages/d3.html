@@ -23,7 +23,7 @@
 
     <div class="small mt-small">3B. Immediate Actions & Responsibility</div>
     <div class="controls mt-xs"><input class="input table-filter" placeholder="Filter by action/responsibility/status" data-for="#d3-actions" /></div>
-    <table id="d3-actions" class="table dynamic-table">
+    <table id="d3-actions" class="table dynamic-table table-alt">
       <thead><tr><th>Action</th><th>Responsibility</th><th>Target Date</th><th>Depends On</th><th>Status</th><th></th></tr></thead>
       <tbody></tbody>
       <tfoot><tr><td colspan="6"><button class="add-row-btn btn btn-ghost">Add Action</button></td></tr></tfoot>
@@ -33,7 +33,7 @@
           <td><input class="input action-owner"/></td>
           <td><input class="input action-date" type="date"/></td>
           <td><select class="input action-dep"><option value="">None</option></select></td>
-          <td><input class="input action-status"/></td>
+          <td><select class="input action-status"><option>To Do</option><option>In Progress</option><option>Done</option></select></td>
           <td><button class="remove-row-btn btn btn-danger">Remove</button></td>
         </tr>
       </template>
@@ -47,7 +47,7 @@
     <div class="section-title">Risk Assessment & Part Verification</div>
     <div class="small">3D. Other Product/Platform at Risk?</div>
     <div class="controls mt-xs"><input class="input table-filter" placeholder="Filter by process/part" data-for="#d3-risk" /></div>
-    <table id="d3-risk" class="table dynamic-table">
+    <table id="d3-risk" class="table dynamic-table table-alt">
       <thead><tr><th>Process/Part Number</th><th>Risk of Same error (Y/N)</th><th>Add to Containment (Y/N)</th><th></th></tr></thead>
       <tbody></tbody>
       <tfoot><tr><td colspan="4"><button class="add-row-btn btn btn-ghost">Add Item</button></td></tr></tfoot>
@@ -58,7 +58,7 @@
 
     <div class="small mt-small">3E. Identification / Labelling of Verified Parts</div>
     <div class="controls mt-xs"><input class="input table-filter" placeholder="Filter by cut off/comments" data-for="#d3-labels" /></div>
-    <table id="d3-labels" class="table dynamic-table">
+    <table id="d3-labels" class="table dynamic-table table-alt">
       <thead><tr><th>Cut Off Number</th><th>Date / Time</th><th>Image</th><th>Comments</th><th></th></tr></thead>
       <tbody></tbody>
       <tfoot><tr><td colspan="5"><button class="add-row-btn btn btn-ghost">Add Label</button></td></tr></tfoot>
@@ -75,7 +75,7 @@
 
     <div class="small mt-small">3F. Sorting / Containment Details</div>
     <div class="controls mt-xs"><input class="input table-filter" placeholder="Filter by task/responsibility" data-for="#d3-sort" /></div>
-    <table id="d3-sort" class="table dynamic-table">
+    <table id="d3-sort" class="table dynamic-table table-alt">
       <thead><tr><th>Task/Indicators</th><th>Responsibility</th><th>Qty to be Checked</th><th>Ok Qty</th><th>Not Ok Qty</th><th>Total Checked</th><th>Activity Date</th><th>Comments</th><th></th></tr></thead>
       <tbody></tbody>
       <tfoot><tr><td colspan="9"><button class="add-row-btn btn btn-ghost">Add Sort Activity</button></td></tr></tfoot>

@@ -104,6 +104,28 @@
         #app-container.sidebar-collapsed .step { justify-content: center; }
         #app-container.sidebar-collapsed #toggle-btn-icon { transform: rotate(180deg); }
         #app-container.sidebar-collapsed main#main-panel { flex: 1 1 auto; width: auto; }
+            /* Tooltips for steps */
+        .step-link{ position: relative; }
+        .step-link[data-tooltip]:hover::after { content: attr(data-tooltip); position: absolute; left: 3.75rem; top: 50%; transform: translateY(-50%); background: #111827; color: #fff; padding: 0.5rem 0.6rem; border-radius: 0.5rem; box-shadow: 0 4px 18px rgba(0,0,0,0.2); width: 16rem; font-size: 0.75rem; line-height: 1.1; z-index: 50; }
+        .step-link[data-tooltip]:hover::before { content: ''; position: absolute; left: 3.4rem; top: 50%; transform: translateY(-50%); border-width: 6px; border-style: solid; border-color: transparent #111827 transparent transparent; }
+
+        /* Animated progress line */
+        #stepper-nav { position: relative; }
+        #stepper-progress { position: absolute; left: 1.25rem; top: 1.25rem; width: 2px; height: 0; background-color: #10b981; z-index: 2; transition: height 0.4s ease; }
+
+        /* Collapsed: show icons in the circle, hide text */
+        .step-abbr{ display:inline; }
+        .step-icon-circle{ display:none; }
+        #app-container.sidebar-collapsed .step-abbr{ display:none; }
+        #app-container.sidebar-collapsed .step-icon-circle{ display:inline-flex; }
+
+        /* Focus ring for accessibility */
+        a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.45); border-color: #93c5fd; }
+
+        /* Skeleton loading */
+        .skeleton{ position:relative; overflow:hidden; background:#f3f4f6; }
+        .skeleton::after{ content:''; position:absolute; inset:0; background: linear-gradient(90deg, rgba(243,244,246,0) 0%, rgba(209,213,219,.7) 50%, rgba(243,244,246,0) 100%); transform:translateX(-100%); animation: sk 1.2s infinite; }
+        @keyframes sk{ to { transform: translateX(100%); } }
     </style>
 </head>
 <body class="antialiased">
@@ -138,11 +160,11 @@
         <!-- Main Content -->
         <main id="main-panel" class="w-2/3 lg:w-3/4 p-4 md:p-8 overflow-y-auto">
             <div id="content-toolbar" class="flex items-center justify-between mb-4">
-              <div class="text-sm text-gray-600" id="progress-summary"></div>
+              <div class="text-xs text-gray-600" id="progress-summary"></div>
               <div class="flex gap-2">
-                <button id="export-csv" class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"><i class="fa-solid fa-file-csv mr-1"></i> Export CSV</button>
-                <button id="export-json" class="px-3 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 text-sm"><i class="fa-solid fa-code mr-1"></i> Export JSON</button>
-                <button id="print-pdf" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm"><i class="fa-solid fa-print mr-1"></i> Print / PDF</button>
+                <button id="export-csv" class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold focus-ring"><i class="fa-solid fa-file-csv mr-1"></i> Export CSV</button>
+                <button id="export-json" class="px-3 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 text-sm focus-ring"><i class="fa-solid fa-code mr-1"></i> Export JSON</button>
+                <button id="print-pdf" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring"><i class="fa-solid fa-print mr-1"></i> Print / PDF</button>
               </div>
             </div>
             <div id="content-container">
@@ -163,6 +185,17 @@
         { id: 'd7', title: 'PREVENTIVE ACTION', shortDesc: 'Modify the necessary systems including policies, practices, and procedures to prevent recurrence of this and similar problems.' },
         { id: 'd8', title: 'RECOGNITION', shortDesc: 'Congratulate your team and recognize their collective efforts.' }
     ];
+
+    const stepIcons = {
+        d1: 'fa-users',
+        d2: 'fa-notes-medical',
+        d3: 'fa-shield-halved',
+        d4: 'fa-magnifying-glass',
+        d5: 'fa-list-check',
+        d6: 'fa-screwdriver-wrench',
+        d7: 'fa-ban',
+        d8: 'fa-trophy'
+    };
 
     function getInitialData() {
         const data = {};
@@ -215,26 +248,33 @@
 
         renderStepper() {
             const nav = document.getElementById('stepper-nav');
-            nav.innerHTML = disciplines.map(d => {
+            const stepsHtml = disciplines.map(d => {
                 const status = (this.data[d.id]?.status) || 'pending';
                 const badge = this.renderStatusBadge(status);
+                const icon = (typeof stepIcons !== 'undefined' && stepIcons[d.id]) ? stepIcons[d.id] : 'fa-circle-dot';
                 return `
-                <a href="#${d.id}" id="nav-${d.id}" data-id="${d.id}" class="step-link block">
+                <a href="#${d.id}" id="nav-${d.id}" data-id="${d.id}" class="step-link block focus-ring" data-tooltip="${d.shortDesc}">
                     <div class="step flex items-center mb-4">
-                        <div class="step-circle z-10">${d.id.toUpperCase()}</div>
+                        <div class="step-circle z-10">
+                            <span class="step-abbr">${d.id.toUpperCase()}</span>
+                            <i class="fa-solid ${icon} step-icon-circle"></i>
+                        </div>
                         <div class="ml-4 p-3 rounded-lg w-full step-content font-semibold text-gray-600 flex justify-between items-center">
-                            <span class="flex items-center gap-2">${d.title} <span class="inline-flex items-center gap-1 text-xs font-medium" id="badge-${d.id}">${badge}</span></span>
+                            <span class="flex items-center gap-2"><i class="fa-solid ${icon} text-gray-500"></i> ${d.title} <span class="inline-flex items-center gap-1 text-xs font-medium" id="badge-${d.id}">${badge}</span></span>
                             <i class="fas fa-chevron-right step-arrow"></i>
                         </div>
                     </div>
                 </a>`;
             }).join('');
+            nav.innerHTML = `<div id=\"stepper-progress\"></div>` + stepsHtml;
             this.updateProgressSummary();
+            this.updateStepperProgressLine && this.updateStepperProgressLine();
         },
         
         async loadDisciplineContent(id) {
             const container = document.getElementById('content-container');
             container.classList.add('loading');
+            this.showSkeleton && this.showSkeleton(container);
             try {
                 // Try multiple candidate paths (root, same directory, relative) to be resilient across hosts
                 const tryPaths = [];
@@ -457,18 +497,19 @@
             this.saveData();
             this.populateForm(id);
 
-            // Show feedback
+            // Micro-interaction feedback
             const saveBtn = document.querySelector(`.save-btn[data-id="${id}"]`);
             if(saveBtn) {
-                const originalText = saveBtn.innerHTML;
-                saveBtn.innerHTML = `<i class="fas fa-check mr-2"></i> Saved!`;
-                saveBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
-                saveBtn.classList.add('bg-blue-600');
+                const originalHTML = saveBtn.innerHTML;
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = `<i class=\"fa-solid fa-spinner fa-spin mr-2\"></i> Saving...`;
                 setTimeout(() => {
-                    saveBtn.innerHTML = originalText;
-                    saveBtn.classList.add('bg-green-600', 'hover:bg-green-700');
-                    saveBtn.classList.remove('bg-blue-600');
-                }, 2000);
+                    saveBtn.innerHTML = `<i class=\"fas fa-check mr-2\"></i> Saved!`;
+                    setTimeout(() => {
+                        saveBtn.innerHTML = originalHTML;
+                        saveBtn.disabled = false;
+                    }, 1200);
+                }, 400);
             }
         },
         
@@ -537,7 +578,7 @@
                     if(badgeHost) badgeHost.innerHTML = this.renderStatusBadge(st);
                 }
             });
-            this.updateProgressSummary();
+            this.updateProgressSummary(); this.updateStepperProgressLine && this.updateStepperProgressLine();
         },
 
         updateSidebarToggleUI(isCollapsed){
@@ -553,6 +594,42 @@
     document.addEventListener('DOMContentLoaded', () => {
         app.init();
     });
+
+    // Helper: show skeletons during load
+    app.showSkeleton = function(container){
+        const host = container || document.getElementById('content-container');
+        if(!host) return;
+        host.innerHTML = `
+          <div class="card">
+            <div class="flex items-center justify-between">
+              <div class="skeleton" style="height:24px;width:220px;border-radius:6px"></div>
+              <div class="skeleton" style="height:36px;width:120px;border-radius:8px"></div>
+            </div>
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="skeleton" style="height:140px;border-radius:10px"></div>
+              <div class="skeleton" style="height:140px;border-radius:10px"></div>
+            </div>
+          </div>`;
+    };
+
+    // Compute and animate the stepper green progress line
+    app.updateStepperProgressLine = function(){
+        const nav = document.getElementById('stepper-nav');
+        const line = document.getElementById('stepper-progress');
+        if(!nav || !line) return;
+        const steps = Array.from(nav.querySelectorAll('.step'));
+        if(!steps.length) { line.style.height = '0px'; return; }
+        let lastIdx = -1;
+        disciplines.forEach((d, i)=>{ if(app.data[d.id]?.status === 'completed') lastIdx = i; });
+        if(lastIdx < 0){ line.style.height = '0px'; return; }
+        const targetStep = steps[Math.min(lastIdx, steps.length-1)];
+        const navTop = nav.getBoundingClientRect().top;
+        const stepRect = targetStep.getBoundingClientRect();
+        const center = stepRect.top - navTop + (stepRect.height/2);
+        const offsetTop = 20; // matches top: 1.25rem (~20px)
+        const h = Math.max(0, center - offsetTop);
+        line.style.height = h + 'px';
+    };
     </script>
 <script>
 (function(){
@@ -597,8 +674,8 @@
         </select>
         <input id="global-assignee" class="px-2 py-2 bg-white border border-gray-200 rounded-lg text-sm" placeholder="Assignee" />
         <input id="global-team" class="px-2 py-2 bg-white border border-gray-200 rounded-lg text-sm" placeholder="Team" />
-        <a id="nc-link" href="../NC Listing Page.html" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm" title="Open NC Report"><i class="fa-solid fa-link mr-1"></i> NC Report</a>
-        <button id="show-audit" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm"><i class="fa-solid fa-clock-rotate-left mr-1"></i> Audit</button>
+        <a id="nc-link" href="../NC Listing Page.html" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring" title="Open NC Report"><i class="fa-solid fa-link mr-1"></i> NC Report</a>
+        <button id="show-audit" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring"><i class="fa-solid fa-clock-rotate-left mr-1"></i> Audit</button>
       </div>`);
     right.parentNode.insertBefore(extras, right);
 
@@ -640,6 +717,7 @@
     app.loadDisciplineContent = async function(id){
       const container = $('content-container');
       container.classList.add('loading');
+            this.showSkeleton && this.showSkeleton(container);
       try{
         const base = window.location.pathname.replace(/[^\/]*$/, '');
         const tryPaths = [ base + id + '.html', '/' + id + '.html', './' + id + '.html', id + '.html' ];
@@ -768,8 +846,8 @@
       if(id === 'd3' && !$('expand-all')){
         const barRight = $('content-toolbar')?.querySelector('.flex.gap-2');
         if(barRight){
-          const ex = createEl('<button id="expand-all" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm">Expand All</button>');
-          const col = createEl('<button id="collapse-all" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm">Collapse All</button>');
+          const ex = createEl('<button id="expand-all" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring">Expand All</button>');
+          const col = createEl('<button id="collapse-all" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring">Collapse All</button>');
           barRight.parentNode.insertBefore(ex, barRight);
           barRight.parentNode.insertBefore(col, barRight);
           const cards = qsa('#content-container .card');

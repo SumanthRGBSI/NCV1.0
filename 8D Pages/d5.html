@@ -19,26 +19,19 @@
   <div class="card">
     <div class="section-title">5A. Selection & Verification of Corrective Action</div>
     <table id="d5-actions" class="table dynamic-table">
-      <thead><tr><th>Action (PCA)</th><th>Root Cause</th><th>Target Date</th><th>Responsibility</th><th>Mistake Proof Level</th><th>Estimated Cost</th><th>Expected Benefit</th><th>Status</th><th></th></tr></thead>
+      <thead><tr><th><i class="fa-solid fa-up-down-left-right"></i> Action (PCA)</th><th><i class="fa-solid fa-diagram-project"></i> Root Cause</th><th><i class="fa-solid fa-calendar-days"></i> Target Date</th><th><i class="fa-solid fa-user"></i> Responsibility</th><th><i class="fa-solid fa-shield"></i> Mistake Proof</th><th><i class="fa-solid fa-dollar-sign"></i> Estimated Cost</th><th><i class="fa-solid fa-arrow-trend-up"></i> Expected Benefit</th><th><i class="fa-solid fa-square-check"></i> Verification</th><th></th></tr></thead>
       <tbody></tbody>
       <tfoot><tr><td colspan="9"><button class="add-row-btn btn btn-ghost">Add PCA</button></td></tr></tfoot>
       <template>
-        <tr>
-          <td><input class="input pca-action"/></td>
+        <tr draggable="true">
+          <td><span class="drag-handle" title="Drag to reorder">⋮⋮</span> <input class="input pca-action"/></td>
           <td><select class="input pca-root"><option value="">Select Root Cause</option></select></td>
           <td><input class="input pca-date" type="date"/></td>
           <td><input class="input"/></td>
-          <td>
-            <select class="input">
-              <option>Detection</option>
-              <option>Warning</option>
-              <option>Control</option>
-              <option>Shutdown</option>
-            </select>
-          </td>
+          <td class="mistake-proof-cell"><label class="switch"><input type="checkbox" class="mp-check"/><span class="slider"></span></label></td>
           <td><input class="input" type="number" placeholder="$"/></td>
           <td><input class="input" placeholder="Benefit"/></td>
-          <td><input class="input"/></td>
+          <td><select class="input verify-select"><option>Pending</option><option>Verified</option></select></td>
           <td><button class="remove-row-btn btn btn-danger">Remove</button></td>
         </tr>
       </template>
@@ -46,12 +39,14 @@
 
     <div class="mt-small">
       <label class="label">5B. Corrective Action Images / Documents</label>
-      <input class="preview-file" type="file" multiple />
+      <input class="preview-file multi-file-input" type="file" multiple />
+      <div id="d5-file-list" class="small mt-xs"></div>
     </div>
 
     <div class="mt-small">
       <label class="label">5C. Selected Permanent Corrective Action</label>
       <textarea id="d5-selectedPCA" class="input"></textarea>
+      <div class="small" id="d5-pca-counter">0 characters</div>
     </div>
 
     <div class="mt-small">

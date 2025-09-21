@@ -12,26 +12,30 @@
         <option value="in-progress">In Progress</option>
         <option value="completed">Completed</option>
       </select>
-      <button class="btn btn-primary save-btn" data-id="d8"><i class="fas fa-save"></i> Save</button>
+      <button class="btn btn-primary save-btn" data-id="d8"><i class="fa-solid fa-check-double"></i> Finalize & Congratulate</button>
     </div>
   </div>
 
   <div class="card">
     <div class="section-title">Acknowledge Contributions</div>
     <table class="table dynamic-table">
-      <thead><tr><th>Name</th><th>Title</th><th>Responsibility</th><th>Achievements</th><th></th></tr></thead>
+      <thead><tr><th>Name</th><th>Title</th><th>Responsibility</th><th>Achievements</th><th>Award</th><th></th></tr></thead>
       <tbody></tbody>
       <tfoot><tr><td colspan="5"><button class="add-row-btn btn btn-ghost">Add Recognition</button></td></tr></tfoot>
-      <template><tr><td><input class="input"/></td><td><input class="input"/></td><td><input class="input"/></td><td><input class="input"/></td><td><button class="remove-row-btn btn btn-danger">Remove</button></td></tr></template>
+      <template><tr><td><input class="input"/></td><td><input class="input"/></td><td><input class="input"/></td><td><input class="input"/></td><td><select class="input"><option>🏅</option><option>⭐</option><option>👍</option><option>🎖️</option><option>🏆</option></select></td><td><button class="remove-row-btn btn btn-danger">Remove</button></td></tr></template>
     </table>
   </div>
 
   <div class="card">
-    <div class="section-title">Final Sign-off</div>
+    <div class="controls flex-between">
+      <div class="section-title">Final Sign-off</div>
+      <button id="d8-preview" class="btn btn-ghost"><i class="fa-regular fa-eye"></i> Preview Final Report</button>
+    </div>
     <div class="row">
       <div class="col">
         <label class="label">Approved By - Name</label>
         <input id="d8-approvedName" class="input" />
+        <canvas id="d8-approved-sign" width="280" height="80" class="mt-xs" style="border:1px solid #e6e9ef;border-radius:8px"></canvas>
       </div>
       <div class="col">
         <label class="label">Approved By - Date</label>
@@ -39,7 +43,7 @@
       </div>
     </div>
     <div class="row mt-xs">
-      <div class="col"><label class="label">Submitted By - Name</label><input id="d8-submittedName" class="input"/></div>
+      <div class="col"><label class="label">Submitted By - Name</label><input id="d8-submittedName" class="input"/><canvas id="d8-submitted-sign" width="280" height="80" class="mt-xs" style="border:1px solid #e6e9ef;border-radius:8px"></canvas></div>
       <div class="col"><label class="label">Submitted By - Date</label><input id="d8-submittedDate" class="input" type="date"/></div>
     </div>
 
@@ -50,5 +54,32 @@
   </div>
 
   <script src="/assets/8d-forms.js"></script>
-  <script>window.__init8D && window.__init8D(document);</script>
+  <script>
+    window.__init8D && window.__init8D(document);
+    // Signature pads
+    function initPad(id){
+      const c = document.getElementById(id); if(!c) return; const ctx=c.getContext('2d'); let d=false,l=null; c.addEventListener('mousedown',e=>{d=true;l=[e.offsetX,e.offsetY]}); c.addEventListener('mousemove',e=>{ if(!d) return; ctx.lineWidth=2; ctx.lineCap='round'; ctx.strokeStyle='#111827'; ctx.beginPath(); ctx.moveTo(l[0],l[1]); ctx.lineTo(e.offsetX,e.offsetY); ctx.stroke(); l=[e.offsetX,e.offsetY];}); window.addEventListener('mouseup',()=> d=false);
+    }
+    initPad('d8-approved-sign'); initPad('d8-submitted-sign');
+
+    // Preview Final Report
+    document.getElementById('d8-preview')?.addEventListener('click', ()=>{
+      const modal = document.createElement('div');
+      const data = (window.app && app.data) ? app.data : {};
+      const items = (window.disciplines||[]).map(d=>`<tr><td>${d.id.toUpperCase()}</td><td>${d.title}</td><td>${data[d.id]?.status||'pending'}</td><td>${data[d.id]?.lastUpdated? new Date(data[d.id].lastUpdated).toLocaleString(): 'Never'}</td></tr>`).join('');
+      modal.innerHTML = `<div id="d8-preview-modal" class="modal-overlay"><div class="card modal-card"><div class="flex-between"><div class="h-title">Final 8D Report Preview</div><button class="icon-btn" id="d8-prev-close">✕</button></div><div class="mt-small" style="max-height:65vh;overflow:auto"><table class="table"><thead><tr><th>Step</th><th>Title</th><th>Status</th><th>Last Updated</th></tr></thead><tbody>${items}</tbody></table></div></div></div>`;
+      document.body.appendChild(modal);
+      modal.addEventListener('click', (e)=>{ if(e.target.id==='d8-preview-modal' || e.target.id==='d8-prev-close'){ modal.remove(); } });
+    });
+
+    // Completion confirmation on save
+    document.querySelector('.save-btn[data-id="d8"]')?.addEventListener('click', ()=>{
+      setTimeout(()=>{
+        const modal = document.createElement('div');
+        modal.innerHTML = `<div id="d8-done" class="modal-overlay"><div class="card modal-card"><div class="h-title">Congratulations on completing the 8D process! 🎉</div><div class="small mt-small">The team's efforts have been recorded.</div><div class="mt-small"><button class="btn btn-primary" id="d8-done-close">Close</button></div></div></div>`;
+        document.body.appendChild(modal);
+        modal.addEventListener('click', (e)=>{ if(e.target.id==='d8-done' || e.target.id==='d8-done-close'){ modal.remove(); } });
+      }, 700);
+    });
+  </script>
 </section>
