@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="/assets/8d.css">
   <div class="card header toolbar">
     <div>
-      <div class="h-title">D1 — Identify Team 👥</div>
+      <div class="h-title">D1 ��� Identify Team 👥</div>
       <div class="h-sub">Assemble the right team to solve the problem. Minimal clicks — add members quickly.</div>
     </div>
     <div class="controls">
@@ -42,26 +42,21 @@
 
   <div class="card">
     <div class="section-title">Team Members (Champion)</div>
-    <div class="row">
-      <div class="col">
-        <label class="label">Champion Name</label>
-        <input id="d1-sponsor" class="input" placeholder="Full name of champion" />
-      </div>
-      <div class="col">
-        <label class="label">Title</label>
-        <input id="d1-sponsorTitle" class="input" placeholder="Champion job title" />
-      </div>
-    </div>
-    <div class="row">
-      <div class="col">
-        <label class="label">Email</label>
-        <input id="d1-sponsorEmail" class="input" placeholder="email@company.com" />
-      </div>
-      <div class="col">
-        <label class="label">Phone</label>
-        <input id="d1-sponsorPhone" class="input" placeholder="(555) 555-5555" />
-      </div>
-    </div>
+    <div class="hint">Add one or more champions/sponsors for escalation and authority.</div>
+    <table class="table dynamic-table" id="d1-champions-table">
+      <thead><tr><th>Name</th><th>Title</th><th>Email</th><th>Phone Number</th><th></th></tr></thead>
+      <tbody></tbody>
+      <tfoot><tr><td colspan="5"><button type="button" class="add-row-btn btn btn-ghost">Add Champion</button></td></tr></tfoot>
+      <template>
+        <tr>
+          <td><input class="input" placeholder="Full name" /></td>
+          <td><input class="input" placeholder="Job title" /></td>
+          <td><input class="input" placeholder="name@company.com" /></td>
+          <td><input class="input" placeholder="(555) 555-5555" /></td>
+          <td><button type="button" class="remove-row-btn btn btn-danger">Remove</button></td>
+        </tr>
+      </template>
+    </table>
   </div>
 
   <div class="card">
