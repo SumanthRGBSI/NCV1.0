@@ -80,10 +80,10 @@
       <template><tr><td><input class="input"/></td><td><input class="input"/></td><td><input class="input" type="date"/></td><td><input class="input"/></td><td><button class="remove-row-btn btn btn-danger">Remove</button></td></tr></template>
     </table>
 
-    <label class="label" class="mt-small">4D. Summary of Root Cause Verifications</label>
+    <label class="label mt-small">4D. Summary of Root Cause Verifications</label>
     <textarea id="d4-verificationSummary" class="input"></textarea>
 
-    <div class="small" class="mt-small">4E. Final Root Cause</div>
+    <div class="small mt-small">4E. Final Root Cause</div>
     <table class="table dynamic-table">
       <thead><tr><th>Root Cause</th><th>Category</th><th></th></tr></thead>
       <tbody></tbody>
@@ -103,13 +103,13 @@
     document.getElementById('launch-fishbone')?.addEventListener('click', ()=>{
       const modal = document.createElement('div');
       modal.innerHTML = `
-        <div id="fb-modal" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.45);z-index:50">
-          <div class="card" style="max-width:900px;width:90%">
+        <div id="fb-modal" class="modal-overlay">
+          <div class="card modal-card">
             <div class="flex-between">
               <div class="h-title">Fishbone Brainstorm</div>
               <button class="icon-btn" id="fb-close" aria-label="Close">✕</button>
             </div>
-            <div class="small" style="margin:0.5rem 0 0.75rem">Use the 6M categories as prompts and capture ideas in the table below.</div>
+            <div class="small mt-small">Use the 6M categories as prompts and capture ideas in the table below.</div>
             <table class="table dynamic-table">
               <thead><tr><th>Category</th><th>Potential Cause</th><th>Evidence/Notes</th><th></th></tr></thead>
               <tbody></tbody>
