@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>8D Problem-Solving Interface</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="assets/design-system.css">
+    <link rel="stylesheet" href="/assets/design-system.css">
+    <link rel="stylesheet" href="/assets/8d.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -33,6 +34,8 @@
         .step-content { transition: border 0.3s, background-color 0.3s, color 0.3s; border: 1px solid transparent; }
         .step-arrow { opacity: 0; transition: opacity 0.3s; color: var(--active-border); }
         #content-container.loading { opacity: 0.5; transition: opacity 0.3s; }
+        #overall-progress-wrap{ height:6px;background:#e5e7eb;border-radius:9999px;overflow:hidden;margin-top:2px; }
+        #overall-progress-bar{ height:100%;width:0%;background:#10b981;transition:width .3s ease; }
         #sidebar { transition: width 0.3s ease-in-out, padding 0.3s ease-in-out, background-color 0.3s ease-in-out; }
         main#main-panel { transition: width 0.3s ease-in-out, flex 0.3s ease-in-out; }
         #app-container.sidebar-collapsed #sidebar { width: 6rem; padding-left: 0.75rem; padding-right: 0.75rem; }
@@ -89,7 +92,10 @@
         </nav>
         <main id="main-panel" class="w-2/3 lg:w-3/4 p-4 md:p-8 overflow-y-auto">
             <div id="content-toolbar" class="flex items-center justify-between mb-3">
-              <div class="text-xs text-gray-600" id="progress-summary"></div>
+              <div class="flex flex-col">
+                <div class="text-xs text-gray-600" id="progress-summary"></div>
+                <div id="overall-progress-wrap"><div id="overall-progress-bar"></div></div>
+              </div>
               <div class="flex items-center gap-2">
                 <div class="relative" id="export-dropdown">
                   <button id="export-toggle" class="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-semibold focus-ring"><i data-lucide="download" class="mr-1"></i> Export</button>
@@ -122,8 +128,9 @@
         { id: 'd7', title: 'PREVENTIVE ACTION', shortDesc: 'Modify the necessary systems including policies, practices, and procedures to prevent recurrence of this and similar problems.' },
         { id: 'd8', title: 'RECOGNITION', shortDesc: 'Congratulate your team and recognize their collective efforts.' }
     ];
+    window.disciplines = disciplines;
 
-    const stepIcons = { d1: 'users', d2: 'file-text', d3: 'shield-check', d4: 'search', d5: 'check-square', d6: 'tool', d7: 'ban', d8: 'award' };
+     const stepIcons = { d1: 'users', d2: 'file-text', d3: 'shield-check', d4: 'search', d5: 'check-square', d6: 'tool', d7: 'ban', d8: 'award' };
 
     function getInitialData() {
         const data = {};
@@ -131,14 +138,19 @@
             data[d.id] = { status: 'pending', lastUpdated: null, fields: {}, checklist: {} };
         });
         data.d1.fields = { teamLeader: '', sponsor: '', members: [] };
-        data.d2.fields = { problemStatement: '', who: '', what: '', when: '', where: '', why: '', how: '', howMany: '' };
-        data.d3.fields = { containmentActions: '', verification: '' };
-        data.d4.fields = { rootCause: '', verificationMethod: '' };
-        data.d5.fields = { correctiveAction: '', verificationPlan: '' };
-        data.d6.fields = { implementationPlan: '', validationResults: '' };
+        data.d2.fields = { briefStatement: '', problemStatement: '', impactCustomer: '', who: '', what: '', when: '', where: '', why: '', how: '', howMany: '' };
+        data.d3.fields = { supplierDescription: '', actionNotes: '' };
+        data.d4.fields = { rootCause: '', verificationMethod: '', verificationSummary: '' };
+        data.d5.fields = { correctiveAction: '', verificationPlan: '', selectedPCA: '' };
+        data.d6.fields = { proof: '', situationAfter: '' };
         data.d7.fields = { preventiveActions: '', responsiblePerson: '', completionDate: '' };
-        data.d8.fields = { recognitionSummary: '', teamFeedback: '' };
+        data.d8.fields = { recognitionSummary: '', teamFeedback: '', approvedName: '', approvedDate: '', submittedName: '', submittedDate: '' };
         return data;
+    }
+
+    function ensureCoreStyles(){
+      const need = ['/assets/8d.css','/assets/design-system.css'];
+      need.forEach(href=>{ if(!document.querySelector(`link[rel="stylesheet"][href="${href}"]`)){ const l=document.createElement('link'); l.rel='stylesheet'; l.href=href; document.head.appendChild(l); }});
     }
 
     const app = {
@@ -148,6 +160,7 @@
             this.renderStepper();
             this.attachEventListeners();
             this.applySidebarState();
+            ensureCoreStyles();
             this.handleRouting();
             this.updateStepperStatusColors();
         },
@@ -218,13 +231,14 @@
                 if (!response || !response.ok) { console.warn('Fetch attempts failed:', tryPaths, lastError); throw new Error(`File not found: ${id}.html.`); }
                 const html = await response.text();
                 container.innerHTML = html;
-                Array.from(container.querySelectorAll('link[rel="stylesheet"]').forEach(link=>{ if(!document.querySelector(`link[href="${link.getAttribute('href')}"]`)){ document.head.appendChild(link.cloneNode()); } link.remove(); }));
+                ensureCoreStyles();
+                Array.from(container.querySelectorAll('link[rel="stylesheet"]')).forEach(link=>{ const href = link.getAttribute('href'); if(href && !document.querySelector(`link[rel="stylesheet"][href="${href}"]`)){ const l = document.createElement('link'); l.rel='stylesheet'; l.href=href; document.head.appendChild(l); } link.remove(); });
                 const scripts = Array.from(container.querySelectorAll('script'));
                 for (const oldScript of scripts) {
                     try { if (oldScript.src) { if (!document.querySelector(`script[src="${oldScript.src}"]`)) { const s = document.createElement('script'); s.src = oldScript.src; s.async = false; document.body.appendChild(s); } } else { const code = oldScript.textContent || ''; if (code.trim()) { try { new Function(code)(); } catch (inlineErr) { const s = document.createElement('script'); s.textContent = code; document.body.appendChild(s); } } } } catch (e) { console.warn('Error executing injected script:', e); } finally { oldScript.remove(); }
                 }
-                if (window.__init8D) window.__init8D(container);
                 this.populateForm(id);
+                if (window.__init8D) window.__init8D(container);
             } catch (error) {
                 console.error('Failed to fetch discipline content:', error);
                 container.innerHTML = `<div class="bg-white p-8 rounded-lg shadow-lg text-center"><h2 class="text-2xl font-bold text-red-600">Error</h2><p class="mt-2 text-gray-600">Could not load content for ${id.toUpperCase()}.</p></div>`;
@@ -270,7 +284,8 @@
               if(disciplines.some(d=> d.id===id)){
                 if(!this.data[id]) return;
                 const m = t.id && t.id.startsWith(id+'-') ? t.id.slice((id+'-').length) : null;
-                if(m){ this.data[id].fields[m] = t.value; this.data[id].lastUpdated = new Date().toISOString(); }
+                if(m){ const val = (t.type === 'checkbox') ? (t.checked ? 'true' : 'false') : t.value; this.data[id].fields[m] = val; }
+                this.data[id].lastUpdated = new Date().toISOString();
               }
               this._dirty = true; this.updateSaveFab(true);
               const ind = document.getElementById('autosave-indicator'); if(ind){ ind.textContent = 'Saving…'; }
@@ -343,7 +358,7 @@
         },
         applySidebarState() { const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true'; if (isCollapsed) { document.getElementById('app-container').classList.add('sidebar-collapsed'); } this.updateSidebarToggleUI(isCollapsed); },
         renderStatusBadge(status){ const map = { 'pending': '<span class="px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">Pending</span>', 'in-progress': '<span class="px-2 py-0.5 rounded-full bg-amber-500 text-white">In Progress</span>', 'completed': '<span class="px-2 py-0.5 rounded-full bg-emerald-500 text-white">Completed</span>' }; return map[status] || map['pending']; },
-        updateProgressSummary(){ const done = disciplines.filter(d=>this.data[d.id]?.status==='completed').length; const total = disciplines.length; const el = document.getElementById('progress-summary'); if(el) el.textContent = `Progress: ${done}/${total} steps completed`; },
+        updateProgressSummary(){ const done = disciplines.filter(d=>this.data[d.id]?.status==='completed').length; const total = disciplines.length; const el = document.getElementById('progress-summary'); if(el) el.textContent = `Progress: ${done}/${total} steps completed`; const bar=document.getElementById('overall-progress-bar'); if(bar){ const pct = Math.max(0, Math.min(100, (done/Math.max(1,total))*100)); bar.style.width = pct+'%'; } },
         updateStepperStatusColors() {
             disciplines.forEach(d => {
                 const link = document.getElementById(`nav-${d.id}`);
@@ -371,6 +386,7 @@
         updateStepperProgressLine(){ const nav = document.getElementById('stepper-nav'); const line = document.getElementById('stepper-progress'); if(!nav || !line) return; const steps = Array.from(nav.querySelectorAll('.step')); if(!steps.length) { line.style.height = '0px'; return; } let lastIdx = -1; disciplines.forEach((d, i)=>{ if(app.data[d.id]?.status === 'completed') lastIdx = i; }); if(lastIdx < 0){ line.style.height = '0px'; return; } const targetStep = steps[Math.min(lastIdx, steps.length-1)]; const navTop = nav.getBoundingClientRect().top; const stepRect = targetStep.getBoundingClientRect(); const center = stepRect.top - navTop + (stepRect.height/2); const offsetTop = 20; const h = Math.max(0, center - offsetTop); line.style.height = h + 'px'; }
     };
 
+    window.app = app;
     document.addEventListener('DOMContentLoaded', () => { app.init(); });
     </script>
 
@@ -441,7 +457,7 @@
     const origUpdate = app.updateStepperStatusColors.bind(app);
     app.updateStepperStatusColors = function(){ origUpdate(); (window.disciplines||[]).forEach(d=>{ const warn = this.data[d.id]?.hasWarnings; const link = $('nav-'+d.id); if(!link) return; const content = link.querySelector('.step-content'); if(!content) return; let icon = content.querySelector('.warn-icon'); if(warn){ if(!icon){ icon = createEl('<span class="warn-icon text-amber-600 ml-2" title="Validation issues"><i data-lucide="alert-triangle"></i></span>'); content.appendChild(icon); } } else if(icon){ icon.remove(); } }); const ind=$('autosave-indicator'); if(ind && ind.textContent==='Saving…'){ ind.textContent='All changes saved'; } };
 
-    function markValidationForCurrent(id){ const container = $('content-container'); let ok = true; qsa('[data-required]', container).forEach(el=>{ const val=(el.value||'').trim(); if(!val){ ok=false; el.classList.add('invalid'); el.setAttribute('aria-invalid','true'); } else { el.classList.remove('invalid'); el.removeAttribute('aria-invalid'); } }); app.data[id].hasWarnings = !ok; app.saveData('validation-scan-'+id); }
+    function markValidationForCurrent(id){ const container = $('content-container'); let ok = true; qsa('[data-required]', container).forEach(el=>{ const tag = el.tagName; if(tag!=='INPUT' && tag!=='TEXTAREA' && tag!=='SELECT') return; const val=(el.value||'').trim(); if(!val){ ok=false; el.classList.add('invalid'); el.setAttribute('aria-invalid','true'); } else { el.classList.remove('invalid'); el.removeAttribute('aria-invalid'); } }); app.data[id].hasWarnings = !ok; app.saveData('validation-scan-'+id); }
 
     const containerEl = $('content-container'); let saveTimer=null;
     containerEl.addEventListener('input', (e)=>{ const id=(location.hash||'#dashboard').replace('#',''); const t=e.target; if(t && t.hasAttribute && t.hasAttribute('data-required')){ markValidationForCurrent(id); } app._dirty=true; app.updateSaveFab(true); clearTimeout(saveTimer); saveTimer=setTimeout(()=> app.saveData('field-change-'+id), 600); });
