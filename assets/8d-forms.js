@@ -152,6 +152,7 @@
           <td><button type="button" class="remove-row-btn btn btn-danger">Remove</button></td>`;
         teamTable.appendChild(row);
         renderOrgChart(container);
+        renderTeamCards(container);
       }
     });
   }
