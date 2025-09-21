@@ -177,6 +177,37 @@
     ).join('') : '<div class="small text-gray-600">No team members yet.</div>';
   }
 
+  // D1: Team cards (visual)
+  function renderTeamCards(container){
+    const host = qs('#d1-team-cards', container);
+    if(!host) return;
+    const people = [];
+    qsa('#d1-kpoc-table tbody tr, #d1-champions-table tbody tr, #d1-team-table tbody tr', container).forEach(tr=>{
+      const name = tr.querySelector('.contact-name')?.value?.trim();
+      const title = tr.querySelector('.contact-title')?.value?.trim();
+      if(name){ people.push({ name, title: title||'Member' }); }
+    });
+    qsa('#d1-members-list .list-item .kv', container).forEach(el=>{
+      const txt = (el.textContent||'').trim(); if(!txt) return;
+      const name = txt.split(/[-—–]/)[0].trim();
+      const rest = txt.replace(name, '').replace(/[-—–]/,'').trim();
+      people.push({ name, title: rest || 'Member' });
+    });
+    const uniq = [];
+    const seen = new Set();
+    people.forEach(p=>{ const key=(p.name+'|'+p.title).toLowerCase(); if(!seen.has(key)){ seen.add(key); uniq.push(p);} });
+    host.innerHTML = uniq.length ? uniq.map(p=>{
+      const initials = p.name.split(/\s+/).map(n=>n[0]?.toUpperCase()||'').slice(0,2).join('');
+      return `<div class="team-card">
+        <div class="avatar" aria-hidden="true">${initials}</div>
+        <div>
+          <div class="card-title">${p.name}</div>
+          <div class="card-sub">${p.title}</div>
+        </div>
+      </div>`;
+    }).join('') : '<div class="small text-gray-600">No team members yet.</div>';
+  }
+
   // D1: Meeting scheduler (.ics)
   function initMeetingScheduler(container){
     const btn = qs('#d1-schedule-meeting', container);
