@@ -594,6 +594,42 @@
     document.addEventListener('DOMContentLoaded', () => {
         app.init();
     });
+
+    // Helper: show skeletons during load
+    app.showSkeleton = function(container){
+        const host = container || document.getElementById('content-container');
+        if(!host) return;
+        host.innerHTML = `
+          <div class="card">
+            <div class="flex items-center justify-between">
+              <div class="skeleton" style="height:24px;width:220px;border-radius:6px"></div>
+              <div class="skeleton" style="height:36px;width:120px;border-radius:8px"></div>
+            </div>
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="skeleton" style="height:140px;border-radius:10px"></div>
+              <div class="skeleton" style="height:140px;border-radius:10px"></div>
+            </div>
+          </div>`;
+    };
+
+    // Compute and animate the stepper green progress line
+    app.updateStepperProgressLine = function(){
+        const nav = document.getElementById('stepper-nav');
+        const line = document.getElementById('stepper-progress');
+        if(!nav || !line) return;
+        const steps = Array.from(nav.querySelectorAll('.step'));
+        if(!steps.length) { line.style.height = '0px'; return; }
+        let lastIdx = -1;
+        disciplines.forEach((d, i)=>{ if(app.data[d.id]?.status === 'completed') lastIdx = i; });
+        if(lastIdx < 0){ line.style.height = '0px'; return; }
+        const targetStep = steps[Math.min(lastIdx, steps.length-1)];
+        const navTop = nav.getBoundingClientRect().top;
+        const stepRect = targetStep.getBoundingClientRect();
+        const center = stepRect.top - navTop + (stepRect.height/2);
+        const offsetTop = 20; // matches top: 1.25rem (~20px)
+        const h = Math.max(0, center - offsetTop);
+        line.style.height = h + 'px';
+    };
     </script>
 <script>
 (function(){
