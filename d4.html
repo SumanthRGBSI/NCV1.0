@@ -1,4 +1,5 @@
 <section class="container">
+  <link rel="stylesheet" href="/assets/8d.css">
   <div class="card header">
     <div>
       <div class="h-title">D4 — Root Cause Analysis 🔬</div>
@@ -6,7 +7,7 @@
     </div>
     <div class="controls">
       <div class="timestamp">Last updated: <span id="d4-timestamp">Never</span></div>
-      <select id="d4-status-select" class="input" style="width:160px">
+      <select id="d4-status-select" class="input select-compact">
         <option value="pending">Pending</option>
         <option value="in-progress">In Progress</option>
         <option value="completed">Completed</option>
@@ -40,10 +41,10 @@
       <template><tr><td><input class="input"/></td><td><input class="input"/></td><td><input class="input" type="date"/></td><td><input class="input"/></td><td><button class="remove-row-btn btn btn-danger">Remove</button></td></tr></template>
     </table>
 
-    <label class="label" style="margin-top:0.75rem">4D. Summary of Root Cause Verifications</label>
+    <label class="label" class="mt-small">4D. Summary of Root Cause Verifications</label>
     <textarea id="d4-verificationSummary" class="input"></textarea>
 
-    <div class="small" style="margin-top:0.75rem">4E. Final Root Cause</div>
+    <div class="small" class="mt-small">4E. Final Root Cause</div>
     <table class="table dynamic-table">
       <thead><tr><th>Root Cause</th><th>Category</th><th></th></tr></thead>
       <tbody></tbody>
@@ -51,7 +52,7 @@
       <template><tr><td><input class="input"/></td><td><select class="input"><option>Process</option><option>Design</option><option>Materials</option><option>Human</option><option>Other</option></select></td><td><button class="remove-row-btn btn btn-danger">Remove</button></td></tr></template>
     </table>
 
-    <div style="margin-top:0.75rem">
+    <div class="mt-small">
       <label class="label">4F. Documents</label>
       <input class="preview-file" type="file" multiple />
     </div>
