@@ -521,6 +521,15 @@
                 }
             });
             this.updateProgressSummary();
+        },
+
+        updateSidebarToggleUI(isCollapsed){
+            const btn = document.getElementById('sidebar-toggle-btn');
+            const icon = document.getElementById('toggle-btn-icon');
+            const label = btn ? btn.querySelector('.sidebar-text') : null;
+            if(label) label.textContent = isCollapsed ? 'Expand' : 'Collapse';
+            if(btn) btn.setAttribute('aria-expanded', (!isCollapsed).toString());
+            if(icon) icon.setAttribute('aria-hidden','true');
         }
     };
 
