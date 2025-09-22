@@ -20,14 +20,7 @@
       <div class="card">
         <div class="section-title sticky-section-title">Problem Definition</div>
         <label class="label" for="d2-problemStatement">2A. Problem Description</label>
-        <div id="d2-problemStatement-toolbar" class="controls mt-xs">
-          <button class="btn btn-ghost rt-bold" data-target="d2-problemStatement">B</button>
-          <button class="btn btn-ghost rt-italic" data-target="d2-problemStatement"><i>I</i></button>
-          <button class="btn btn-ghost rt-ul" data-target="d2-problemStatement">• List</button>
-          <button class="btn btn-ghost rt-ol" data-target="d2-problemStatement">1. List</button>
-        </div>
-        <textarea id="d2-problemStatement" class="input" style="display:none"></textarea>
-        <div id="d2-problemStatement-editor" class="input" contenteditable="true" style="min-height:140px"></div>
+        <textarea id="d2-problemStatement" class="input textarea-lg" placeholder="Provide a detailed description of the problem..."></textarea>
 
         <label class="label mt-small" for="d2-briefStatement" data-required>2B. Problem Statement</label>
         <input id="d2-briefStatement" class="input" placeholder="One-sentence problem statement" data-required />
@@ -56,7 +49,7 @@
       </div>
       <div class="card">
         <div class="section-title sticky-section-title">Problem Description Images / Documents</div>
-        <div class="file-block card drop-zone" id="d2-evidence-zone">
+        <div class="file-block drop-zone" id="d2-evidence-zone">
           <label class="label">Upload images or documents</label>
           <div class="file-input">
             <input class="preview-file" type="file" id="d2-evidence" />
@@ -72,19 +65,12 @@
 
   <div class="card">
     <div class="section-title sticky-section-title">2G. Situation Before Countermeasure Implementation</div>
-    <div id="d2-situationBefore-toolbar" class="controls mt-xs">
-      <button class="btn btn-ghost rt-bold" data-target="d2-situationBefore">B</button>
-      <button class="btn btn-ghost rt-italic" data-target="d2-situationBefore"><i>I</i></button>
-      <button class="btn btn-ghost rt-ul" data-target="d2-situationBefore">• List</button>
-      <button class="btn btn-ghost rt-ol" data-target="d2-situationBefore">1. List</button>
-    </div>
-    <textarea id="d2-situationBefore" class="input" style="display:none"></textarea>
-    <div id="d2-situationBefore-editor" class="input" contenteditable="true" style="min-height:120px"></div>
+    <textarea id="d2-situationBefore" class="input textarea-lg" placeholder="Describe the baseline state before countermeasures..."></textarea>
   </div>
 
   <div class="card">
     <div class="section-title sticky-section-title">2H. Situation Before &amp; Graphs (Images/Documents)</div>
-    <div class="file-block card drop-zone" id="d2-before-zone">
+    <div class="file-block drop-zone" id="d2-before-zone">
       <label class="label">Upload charts, graphs, or photos</label>
       <div class="file-input">
         <input class="preview-file" type="file" id="d2-before-files" multiple />
@@ -98,7 +84,6 @@
       <div class="tabs-nav">
         <button class="tab active" data-tab="audit">Process Audit</button>
         <button class="tab" data-tab="docs">Control Documentary</button>
-        <button class="tab" data-tab="isnot">Is / Is Not</button>
       </div>
       <div class="tabs-panels">
         <div class="tab-panel active" data-panel="audit">
@@ -132,31 +117,6 @@
               </tr>
             </template>
           </table>
-        </div>
-        <div class="tab-panel" data-panel="isnot">
-          <div class="small">Visual Is / Is Not</div>
-          <div class="row mt-small">
-            <div class="col">
-              <label class="label" for="d2-is-what">What — IS</label>
-              <textarea id="d2-is-what" class="input"></textarea>
-            </div>
-            <div class="col">
-              <label class="label" for="d2-not-what">What — IS NOT</label>
-              <textarea id="d2-not-what" class="input"></textarea>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col"><label class="label" for="d2-is-where">Where — IS</label><textarea id="d2-is-where" class="input"></textarea></div>
-            <div class="col"><label class="label" for="d2-not-where">Where — IS NOT</label><textarea id="d2-not-where" class="input"></textarea></div>
-          </div>
-          <div class="row">
-            <div class="col"><label class="label" for="d2-is-when">When — IS</label><textarea id="d2-is-when" class="input"></textarea></div>
-            <div class="col"><label class="label" for="d2-not-when">When — IS NOT</label><textarea id="d2-not-when" class="input"></textarea></div>
-          </div>
-          <div class="row">
-            <div class="col"><label class="label" for="d2-is-why">Why — IS</label><textarea id="d2-is-why" class="input"></textarea></div>
-            <div class="col"><label class="label" for="d2-not-why">Why — IS NOT</label><textarea id="d2-not-why" class="input"></textarea></div>
-          </div>
         </div>
       </div>
     </div>
