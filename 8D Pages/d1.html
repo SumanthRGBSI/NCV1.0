@@ -52,17 +52,13 @@
           <input class="input contact-name" list="contact-directory" placeholder="Full name" />
         </td>
         <td>
-          <select class="input member-roles" multiple>
-            <option>Team Lead</option>
-            <option>Sponsor</option>
-            <option>Champion</option>
-            <option>KPOC</option>
-            <option>Quality Engineer</option>
-            <option>Design Engineer</option>
-            <option>Operator</option>
-            <option>Supplier</option>
-            <option>Other</option>
-          </select>
+          <div class="role-radio-group small">
+            <div class="radio-row">
+              <label class="radio-option"><input type="radio" class="member-role" name="member-role-__" value="KPOC"/> KPOC</label>
+              <label class="radio-option"><input type="radio" class="member-role" name="member-role-__" value="Champion"/> Champion</label>
+              <label class="radio-option"><input type="radio" class="member-role" name="member-role-__" value="Team Member"/> Team Member</label>
+            </div>
+          </div>
         </td>
         <td>
           <input class="input contact-title" placeholder="Job title" />
@@ -101,7 +97,13 @@
     (function(){
       function qs(s, c=document){return c.querySelector(s)}
       function qsa(s, c=document){return Array.from((c||document).querySelectorAll(s))}
-      function addRow(){ const tpl = qs('#d1-row-template'); const tbody = qs('#d1-team-unified tbody'); if(!tpl||!tbody) return; tbody.appendChild(tpl.content.firstElementChild.cloneNode(true)); }
+      function addRow(){
+        const tpl = qs('#d1-row-template'); const tbody = qs('#d1-team-unified tbody'); if(!tpl||!tbody) return;
+        const node = tpl.content.firstElementChild.cloneNode(true);
+        const idx = (tbody.children.length||0) + 1;
+        node.querySelectorAll('input.member-role').forEach(r=>{ r.name = 'member-role-'+Date.now()+'-'+idx; });
+        tbody.appendChild(node);
+      }
       document.addEventListener('click', (e)=>{
         if(e.target.closest('.add-row-btn')){ addRow(); }
         if(e.target.closest('#d1-add-person')){ addRow(); const v = qs('#d1-person-search').value.trim(); if(v){ const last = qs('#d1-team-unified tbody tr:last-child'); last.querySelector('.contact-name').value = v; last.querySelector('.contact-email').value = (v.split(' ')[0]||'').toLowerCase()+'.'+(v.split(' ')[1]||'').toLowerCase()+'@example.com'; }
@@ -110,6 +112,10 @@
       });
       // Seed one row
       if(!qs('#d1-team-unified tbody tr')) addRow();
+      // Ensure unique radio groups for existing rows (e.g., after reload)
+      Array.from(qs('#d1-team-unified tbody')?.children||[]).forEach((tr,i)=>{
+        tr.querySelectorAll('input.member-role').forEach(r=>{ r.name = r.name && r.name!=='member-role-__' ? r.name : ('member-role-'+Date.now()+'-'+(i+1)); });
+      });
     })();
   </script>
 </section>

@@ -202,12 +202,22 @@
     const host = qs('#d1-org-chart', container);
     if(!host) return;
     const entries = [];
+    // Legacy separate tables
     qsa('#d1-kpoc-table tbody tr, #d1-champions-table tbody tr, #d1-team-table tbody tr', container).forEach(tr=>{
       const name = tr.querySelector('.contact-name')?.value || '';
       const title = tr.querySelector('.contact-title')?.value || '';
       const roleSel = tr.querySelector('.member-role');
       const role = roleSel ? roleSel.value : (title || 'Member');
       if(name.trim()) entries.push({ name, role });
+    });
+    // Unified table (multi-role support)
+    qsa('#d1-team-unified tbody tr', container).forEach(tr=>{
+      const name = tr.querySelector('.contact-name')?.value || '';
+      const title = tr.querySelector('.contact-title')?.value || '';
+      const rolesSel = tr.querySelector('.member-roles');
+      const roles = rolesSel ? Array.from(rolesSel.selectedOptions).map(o=>o.value) : [];
+      const roleList = roles.length ? roles : [title || 'Member'];
+      roleList.forEach(role=>{ if(name.trim()) entries.push({ name, role }); });
     });
     const groups = entries.reduce((acc, e)=>{ (acc[e.role] ||= []).push(e.name); return acc; }, {});
     host.innerHTML = Object.keys(groups).length ? Object.entries(groups).map(([role, names])=>
@@ -223,11 +233,19 @@
     const host = qs('#d1-team-cards', container);
     if(!host) return;
     const people = [];
+    // Legacy separate tables
     qsa('#d1-kpoc-table tbody tr, #d1-champions-table tbody tr, #d1-team-table tbody tr', container).forEach(tr=>{
       const name = tr.querySelector('.contact-name')?.value?.trim();
       const title = tr.querySelector('.contact-title')?.value?.trim();
       if(name){ people.push({ name, title: title||'Member' }); }
     });
+    // Unified table
+    qsa('#d1-team-unified tbody tr', container).forEach(tr=>{
+      const name = tr.querySelector('.contact-name')?.value?.trim();
+      const title = tr.querySelector('.contact-title')?.value?.trim() || 'Member';
+      if(name){ people.push({ name, title }); }
+    });
+    // Quick-add list
     qsa('#d1-members-list .list-item .kv', container).forEach(el=>{
       const txt = (el.textContent||'').trim(); if(!txt) return;
       const name = txt.split(/[-—–]/)[0].trim();
@@ -414,9 +432,16 @@
       if(dates.length===0){ ganttHost.innerHTML = '<div class="small text-gray-500">No target dates to show Gantt.</div>'; return; }
       const min = new Date(Math.min(...dates.map(d=>d.getTime())));
       const max = new Date(Math.max(...dates.map(d=>d.getTime())));
-      const range = Math.max(1, (max-min)/(1000*60*60*24));
-      // build bars
-      ganttHost.innerHTML = '';
+      const rangeDays = Math.max(1, Math.ceil((max-min)/(1000*60*60*24)));
+      // Header scale (weekly ticks)
+      const header = document.createElement('div'); header.style.display='flex'; header.style.alignItems='center'; header.style.gap='8px'; header.style.marginBottom='8px';
+      const spacer = document.createElement('div'); spacer.style.width='180px'; header.appendChild(spacer);
+      const scale = document.createElement('div'); scale.style.flex='1'; scale.style.position='relative'; scale.style.height='20px'; scale.style.background='#f8fafc'; scale.style.border='1px dashed #e5e7eb'; scale.style.borderRadius='6px';
+      for(let d=0; d<=rangeDays; d+=7){ const pct = Math.max(0, Math.min(100, (d/rangeDays)*100)); const tick=document.createElement('div'); tick.style.position='absolute'; tick.style.left=pct+'%'; tick.style.top='0'; tick.style.bottom='0'; tick.style.width='1px'; tick.style.background='#cbd5e1'; const lbl=document.createElement('div'); lbl.style.position='absolute'; lbl.style.top='-18px'; lbl.style.left=pct+'%'; lbl.style.transform='translateX(-50%)'; lbl.style.fontSize='11px'; const day=new Date(min.getTime()+d*86400000); lbl.textContent = (day.getMonth()+1)+'/'+day.getDate(); scale.appendChild(tick); scale.appendChild(lbl); }
+      const today = new Date(); if(today>=min && today<=max){ const dd = Math.floor((today-min)/86400000); const pct = Math.max(0, Math.min(100, (dd/rangeDays)*100)); const line=document.createElement('div'); line.style.position='absolute'; line.style.left=pct+'%'; line.style.top='0'; line.style.bottom='0'; line.style.width='2px'; line.style.background='#ef4444'; scale.appendChild(line); }
+      header.appendChild(scale);
+      ganttHost.innerHTML=''; ganttHost.appendChild(header);
+      // Rows
       rows.forEach((r, idx)=>{
         const action = r.querySelector('.impl-action')?.value || r.querySelector('td')?.textContent?.trim() || ('Action '+(idx+1));
         const dateVal = r.querySelector('input[type="date"]')?.value;
@@ -424,7 +449,7 @@
         bar.style.display='flex'; bar.style.alignItems='center'; bar.style.gap='8px'; bar.style.marginBottom='6px';
         const label = document.createElement('div'); label.style.width='180px'; label.style.fontSize='13px'; label.style.color='#0f172a'; label.textContent = action;
         const timeline = document.createElement('div'); timeline.style.flex='1'; timeline.style.position='relative'; timeline.style.height='14px'; timeline.style.background='#f8fafc'; timeline.style.border='1px solid #eef2f7'; timeline.style.borderRadius='6px';
-        if(dateVal){ const d = new Date(dateVal); const days = (d - min)/(1000*60*60*24); const pct = Math.max(0, Math.min(100, (days / range) * 100)); const dot = document.createElement('div'); dot.style.position='absolute'; dot.style.left = pct + '%'; dot.style.transform='translateX(-50%)'; dot.style.top='50%'; dot.style.width='10px'; dot.style.height='10px'; dot.style.borderRadius='50%'; dot.style.background = 'var(--brand-primary)'; dot.style.boxShadow='0 2px 6px rgba(2,6,23,0.12)'; timeline.appendChild(dot); }
+        if(dateVal){ const d = new Date(dateVal); const dd = Math.floor((d - min)/86400000); const pct = Math.max(0, Math.min(100, (dd / rangeDays) * 100)); const dot = document.createElement('div'); dot.style.position='absolute'; dot.style.left = pct + '%'; dot.style.transform='translateX(-50%)'; dot.style.top='50%'; dot.style.width='10px'; dot.style.height='10px'; dot.style.borderRadius='50%'; dot.style.background = 'var(--brand-primary)'; dot.style.boxShadow='0 2px 6px rgba(2,6,23,0.12)'; dot.title = d.toDateString(); timeline.appendChild(dot); }
         bar.appendChild(label); bar.appendChild(timeline); ganttHost.appendChild(bar);
       });
     }
@@ -432,6 +457,13 @@
     host.addEventListener('input', ()=> setTimeout(render, 200));
     host.addEventListener('click', ()=> setTimeout(render, 250));
     render();
+  }
+
+  // UX: Auto-grow textareas
+  function initAutoGrowTextareas(container){
+    const ctx = container||document; const areas = Array.from(ctx.querySelectorAll('textarea.input, textarea.textarea-lg'));
+    function fit(el){ el.style.height='auto'; el.style.height = Math.min(Math.max(el.scrollHeight, 120), 600) + 'px'; }
+    areas.forEach(a=>{ fit(a); a.addEventListener('input', ()=> fit(a)); });
   }
 
   // Boot
@@ -448,14 +480,14 @@
     initMeetingScheduler(document);
     initAnnotate(document);
     initPartLink(document);
-    initRichText(document, 'd2-problemStatement');
-    initRichText(document, 'd2-situationBefore');
+    // D2 rich text removed by design; use plain textareas
     initD3AutoCalc(document);
     initD3Kanban(document);
+    initD3KanbanSync(document);
     initD4RCA(document);
     initD4RootScore(document);
     initD5Enhancements(document);
-    initD5Gantt(document);
+    initD5GanttImproved(document);
     initD6Kpi(document);
     initD6Compare(document);
     initD6Signoff(document);
@@ -463,6 +495,7 @@
     initD7Enhancements(document);
     initD8Enhancements(document);
     initD1UnifiedPersist(document);
+    initAutoGrowTextareas(document);
     renderOrgChart(document);
     renderTeamCards(document);
   });
@@ -482,14 +515,14 @@
     initMeetingScheduler(ctx);
     initAnnotate(ctx);
     initPartLink(ctx);
-    initRichText(ctx, 'd2-problemStatement');
-    initRichText(ctx, 'd2-situationBefore');
+    // D2 rich text removed by design; use plain textareas
     initD3AutoCalc(ctx);
     initD3Kanban(ctx);
+    initD3KanbanSync(ctx);
     initD4RCA(ctx);
     initD4RootScore(ctx);
     initD5Enhancements(ctx);
-    initD5Gantt(ctx);
+    initD5GanttImproved(ctx);
     initD6Kpi(ctx);
     initD6Compare(ctx);
     initD6Signoff(ctx);
@@ -497,6 +530,7 @@
     initD7Enhancements(ctx);
     initD8Enhancements(ctx);
     initD1UnifiedPersist(ctx);
+    initAutoGrowTextareas(ctx);
     renderOrgChart(ctx);
     renderTeamCards(ctx);
     // init D6 gantt if present
@@ -514,20 +548,42 @@
       done: (container||document).querySelector('#d3-col-done')
     };
     if(!addInp || !cols.todo || !cols.inprogress || !cols.done) return;
+    const statusMap = { 'Assigned':'todo', 'In Progress':'inprogress', 'Done':'done' };
+    const invStatus = { 'todo':'Assigned', 'inprogress':'In Progress', 'done':'Done' };
     function getStore(){ try{ return (window.app&&app.data&&app.data.d3&&app.data.d3.fields) || {}; }catch(_){ return {}; } }
     function ensureStore(){ if(!window.app||!app.data||!app.data.d3) return; if(!app.data.d3.fields.kanban){ app.data.d3.fields.kanban = { todo:[], inprogress:[], done:[] }; } }
-    function render(){ ensureStore(); const kb = getStore().kanban||{todo:[],inprogress:[],done:[]}; ['todo','inprogress','done'].forEach(col=>{ cols[col].innerHTML = kb[col].map((t,i)=> card(col,i,t)).join(''); }); bindDnD(); if(window.lucide&&window.lucide.createIcons) window.lucide.createIcons(); }
-    function card(col, idx, text){ return `<div class="card" draggable="true" data-col="${col}" data-idx="${idx}" style="margin:.4rem 0;padding:.5rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem"><span>${text}</span><span class="controls"><button class="icon-btn d3-del" title="Remove"><i data-lucide="trash-2"></i></button></span></div>`; }
+    function normalizeKanban(){ ensureStore(); const kb = app.data.d3.fields.kanban; ['todo','inprogress','done'].forEach(k=>{ kb[k] = (kb[k]||[]).map(item=> typeof item==='string' ? { id: (Date.now()+Math.random()).toString(36), text: item } : item ); }); }
+    function render(){ ensureStore(); normalizeKanban(); const kb = getStore().kanban||{todo:[],inprogress:[],done:[]}; ['todo','inprogress','done'].forEach(col=>{ cols[col].innerHTML = kb[col].map((t,i)=> card(col,i,t)).join(''); }); bindDnD(); if(window.lucide&&window.lucide.createIcons) window.lucide.createIcons(); }
+    function card(col, idx, item){ const text = item.text||''; const id=item.id||''; return `<div class="card" draggable="true" data-col="${col}" data-idx="${idx}" data-id="${id}" style="margin:.4rem 0;padding:.5rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem"><span>${text}</span><span class="controls"><button class="icon-btn d3-del" title="Remove"><i data-lucide="trash-2"></i></button></span></div>`; }
     function save(){ if(window.app) app.saveData('d3-kanban'); }
-    addInp.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ const v=(addInp.value||'').trim(); if(!v) return; ensureStore(); app.data.d3.fields.kanban.todo.push(v); addInp.value=''; render(); save(); }});
-    (container||document).addEventListener('click', (e)=>{ const del = e.target.closest('.d3-del'); if(!del) return; const host = del.closest('[draggable]'); const col = host.dataset.col; const idx = Number(host.dataset.idx); ensureStore(); app.data.d3.fields.kanban[col].splice(idx,1); render(); save(); });
+    addInp.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ const v=(addInp.value||'').trim(); if(!v) return; ensureStore(); normalizeKanban(); const id=(Date.now()+Math.random()).toString(36); app.data.d3.fields.kanban.todo.push({ id, text:v }); addInp.value=''; render(); save(); addD3ActionRow(v, id, 'Assigned'); }});
+    (container||document).addEventListener('click', (e)=>{ const del = e.target.closest('.d3-del'); if(!del) return; const host = del.closest('[draggable]'); const col = host.dataset.col; const idx = Number(host.dataset.idx); ensureStore(); normalizeKanban(); const kb = app.data.d3.fields.kanban; const [item] = kb[col].splice(idx,1); render(); save(); if(item && item.id){ const row=findD3RowById(item.id); row?.remove(); if(window.app) app.saveData('d3-remove-row'); }
+    });
     function bindDnD(){ (container||document).querySelectorAll('#d3-kanban [draggable]')?.forEach(card=>{
       card.addEventListener('dragstart', (e)=>{ e.dataTransfer.setData('text/plain', JSON.stringify({ col: card.dataset.col, idx: Number(card.dataset.idx) })); });
     }); Object.entries(cols).forEach(([col, el])=>{
       el.addEventListener('dragover', (e)=> e.preventDefault());
-      el.addEventListener('drop', (e)=>{ e.preventDefault(); const data = JSON.parse(e.dataTransfer.getData('text/plain')); ensureStore(); const kb = app.data.d3.fields.kanban; const [item] = kb[data.col].splice(data.idx,1); kb[col].push(item); render(); save(); });
+      el.addEventListener('drop', (e)=>{ e.preventDefault(); const data = JSON.parse(e.dataTransfer.getData('text/plain')); ensureStore(); normalizeKanban(); const kb = app.data.d3.fields.kanban; const [item] = kb[data.col].splice(data.idx,1); kb[col].push(item); render(); save(); if(item && item.id){ const row = findD3RowById(item.id); const sel = row?.querySelector('td:nth-child(4) select'); if(sel){ sel.value = invStatus[col]||'Assigned'; sel.dispatchEvent(new Event('change',{bubbles:true})); } }
+      });
     }); }
+    function findD3RowById(id){ return (container||document).querySelector(`#d3-actions tbody tr[data-id="${id}"]`); }
+    function addD3ActionRow(text, id, status){ const tbl=(container||document).querySelector('#d3-actions'); const tpl=tbl?.querySelector('template'); const tbody=tbl?.querySelector('tbody'); if(!tpl||!tbody) return; const row=tpl.content.firstElementChild.cloneNode(true); row.dataset.id = id || (Date.now()+Math.random()).toString(36); row.querySelector('td:nth-child(1) .input').value = text||''; const sel=row.querySelector('td:nth-child(4) select'); if(sel){ sel.value = status||'Assigned'; } tbody.appendChild(row); }
     render();
+  }
+
+  function initD3KanbanSync(container){
+    const ctx = container||document; const tbl = ctx.querySelector('#d3-actions'); if(!tbl) return;
+    const statusMap = { 'Assigned':'todo', 'In Progress':'inprogress', 'Done':'done' };
+    function ensureStore(){ if(!window.app||!app.data||!app.data.d3) return; if(!app.data.d3.fields.kanban){ app.data.d3.fields.kanban = { todo:[], inprogress:[], done:[] }; } }
+    function normalizeKanban(){ ensureStore(); const kb = app.data.d3.fields.kanban; ['todo','inprogress','done'].forEach(k=>{ kb[k] = (kb[k]||[]).map(item=> typeof item==='string' ? { id: (Date.now()+Math.random()).toString(36), text: item } : item ); }); }
+    function upsertCard(id, text, status){ ensureStore(); normalizeKanban(); const kb = app.data.d3.fields.kanban; ['todo','inprogress','done'].forEach(k=>{ const i = kb[k].findIndex(it=> it.id===id); if(i>=0) kb[k].splice(i,1); }); const col = statusMap[status]||'todo'; kb[col].push({ id, text }); if(window.app) app.saveData('d3-sync-table'); }
+    function getRowId(tr){ return tr.dataset.id || (tr.dataset.id = (Date.now()+Math.random()).toString(36)); }
+    tbl.addEventListener('input', (e)=>{
+      const tr = e.target.closest('tr'); if(!tr) return; const id=getRowId(tr); const text = tr.querySelector('td:nth-child(1) .input')?.value||''; const statusSel = tr.querySelector('td:nth-child(4) select'); const status = statusSel?.value||'Assigned'; upsertCard(id, text, status);
+    });
+    tbl.addEventListener('change', (e)=>{
+      const tr = e.target.closest('tr'); if(!tr) return; const id=getRowId(tr); const text = tr.querySelector('td:nth-child(1) .input')?.value||''; const statusSel = tr.querySelector('td:nth-child(4) select'); const status = statusSel?.value||'Assigned'; upsertCard(id, text, status);
+    });
   }
 
   // D4: RCA tools (fishbone + 5 whys + promote + score)
@@ -591,6 +647,40 @@
   function initD5Gantt(container){ const host = (container||document).querySelector('#d5-gantt'); const tbl=(container||document).querySelector('#d5-actions'); if(!host||!tbl) return; function render(){ const rows = Array.from(tbl.querySelectorAll('tbody tr')); const dates = rows.map(r=> r.querySelector('.pca-date')?.value).filter(Boolean).map(d=> new Date(d)); if(!dates.length){ host.innerHTML='<div class="small text-gray-500">Add target dates to see timeline.</div>'; return; } const min = new Date(Math.min(...dates.map(d=>d.getTime()))); const max = new Date(Math.max(...dates.map(d=>d.getTime()))); const range=Math.max(1,(max-min)/(86400000)); host.innerHTML=''; rows.forEach((r,i)=>{ const name=r.querySelector('.pca-action')?.value||('Action '+(i+1)); const dateVal=r.querySelector('.pca-date')?.value; const bar=document.createElement('div'); bar.style.display='flex'; bar.style.alignItems='center'; bar.style.gap='8px'; bar.style.margin='6px 0'; const label=document.createElement('div'); label.style.width='180px'; label.style.fontSize='13px'; label.textContent=name; const tl=document.createElement('div'); tl.style.flex='1'; tl.style.position='relative'; tl.style.height='12px'; tl.style.background='#f8fafc'; tl.style.border='1px solid #eef2f7'; tl.style.borderRadius='6px'; if(dateVal){ const d=new Date(dateVal); const pct=Math.max(0,Math.min(100, ((d-min)/(86400000))/range*100)); const dot=document.createElement('div'); dot.style.position='absolute'; dot.style.left=pct+'%'; dot.style.transform='translateX(-50%)'; dot.style.top='50%'; dot.style.width='10px'; dot.style.height='10px'; dot.style.borderRadius='50%'; dot.style.background='var(--brand-primary)'; tl.appendChild(dot); } bar.appendChild(label); bar.appendChild(tl); host.appendChild(bar); }); }
     tbl.addEventListener('input', ()=> setTimeout(render,150)); render(); }
 
+  // D5: Improved Gantt with scale and today marker
+  function initD5GanttImproved(container){
+    const host = (container||document).querySelector('#d5-gantt');
+    const tbl = (container||document).querySelector('#d5-actions');
+    if(!host || !tbl) return;
+    function render(){
+      const rows = Array.from(tbl.querySelectorAll('tbody tr'));
+      const dates = rows.map(r=> r.querySelector('.pca-date')?.value).filter(Boolean).map(d=> new Date(d));
+      if(!dates.length){ host.innerHTML = '<div class="small text-gray-500">Add target dates to see timeline.</div>'; return; }
+      const min = new Date(Math.min(...dates.map(d=>d.getTime())));
+      const max = new Date(Math.max(...dates.map(d=>d.getTime())));
+      const rangeDays = Math.max(1, Math.ceil((max - min) / 86400000));
+      const header = document.createElement('div'); header.style.display='flex'; header.style.alignItems='center'; header.style.gap='8px'; header.style.marginBottom='8px';
+      const spacer = document.createElement('div'); spacer.style.width='180px'; header.appendChild(spacer);
+      const scale = document.createElement('div'); scale.style.flex='1'; scale.style.position='relative'; scale.style.height='20px'; scale.style.background='#f8fafc'; scale.style.border='1px dashed #e5e7eb'; scale.style.borderRadius='6px';
+      for(let d=0; d<=rangeDays; d+=7){ const pct = Math.max(0, Math.min(100, (d/rangeDays)*100)); const tick=document.createElement('div'); tick.style.position='absolute'; tick.style.left=pct+'%'; tick.style.top='0'; tick.style.bottom='0'; tick.style.width='1px'; tick.style.background='#cbd5e1'; const lbl=document.createElement('div'); lbl.style.position='absolute'; lbl.style.top='-18px'; lbl.style.left=pct+'%'; lbl.style.transform='translateX(-50%)'; lbl.style.fontSize='11px'; const day=new Date(min.getTime()+d*86400000); lbl.textContent=(day.getMonth()+1)+'/'+day.getDate(); scale.appendChild(tick); scale.appendChild(lbl); }
+      const today = new Date(); if(today>=min && today<=max){ const dd = Math.floor((today-min)/86400000); const pct = Math.max(0, Math.min(100, (dd/rangeDays)*100)); const line=document.createElement('div'); line.style.position='absolute'; line.style.left=pct+'%'; line.style.top='0'; line.style.bottom='0'; line.style.width='2px'; line.style.background='#ef4444'; scale.appendChild(line); }
+      header.appendChild(scale);
+      host.innerHTML=''; host.appendChild(header);
+      rows.forEach((r,i)=>{
+        const name = r.querySelector('.pca-action')?.value || ('Action '+(i+1));
+        const dateVal = r.querySelector('.pca-date')?.value;
+        const bar = document.createElement('div'); bar.style.display='flex'; bar.style.alignItems='center'; bar.style.gap='8px'; bar.style.margin='6px 0';
+        const label = document.createElement('div'); label.style.width='180px'; label.style.fontSize='13px'; label.style.color='#0f172a'; label.textContent=name;
+        const tl = document.createElement('div'); tl.style.flex='1'; tl.style.position='relative'; tl.style.height='12px'; tl.style.background='#f8fafc'; tl.style.border='1px solid #eef2f7'; tl.style.borderRadius='6px';
+        if(dateVal){ const d = new Date(dateVal); const dd = Math.floor((d - min)/86400000); const pct = Math.max(0, Math.min(100, (dd/rangeDays)*100)); const dot=document.createElement('div'); dot.style.position='absolute'; dot.style.left=pct+'%'; dot.style.transform='translateX(-50%)'; dot.style.top='50%'; dot.style.width='10px'; dot.style.height='10px'; dot.style.borderRadius='50%'; dot.style.background='var(--brand-primary)'; dot.style.boxShadow='0 2px 6px rgba(2,6,23,0.12)'; dot.title=d.toDateString(); tl.appendChild(dot); }
+        bar.appendChild(label); bar.appendChild(tl); host.appendChild(bar);
+      });
+    }
+    tbl.addEventListener('input', ()=> setTimeout(render, 150));
+    tbl.addEventListener('change', ()=> setTimeout(render, 150));
+    render();
+  }
+
   // D6: sign-off gating + sync from D5
   function initD6Signoff(container){ const btn=(container||document).querySelector('#d6-approve'); const tbl=(container||document).querySelector('#d6-verify'); if(!btn||!tbl) return; function check(){ const ok = Array.from(tbl.querySelectorAll('tbody select')).every(s=> (s.value||'').toLowerCase()==='yes'); btn.disabled = !ok; const status=(container||document).querySelector('#d6-approval-status'); if(status) status.textContent = ok? 'All checklist items complete. You may sign off.' : 'Complete all items to enable sign-off.'; } tbl.addEventListener('change', check); check(); }
   function initSyncD6FromD5(container){ const tbl=(container||document).querySelector('#d6-impl tbody'); if(!tbl) return; try{ const pcas = app?.data?.d5?.fields?.pcas||[]; if(pcas && pcas.length && tbl.children.length===0){ const tpl=(container||document).querySelector('#d6-impl template'); pcas.forEach(p=>{ const row=tpl.content.firstElementChild.cloneNode(true); row.querySelector('.impl-action').value = p.action||''; row.querySelector('input[type="date"]').value = p.date||''; tbl.appendChild(row); }); if(window.lucide&&window.lucide.createIcons) window.lucide.createIcons(); } }catch(_){ }
@@ -630,13 +720,17 @@
     function collect(){
       const rows = [];
       if(unified){
-        rows.push(...Array.from(unified.querySelectorAll('tbody tr')).map(r=>({
-          name: r.querySelector('.contact-name')?.value||'',
-          title: r.querySelector('.contact-title')?.value||'',
-          email: r.querySelector('.contact-email')?.value||'',
-          phone: r.querySelector('.contact-phone')?.value||'',
-          role: (r.querySelector('.member-roles') && Array.from(r.querySelector('.member-roles').selectedOptions).map(o=>o.value).join(', ')) || 'Member'
-        })));
+        rows.push(...Array.from(unified.querySelectorAll('tbody tr')).map(r=>{
+          const radio = r.querySelector('input.member-role:checked');
+          const multi = r.querySelector('.member-roles') && Array.from(r.querySelector('.member-roles').selectedOptions).map(o=>o.value).join(', ');
+          return {
+            name: r.querySelector('.contact-name')?.value||'',
+            title: r.querySelector('.contact-title')?.value||'',
+            email: r.querySelector('.contact-email')?.value||'',
+            phone: r.querySelector('.contact-phone')?.value||'',
+            role: (radio && radio.value) || multi || 'Team Member'
+          };
+        }));
       }
       function collectFrom(table, role){
         if(!table) return;
