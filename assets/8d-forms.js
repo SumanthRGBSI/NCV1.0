@@ -487,7 +487,7 @@
     initD4RCA(document);
     initD4RootScore(document);
     initD5Enhancements(document);
-    initD5Gantt(document);
+    initD5GanttImproved(document);
     initD6Kpi(document);
     initD6Compare(document);
     initD6Signoff(document);
@@ -522,7 +522,7 @@
     initD4RCA(ctx);
     initD4RootScore(ctx);
     initD5Enhancements(ctx);
-    initD5Gantt(ctx);
+    initD5GanttImproved(ctx);
     initD6Kpi(ctx);
     initD6Compare(ctx);
     initD6Signoff(ctx);
@@ -646,6 +646,40 @@
   }
   function initD5Gantt(container){ const host = (container||document).querySelector('#d5-gantt'); const tbl=(container||document).querySelector('#d5-actions'); if(!host||!tbl) return; function render(){ const rows = Array.from(tbl.querySelectorAll('tbody tr')); const dates = rows.map(r=> r.querySelector('.pca-date')?.value).filter(Boolean).map(d=> new Date(d)); if(!dates.length){ host.innerHTML='<div class="small text-gray-500">Add target dates to see timeline.</div>'; return; } const min = new Date(Math.min(...dates.map(d=>d.getTime()))); const max = new Date(Math.max(...dates.map(d=>d.getTime()))); const range=Math.max(1,(max-min)/(86400000)); host.innerHTML=''; rows.forEach((r,i)=>{ const name=r.querySelector('.pca-action')?.value||('Action '+(i+1)); const dateVal=r.querySelector('.pca-date')?.value; const bar=document.createElement('div'); bar.style.display='flex'; bar.style.alignItems='center'; bar.style.gap='8px'; bar.style.margin='6px 0'; const label=document.createElement('div'); label.style.width='180px'; label.style.fontSize='13px'; label.textContent=name; const tl=document.createElement('div'); tl.style.flex='1'; tl.style.position='relative'; tl.style.height='12px'; tl.style.background='#f8fafc'; tl.style.border='1px solid #eef2f7'; tl.style.borderRadius='6px'; if(dateVal){ const d=new Date(dateVal); const pct=Math.max(0,Math.min(100, ((d-min)/(86400000))/range*100)); const dot=document.createElement('div'); dot.style.position='absolute'; dot.style.left=pct+'%'; dot.style.transform='translateX(-50%)'; dot.style.top='50%'; dot.style.width='10px'; dot.style.height='10px'; dot.style.borderRadius='50%'; dot.style.background='var(--brand-primary)'; tl.appendChild(dot); } bar.appendChild(label); bar.appendChild(tl); host.appendChild(bar); }); }
     tbl.addEventListener('input', ()=> setTimeout(render,150)); render(); }
+
+  // D5: Improved Gantt with scale and today marker
+  function initD5GanttImproved(container){
+    const host = (container||document).querySelector('#d5-gantt');
+    const tbl = (container||document).querySelector('#d5-actions');
+    if(!host || !tbl) return;
+    function render(){
+      const rows = Array.from(tbl.querySelectorAll('tbody tr'));
+      const dates = rows.map(r=> r.querySelector('.pca-date')?.value).filter(Boolean).map(d=> new Date(d));
+      if(!dates.length){ host.innerHTML = '<div class="small text-gray-500">Add target dates to see timeline.</div>'; return; }
+      const min = new Date(Math.min(...dates.map(d=>d.getTime())));
+      const max = new Date(Math.max(...dates.map(d=>d.getTime())));
+      const rangeDays = Math.max(1, Math.ceil((max - min) / 86400000));
+      const header = document.createElement('div'); header.style.display='flex'; header.style.alignItems='center'; header.style.gap='8px'; header.style.marginBottom='8px';
+      const spacer = document.createElement('div'); spacer.style.width='180px'; header.appendChild(spacer);
+      const scale = document.createElement('div'); scale.style.flex='1'; scale.style.position='relative'; scale.style.height='20px'; scale.style.background='#f8fafc'; scale.style.border='1px dashed #e5e7eb'; scale.style.borderRadius='6px';
+      for(let d=0; d<=rangeDays; d+=7){ const pct = Math.max(0, Math.min(100, (d/rangeDays)*100)); const tick=document.createElement('div'); tick.style.position='absolute'; tick.style.left=pct+'%'; tick.style.top='0'; tick.style.bottom='0'; tick.style.width='1px'; tick.style.background='#cbd5e1'; const lbl=document.createElement('div'); lbl.style.position='absolute'; lbl.style.top='-18px'; lbl.style.left=pct+'%'; lbl.style.transform='translateX(-50%)'; lbl.style.fontSize='11px'; const day=new Date(min.getTime()+d*86400000); lbl.textContent=(day.getMonth()+1)+'/'+day.getDate(); scale.appendChild(tick); scale.appendChild(lbl); }
+      const today = new Date(); if(today>=min && today<=max){ const dd = Math.floor((today-min)/86400000); const pct = Math.max(0, Math.min(100, (dd/rangeDays)*100)); const line=document.createElement('div'); line.style.position='absolute'; line.style.left=pct+'%'; line.style.top='0'; line.style.bottom='0'; line.style.width='2px'; line.style.background='#ef4444'; scale.appendChild(line); }
+      header.appendChild(scale);
+      host.innerHTML=''; host.appendChild(header);
+      rows.forEach((r,i)=>{
+        const name = r.querySelector('.pca-action')?.value || ('Action '+(i+1));
+        const dateVal = r.querySelector('.pca-date')?.value;
+        const bar = document.createElement('div'); bar.style.display='flex'; bar.style.alignItems='center'; bar.style.gap='8px'; bar.style.margin='6px 0';
+        const label = document.createElement('div'); label.style.width='180px'; label.style.fontSize='13px'; label.style.color='#0f172a'; label.textContent=name;
+        const tl = document.createElement('div'); tl.style.flex='1'; tl.style.position='relative'; tl.style.height='12px'; tl.style.background='#f8fafc'; tl.style.border='1px solid #eef2f7'; tl.style.borderRadius='6px';
+        if(dateVal){ const d = new Date(dateVal); const dd = Math.floor((d - min)/86400000); const pct = Math.max(0, Math.min(100, (dd/rangeDays)*100)); const dot=document.createElement('div'); dot.style.position='absolute'; dot.style.left=pct+'%'; dot.style.transform='translateX(-50%)'; dot.style.top='50%'; dot.style.width='10px'; dot.style.height='10px'; dot.style.borderRadius='50%'; dot.style.background='var(--brand-primary)'; dot.style.boxShadow='0 2px 6px rgba(2,6,23,0.12)'; dot.title=d.toDateString(); tl.appendChild(dot); }
+        bar.appendChild(label); bar.appendChild(tl); host.appendChild(bar);
+      });
+    }
+    tbl.addEventListener('input', ()=> setTimeout(render, 150));
+    tbl.addEventListener('change', ()=> setTimeout(render, 150));
+    render();
+  }
 
   // D6: sign-off gating + sync from D5
   function initD6Signoff(container){ const btn=(container||document).querySelector('#d6-approve'); const tbl=(container||document).querySelector('#d6-verify'); if(!btn||!tbl) return; function check(){ const ok = Array.from(tbl.querySelectorAll('tbody select')).every(s=> (s.value||'').toLowerCase()==='yes'); btn.disabled = !ok; const status=(container||document).querySelector('#d6-approval-status'); if(status) status.textContent = ok? 'All checklist items complete. You may sign off.' : 'Complete all items to enable sign-off.'; } tbl.addEventListener('change', check); check(); }
