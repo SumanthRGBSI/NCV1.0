@@ -202,12 +202,22 @@
     const host = qs('#d1-org-chart', container);
     if(!host) return;
     const entries = [];
+    // Legacy separate tables
     qsa('#d1-kpoc-table tbody tr, #d1-champions-table tbody tr, #d1-team-table tbody tr', container).forEach(tr=>{
       const name = tr.querySelector('.contact-name')?.value || '';
       const title = tr.querySelector('.contact-title')?.value || '';
       const roleSel = tr.querySelector('.member-role');
       const role = roleSel ? roleSel.value : (title || 'Member');
       if(name.trim()) entries.push({ name, role });
+    });
+    // Unified table (multi-role support)
+    qsa('#d1-team-unified tbody tr', container).forEach(tr=>{
+      const name = tr.querySelector('.contact-name')?.value || '';
+      const title = tr.querySelector('.contact-title')?.value || '';
+      const rolesSel = tr.querySelector('.member-roles');
+      const roles = rolesSel ? Array.from(rolesSel.selectedOptions).map(o=>o.value) : [];
+      const roleList = roles.length ? roles : [title || 'Member'];
+      roleList.forEach(role=>{ if(name.trim()) entries.push({ name, role }); });
     });
     const groups = entries.reduce((acc, e)=>{ (acc[e.role] ||= []).push(e.name); return acc; }, {});
     host.innerHTML = Object.keys(groups).length ? Object.entries(groups).map(([role, names])=>
@@ -223,11 +233,19 @@
     const host = qs('#d1-team-cards', container);
     if(!host) return;
     const people = [];
+    // Legacy separate tables
     qsa('#d1-kpoc-table tbody tr, #d1-champions-table tbody tr, #d1-team-table tbody tr', container).forEach(tr=>{
       const name = tr.querySelector('.contact-name')?.value?.trim();
       const title = tr.querySelector('.contact-title')?.value?.trim();
       if(name){ people.push({ name, title: title||'Member' }); }
     });
+    // Unified table
+    qsa('#d1-team-unified tbody tr', container).forEach(tr=>{
+      const name = tr.querySelector('.contact-name')?.value?.trim();
+      const title = tr.querySelector('.contact-title')?.value?.trim() || 'Member';
+      if(name){ people.push({ name, title }); }
+    });
+    // Quick-add list
     qsa('#d1-members-list .list-item .kv', container).forEach(el=>{
       const txt = (el.textContent||'').trim(); if(!txt) return;
       const name = txt.split(/[-—–]/)[0].trim();
