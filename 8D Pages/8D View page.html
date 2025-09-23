@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>8D Problem-Solving Interface</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/assets/design-system.css">
-    <link rel="stylesheet" href="/assets/8d.css">
+    <link rel="stylesheet" href="../assets/design-system.css">
+    <link rel="stylesheet" href="../assets/8d.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -149,7 +149,7 @@
     }
 
     function ensureCoreStyles(){
-      const need = ['/assets/8d.css','/assets/design-system.css'];
+      const need = ['../assets/8d.css','../assets/design-system.css'];
       need.forEach(href=>{ if(!document.querySelector(`link[rel="stylesheet"][href="${href}"]`)){ const l=document.createElement('link'); l.rel='stylesheet'; l.href=href; document.head.appendChild(l); }});
     }
 
@@ -479,7 +479,7 @@
   })();
 })();
 </script>
-  <script src="assets/data-store.js" defer></script>
-  <script src="assets/app-shell.js" defer></script>
+  <script src="../assets/data-store.js" defer></script>
+  <script src="../assets/app-shell.js" defer></script>
 </body>
 </html>

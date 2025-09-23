@@ -1,4 +1,12 @@
 (function(){
+  const ROOT = (function(){
+    try{
+      const s = document.currentScript || Array.from(document.scripts).find(s=> s.src && /\/assets\/app-shell\.js(\?|$)/.test(s.src));
+      const url = new URL(s ? s.src : 'assets/app-shell.js', location.href);
+      return url.pathname.replace(/assets\/app-shell\.js(?:\?.*)?$/, '');
+    }catch(_){ return '/'; }
+  })();
+  const ASSETS = ROOT + 'assets/';
   function el(html){ const t=document.createElement('template'); t.innerHTML=html.trim(); return t.content.firstChild; }
   function qs(s, c=document){ return c.querySelector(s); }
   function on(elm, ev, fn){ elm && elm.addEventListener(ev, fn); }
@@ -10,7 +18,7 @@
   }
   function ensureDataStore(){
     if(window.DataStore && typeof window.DataStore.init==='function') return Promise.resolve();
-    return new Promise((res)=>{ const s=document.createElement('script'); s.src='assets/data-store.js'; s.async=true; s.onload=()=>res(); document.head.appendChild(s); });
+    return new Promise((res)=>{ const s=document.createElement('script'); s.src=ASSETS+'data-store.js'; s.async=true; s.onload=()=>res(); document.head.appendChild(s); });
   }
   function applyBranding(){
     try{
@@ -27,7 +35,7 @@
     const hdr = el(`
       <header id="global-app-header" class="ds-app-header sticky top-0 z-40" role="banner">
         <div class="ds-header-inner">
-          <a href="index.html#hub" class="ds-brand" aria-label="Home">
+          <a href="${ROOT}index.html#hub" class="ds-brand" aria-label="Home">
             <img id="ds-brand-logo" alt="Brand" class="ds-hidden" width="36" height="36" />
             <div id="ds-brand-fallback" class="ds-brand__logo">N</div>
             <div class="ds-brand__text">
@@ -43,9 +51,9 @@
             <div class="ds-create-wrap" style="position:relative">
               <button id="ds-create" class="ds-btn ds-btn--primary">Create New…</button>
               <div id="ds-create-pop" class="ds-popover" role="menu" aria-labelledby="ds-create">
-                <div class="ds-popover__section"><a href="8D Pages/8D View page.html#dashboard" class="ds-btn ds-btn--tertiary" style="width:100%">8D</a></div>
-                <div class="ds-popover__section"><a href="NC Creation and Edit Page.html" class="ds-btn ds-btn--tertiary" style="width:100%">Non-Conformance</a></div>
-                <div class="ds-popover__section"><a href="index.html#capa_create" class="ds-btn ds-btn--tertiary" style="width:100%">CAPA</a></div>
+                <div class="ds-popover__section"><a href="${ROOT}8D Pages/8D View page.html#dashboard" class="ds-btn ds-btn--tertiary" style="width:100%">8D</a></div>
+                <div class="ds-popover__section"><a href="${ROOT}NC Creation and Edit Page.html" class="ds-btn ds-btn--tertiary" style="width:100%">Non-Conformance</a></div>
+                <div class="ds-popover__section"><a href="${ROOT}index.html#capa_create" class="ds-btn ds-btn--tertiary" style="width:100%">CAPA</a></div>
               </div>
             </div>
             <button id="ds-density" class="ds-icon-btn" title="Toggle density" aria-label="Toggle density">
@@ -108,9 +116,9 @@
       <div class=\"ds-create-wrap\" style=\"position:relative\">
         <button id=\"ds-create\" class=\"ds-btn ds-btn--primary\">Create New…</button>
         <div id=\"ds-create-pop\" class=\"ds-popover\" role=\"menu\" aria-labelledby=\"ds-create\">
-          <div class=\"ds-popover__section\"><a href=\"8D Pages/8D View page.html#dashboard\" class=\"ds-btn ds-btn--tertiary\" style=\"width:100%\">8D</a></div>
-          <div class=\"ds-popover__section\"><a href=\"NC Creation and Edit Page.html\" class=\"ds-btn ds-btn--tertiary\" style=\"width:100%\">Non-Conformance</a></div>
-          <div class=\"ds-popover__section\"><a href=\"index.html#capa_create\" class=\"ds-btn ds-btn--tertiary\" style=\"width:100%\">CAPA</a></div>
+          <div class=\"ds-popover__section\"><a href=\"${ROOT}8D Pages/8D View page.html#dashboard\" class=\"ds-btn ds-btn--tertiary\" style=\"width:100%\">8D</a></div>
+          <div class=\"ds-popover__section\"><a href=\"${ROOT}NC Creation and Edit Page.html\" class=\"ds-btn ds-btn--tertiary\" style=\"width:100%\">Non-Conformance</a></div>
+          <div class=\"ds-popover__section\"><a href=\"${ROOT}index.html#capa_create\" class=\"ds-btn ds-btn--tertiary\" style=\"width:100%\">CAPA</a></div>
         </div>
       </div>
       <button id="ds-density" class="ds-icon-btn" title="Toggle density" aria-label="Toggle density"><i data-lucide=rows></i></button>
@@ -136,7 +144,7 @@
 
     const search = qs('#ds-global-search');
     if(search){ on(search, 'keydown', (e)=>{ if(e.key==='Enter'){ const q=search.value.trim(); if(!q) return; // navigate to listing with query param
-                const target = 'NC Listing Page.html?q='+encodeURIComponent(q);
+                const target = ROOT + 'NC Listing Page.html?q='+encodeURIComponent(q);
                 if(window.location.pathname.endsWith('NC Listing Page.html')){ // if already on listing, set input
                   try{ if(typeof window.__globalSearch === 'function'){ window.__globalSearch(q); } else { location.href = target; } }catch(_){ location.href = target; }
                 } else { location.href = target; }
@@ -156,9 +164,9 @@
     function openPalette(q='') { palette.style.display='flex'; cmdInput.value=q; cmdInput.focus(); renderCmdResults(''); }
     function closePalette(){ palette.style.display='none'; cmdHost.innerHTML=''; }
     function renderCmdResults(filter){ const cmds = [
-        {id:'new8d',label:'Create New 8D',action:()=> location.href='8D Pages/8D View page.html#d1'},
-        {id:'nc-list',label:'Open NC Listing',action:()=> location.href='NC Listing Page.html'},
-        {id:'nc-create',label:'Create NC',action:()=> location.href='NC Creation and Edit Page.html'},
+        {id:'new8d',label:'Create New 8D',action:()=> location.href= ROOT + '8D Pages/8D View page.html#d1'},
+        {id:'nc-list',label:'Open NC Listing',action:()=> location.href= ROOT + 'NC Listing Page.html'},
+        {id:'nc-create',label:'Create NC',action:()=> location.href= ROOT + 'NC Creation and Edit Page.html'},
         {id:'goto-d1',label:'Go to D1 - Identify Team',action:()=> location.hash='#d1'},
         {id:'goto-d2',label:'Go to D2 - Problem Description',action:()=> location.hash='#d2'},
         {id:'focus-search',label:'Focus Global Search',action:()=> { const s=qs('#ds-global-search'); if(s){ s.focus(); }}},
