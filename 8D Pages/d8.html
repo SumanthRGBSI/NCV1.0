@@ -58,10 +58,18 @@
         <span>Generate Recognition Summary</span>
       </button>
     </div>
-    <div class="ds-card__body grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-      <!-- Approved By Column -->
-      <div class="space-y-2">
-        <h4 class="font-semibold text-slate-700">Approved By</h4>
+    <div class="ds-card__body space-y-6">
+      <div>
+        <h4 class="ds-h4">Potential Causes Summary (from D4)</h4>
+        <div id="d8-causes-summary" class="mt-2 p-3 ds-textarea--readonly h-40 overflow-y-auto">
+          <!-- Populated by JS -->
+          <p class="ds-caption">Loading summary...</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 border-t pt-6">
+        <!-- Approved By Column -->
+        <div class="space-y-2">
+          <h4 class="font-semibold text-slate-700">Approved By</h4>
         <div>
             <label class="ds-caption" for="d8-approvedName">Name</label>
             <input id="d8-approvedName" class="ds-input" />

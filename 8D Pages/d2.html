@@ -63,47 +63,49 @@
       </div>
     </div>
 
-    <!-- Process Analysis Card -->
-    <div class="ds-card" x-data="{ activeTab: 'audit' }">
-      <div class="ds-card__header border-b-0">
-        <div class="flex border-b border-slate-200">
-            <button @click="activeTab = 'audit'" :class="{'border-primary-500 text-primary-600 font-semibold': activeTab === 'audit', 'border-transparent text-slate-500 hover:text-slate-700': activeTab !== 'audit'}" class="px-4 py-2 text-sm border-b-2 transition-colors">2E. Process Audit</button>
-            <button @click="activeTab = 'docs'" :class="{'border-primary-500 text-primary-600 font-semibold': activeTab === 'docs', 'border-transparent text-slate-500 hover:text-slate-700': activeTab !== 'docs'}" class="px-4 py-2 text-sm border-b-2 transition-colors">2F. Control Documentary</button>
-        </div>
+    <!-- Process Audit Card -->
+    <div class="ds-card">
+      <div class="ds-card__header">
+        <h3 class="ds-h3">2E. Process Audit</h3>
+        <p class="ds-caption mt-1">Identify all process steps and check for potential causes of the problem.</p>
       </div>
-      <div class="ds-card__body">
-          <!-- Process Audit Panel -->
-          <div x-show="activeTab === 'audit'" class="overflow-x-auto">
-              <table class="ds-table w-full" id="d2-process-audit">
-                  <thead><tr><th>Process Step</th><th>Potential Root Cause</th><th>Action (Y/N)</th><th class="w-12"></th></tr></thead>
-                  <tbody></tbody>
-                  <tfoot><tr><td colspan="4"><button type="button" class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Row</button></td></tr></tfoot>
-                  <template>
-                      <tr>
-                          <td><input class="ds-input" placeholder="Step (e.g., Assembly)" /></td>
-                          <td><input class="ds-input" placeholder="Possible cause" /></td>
-                          <td><select class="ds-select"><option>Yes</option><option>No</option></select></td>
-                          <td><button type="button" class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
-                      </tr>
-                  </template>
-              </table>
-          </div>
-          <!-- Control Documentary Panel -->
-          <div x-show="activeTab === 'docs'" class="overflow-x-auto">
-              <table class="ds-table w-full" id="d2-docs">
-                  <thead><tr><th>Document</th><th>Reviewed (Y/N)</th><th>Current RPN</th><th class="w-12"></th></tr></thead>
-                  <tbody></tbody>
-                  <tfoot><tr><td colspan="4"><button type="button" class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Document</button></td></tr></tfoot>
-                  <template>
-                      <tr>
-                          <td><input class="ds-input" placeholder="Document name (PFMEA, Control Plan)" /></td>
-                          <td><select class="ds-select"><option>Yes</option><option>No</option></select></td>
-                          <td><input class="ds-input" placeholder="Current RPN" type="number" /></td>
-                          <td><button type="button" class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
-                      </tr>
-                  </template>
-              </table>
-          </div>
+      <div class="ds-card__body overflow-x-auto">
+        <table class="ds-table w-full" id="d2-process-audit">
+            <thead><tr><th>Process Step</th><th>Potential Root Cause</th><th>Action (Y/N)</th><th class="w-12"></th></tr></thead>
+            <tbody></tbody>
+            <tfoot><tr><td colspan="4"><button type="button" class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Row</button></td></tr></tfoot>
+            <template>
+                <tr>
+                    <td><input class="ds-input" placeholder="Step (e.g., Assembly)" /></td>
+                    <td><input class="ds-input" placeholder="Possible cause" /></td>
+                    <td><select class="ds-select"><option>Yes</option><option>No</option></select></td>
+                    <td><button type="button" class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
+                </tr>
+            </template>
+        </table>
+      </div>
+    </div>
+
+    <!-- Control Documentary Card -->
+    <div class="ds-card">
+      <div class="ds-card__header">
+        <h3 class="ds-h3">2F. Control Documentary</h3>
+        <p class="ds-caption mt-1">Review all relevant control documents for completeness and accuracy.</p>
+      </div>
+      <div class="ds-card__body overflow-x-auto">
+        <table class="ds-table w-full" id="d2-docs">
+            <thead><tr><th>Document</th><th>Reviewed (Y/N)</th><th>Current RPN</th><th class="w-12"></th></tr></thead>
+            <tbody></tbody>
+            <tfoot><tr><td colspan="4"><button type="button" class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Document</button></td></tr></tfoot>
+            <template>
+                <tr>
+                    <td><input class="ds-input" placeholder="Document name (PFMEA, Control Plan)" /></td>
+                    <td><select class="ds-select"><option>Yes</option><option>No</option></select></td>
+                    <td><input class="ds-input" placeholder="Current RPN" type="number" /></td>
+                    <td><button type="button" class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
+                </tr>
+            </template>
+        </table>
       </div>
     </div>
   </div>

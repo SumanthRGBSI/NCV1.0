@@ -44,8 +44,45 @@
         #app-container.sidebar-collapsed #toggle-btn-icon { transform: rotate(180deg); }
         #app-container #main-panel { flex: 1 1 auto; width: auto; max-width: none; }
         .step-link{ position: relative; }
-        .step-link[data-tooltip]:hover::after { content: attr(data-tooltip); position: absolute; left: 3.75rem; top: 50%; transform: translateY(-50%); background: #111827; color: #fff; padding: 0.5rem 0.6rem; border-radius: 0.5rem; box-shadow: 0 4px 18px rgba(0,0,0,0.2); width: 16rem; font-size: 0.75rem; line-height: 1.1; z-index: 50; }
-        .step-link[data-tooltip]:hover::before { content: ''; position: absolute; left: 3.4rem; top: 50%; transform: translateY(-50%); border-width: 6px; border-style: solid; border-color: transparent #111827 transparent transparent; }
+
+        /* Default tooltip style */
+        .step-link[data-tooltip]:hover::after, .step-link[data-tooltip]:hover::before { display: none; }
+
+        /* Show tooltip only when sidebar is collapsed */
+        #app-container.sidebar-collapsed .step-link[data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            display: block;
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            margin-left: 12px; /* Add some space from the icon */
+            background: #1f2937;
+            color: #fff;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.2);
+            width: 18rem; /* Give it enough width */
+            font-size: 0.875rem;
+            line-height: 1.4;
+            z-index: 50;
+            pointer-events: none; /* Prevent tooltip from interfering with mouse */
+        }
+
+        #app-container.sidebar-collapsed .step-link[data-tooltip]:hover::before {
+            content: '';
+            display: block;
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            margin-left: 6px;
+            border-width: 6px;
+            border-style: solid;
+            border-color: transparent #1f2937 transparent transparent;
+            z-index: 51;
+            pointer-events: none;
+        }
         #stepper-nav { position: relative; }
         #stepper-progress { position: absolute; left: 1.25rem; top: 1.25rem; width: 2px; height: 0; background-color: #10b981; z-index: 2; transition: height 0.4s ease; }
         .step-abbr{ display:inline; }
@@ -133,18 +170,80 @@
      const stepIcons = { d1: 'users', d2: 'file-text', d3: 'shield-check', d4: 'search', d5: 'check-square', d6: 'tool', d7: 'ban', d8: 'award' };
 
     function getInitialData() {
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const twoDaysAgo = new Date(today);
+        twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
         const data = {};
         disciplines.forEach(d => {
             data[d.id] = { status: 'pending', lastUpdated: null, fields: {}, checklist: {} };
         });
-        data.d1.fields = { teamLeader: '', sponsor: '', members: [] };
-        data.d2.fields = { briefStatement: '', problemStatement: '', impactCustomer: '', who: '', what: '', when: '', where: '', why: '', how: '', howMany: '' };
-        data.d3.fields = { supplierDescription: '', actionNotes: '' };
-        data.d4.fields = { rootCause: '', verificationMethod: '', verificationSummary: '' };
-        data.d5.fields = { correctiveAction: '', verificationPlan: '', selectedPCA: '' };
-        data.d6.fields = { proof: '', situationAfter: '' };
-        data.d7.fields = { preventiveActions: '', responsiblePerson: '', completionDate: '' };
-        data.d8.fields = { recognitionSummary: '', teamFeedback: '', approvedName: '', approvedDate: '', submittedName: '', submittedDate: '' };
+
+        // --- Pre-populated Demo Data ---
+        data.d1 = {
+            status: 'completed',
+            lastUpdated: twoDaysAgo.toISOString(),
+            fields: {
+                members: [
+                    { name: 'Sarah Jenkins', role: 'KPOC', title: 'Quality Engineer', email: 's.jenkins@example.com', phone: '555-123-4567' },
+                    { name: 'Tom Wilson', role: 'Champion', title: 'Production Manager', email: 't.wilson@example.com', phone: '555-987-6543' },
+                    { name: 'Maria Garcia', role: 'Team Member', title: 'Materials Scientist', email: 'm.garcia@example.com', phone: '555-234-5678' },
+                    { name: 'David Chen', role: 'Team Member', title: 'Supplier Quality', email: 'd.chen@example.com', phone: '555-876-5432' }
+                ]
+            }
+        };
+
+        data.d2 = {
+            status: 'completed',
+            lastUpdated: twoDaysAgo.toISOString(),
+            fields: {
+                problemStatement: 'During routine quality checks, it was discovered that the Z-80 mounting brackets from our new supplier (Supplier-B, Lot #B-456) are fracturing under standard operational stress tests. This issue was not present with the previous supplier.',
+                briefStatement: 'The new Z-80 mounting brackets are fracturing under standard operational stress.',
+                impactCustomer: 'Potential for in-field failure of the final assembly, leading to safety risks and warranty claims.',
+                who: 'All units manufactured in the last 2 weeks using Lot #B-456.',
+                what: 'Z-80 mounting bracket (Part #45-113B)',
+                when: 'First observed during afternoon shift quality testing yesterday.',
+                where: 'In-house quality assurance lab.',
+                why: 'The failure prevents the final product from meeting safety and durability standards.',
+                situationBefore: 'Brackets from the previous supplier (Supplier-A) had a 0.01% failure rate. New supplier brackets are failing at a rate of 15% in initial testing.'
+            }
+        };
+
+        data.d3 = {
+            status: 'completed',
+            lastUpdated: yesterday.toISOString(),
+            fields: {
+                supplierDescription: 'All inventory from Lot #B-456 has been quarantined and tagged as non-conforming. A 100% inspection and stress test process has been implemented for all incoming Z-80 brackets until the root cause is identified and resolved.',
+                actionNotes: 'Contacted Supplier-B and informed them of the issue. They have started an internal investigation.'
+            }
+        };
+
+        data.d4 = {
+            status: 'completed',
+            lastUpdated: yesterday.toISOString(),
+            fields: {
+                rootCause: 'Improper heat treatment during the manufacturing process by Supplier-B resulted in reduced material tensile strength, making the brackets brittle.',
+                verificationMethod: 'Metallurgical analysis (Rockwell hardness test) of failed parts compared to the engineering specification.',
+                verificationSummary: 'Lab analysis confirmed the material hardness of failed brackets is 20% below the required HRC 45 specification. Brackets from a good lot tested within spec.'
+            }
+        };
+
+        data.d5 = {
+            status: 'in-progress',
+            lastUpdated: today.toISOString(),
+            fields: {
+                correctiveAction: 'Issue a corrective action to Supplier-B detailing the required heat treatment process. Implement mandatory batch testing for hardness on all incoming shipments from Supplier-B.',
+                verificationPlan: 'Test 10 samples from the next 5 shipments from Supplier-B. All samples must pass hardness testing. Failure rate must return to <0.1% for 30 days.',
+                selectedPCA: 'Implement mandatory batch testing for hardness.'
+            }
+        };
+
+        data.d6 = { status: 'pending', lastUpdated: null, fields: { proof: '', situationAfter: '' } };
+        data.d7 = { status: 'pending', lastUpdated: null, fields: { preventiveActions: '', responsiblePerson: '', completionDate: '' } };
+        data.d8 = { status: 'pending', lastUpdated: null, fields: { recognitionSummary: '', teamFeedback: '', approvedName: '', approvedDate: '', submittedName: '', submittedDate: '' } };
+
         return data;
     }
 
@@ -323,7 +422,40 @@
             const timestamp = document.getElementById(`${id}-timestamp`); if(timestamp) timestamp.textContent = disciplineData.lastUpdated ? new Date(disciplineData.lastUpdated).toLocaleString() : "Never";
             for (const key in disciplineData.fields) { const element = document.getElementById(`${id}-${key}`); if (element) element.value = disciplineData.fields[key] || ''; }
             if (id === 'd1') this.renderTeamMembers();
+            if (id === 'd8') this.populateD8Summaries();
             for (const key in disciplineData.checklist) { const element = document.getElementById(`${id}-check-${key}`); if (element) element.checked = disciplineData.checklist[key]; }
+        },
+        populateD8Summaries() {
+            const summaryContainer = document.getElementById('d8-causes-summary');
+            if (!summaryContainer) return;
+            const d4data = this.data.d4;
+            if (!d4data || !d4data.fields) {
+                summaryContainer.innerHTML = '<p class="ds-caption">D4 data not available.</p>';
+                return;
+            }
+            // Use the fields defined in getInitialData as the source
+            const { rootCause, verificationMethod, verificationSummary } = d4data.fields;
+            if (!rootCause && !verificationSummary) {
+                summaryContainer.innerHTML = '<p class="ds-caption">No root cause analysis has been documented in D4.</p>';
+                return;
+            }
+            const summaryHtml = `
+                <dl class="space-y-3">
+                    <div>
+                        <dt class="font-semibold text-slate-800">Root Cause</dt>
+                        <dd class="text-slate-600 pl-2">${rootCause || 'Not specified.'}</dd>
+                    </div>
+                    <div>
+                        <dt class="font-semibold text-slate-800">Verification Method</dt>
+                        <dd class="text-slate-600 pl-2">${verificationMethod || 'Not specified.'}</dd>
+                    </div>
+                    <div>
+                        <dt class="font-semibold text-slate-800">Verification Summary</dt>
+                        <dd class="text-slate-600 pl-2">${verificationSummary || 'Not specified.'}</dd>
+                    </div>
+                </dl>
+            `;
+            summaryContainer.innerHTML = summaryHtml;
         },
         exportCurrentToCSV(){
             const hash = window.location.hash.replace('#','') || 'dashboard';
