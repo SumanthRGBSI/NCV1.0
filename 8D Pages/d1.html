@@ -1,121 +1,257 @@
-<section class="container">
-  <link rel="stylesheet" href="../assets/8d.css">
-  <div class="card header toolbar">
-    <div>
-      <div class="h-title">D1 — Identify Team 👥</div>
-      <div class="h-sub">Assemble the right team. Search, add, and tag roles quickly.</div>
-    </div>
-    <div class="controls">
-      <div class="timestamp">Last updated: <span id="d1-timestamp">Never</span></div>
-      <select id="d1-status-select" class="input select-compact status-select" data-id="d1">
-        <option value="pending">Pending</option>
-        <option value="in-progress">In Progress</option>
-        <option value="completed">Completed</option>
-      </select>
-    </div>
-  </div>
-
+<!-- D1 — Identify Team -->
+<div class="space-y-6">
   <datalist id="contact-directory"></datalist>
 
-  <div class="card">
-    <div class="section-title sticky-section-title">Team</div>
-    <div class="row mt-small">
-      <div class="col">
-        <input id="d1-person-search" class="input" list="contact-directory" placeholder="Search directory and press Add…" />
+  <!-- Team Management Card -->
+  <div class="ds-card">
+    <div class="ds-card__header">
+      <h3 class="ds-h3">Team Members</h3>
+    </div>
+    <div class="ds-card__body">
+      <!-- Add Member Section -->
+      <div class="flex flex-col sm:flex-row items-end gap-4 mb-6">
+        <div class="flex-grow w-full">
+          <label for="d1-person-search" class="ds-caption">Add by name or email</label>
+          <input id="d1-person-search" class="ds-input" list="contact-directory" placeholder="Search directory and press Add…" />
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="d1-add-person" class="ds-btn ds-btn--primary">
+            <i data-lucide="plus"></i>
+            <span>Add</span>
+          </button>
+          <button id="d1-add-me" class="ds-btn ds-btn--secondary">Add Me</button>
+        </div>
       </div>
-      <div class="col col-fixed">
-        <button id="d1-add-person" class="btn btn-primary">Add</button>
-        <button id="d1-add-me" class="btn btn-ghost">Add Me</button>
+
+      <!-- Team Table -->
+      <div class="overflow-x-auto">
+        <table id="d1-team-unified" class="ds-table ds-table--zebra ds-table--hover w-full">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Role</th>
+              <th>Title</th>
+              <th>Contact</th>
+              <th class="w-12"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Rows will be injected by JS -->
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="5">
+                <button type="button" class="add-row-btn ds-btn ds-btn--tertiary w-full">
+                  <i data-lucide="plus"></i>
+                  <span>Add Member Manually</span>
+                </button>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
       </div>
     </div>
+  </div>
 
-    <table id="d1-team-unified" class="table table-alt">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Roles</th>
-          <th>Title</th>
-          <th>Contact</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-      <tfoot>
-        <tr>
-          <td colspan="5"><button type="button" class="add-row-btn btn btn-ghost"><i data-lucide="plus"></i> Add Member</button></td>
-        </tr>
-      </tfoot>
-    </table>
-    <template id="d1-row-template">
-      <tr>
-        <td>
-          <input class="input contact-name" list="contact-directory" placeholder="Full name" />
-        </td>
-        <td>
-          <div class="role-radio-group small">
-            <div class="radio-row">
-              <label class="radio-option"><input type="radio" class="member-role" name="member-role-__" value="KPOC"/> KPOC</label>
-              <label class="radio-option"><input type="radio" class="member-role" name="member-role-__" value="Champion"/> Champion</label>
-              <label class="radio-option"><input type="radio" class="member-role" name="member-role-__" value="Team Member"/> Team Member</label>
+  <!-- Visuals Card -->
+  <div class="ds-card">
+    <div class="ds-card__header">
+      <h3 class="ds-h3">Visuals</h3>
+    </div>
+    <div class="ds-card__body grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <h4 class="font-bold text-slate-800">Team Cards</h4>
+        <div id="d1-team-cards" class="team-cards-grid mt-4 space-y-2">
+          <!-- Team cards will be injected by JS -->
+        </div>
+      </div>
+      <div>
+        <h4 class="font-bold text-slate-800">Team Org Chart</h4>
+        <div id="d1-org-chart" class="mt-4 p-4 bg-slate-50 rounded-lg min-h-[150px]">
+          <!-- Org chart will be injected by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS Template for Table Row -->
+  <template id="d1-row-template">
+    <tr>
+      <td>
+        <input class="ds-input contact-name" list="contact-directory" placeholder="Full name" />
+      </td>
+      <td>
+        <!-- Modern Radio/Tag Pills -->
+        <div class="flex flex-wrap gap-2" role="radiogroup">
+          <label class="cursor-pointer">
+            <input type="radio" class="sr-only peer member-role" name="member-role-__" value="KPOC"/>
+            <span class="ds-badge peer-checked:bg-primary-100 peer-checked:text-primary-700 peer-checked:font-semibold">KPOC</span>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" class="sr-only peer member-role" name="member-role-__" value="Champion"/>
+            <span class="ds-badge peer-checked:bg-primary-100 peer-checked:text-primary-700 peer-checked:font-semibold">Champion</span>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" class="sr-only peer member-role" name="member-role-__" value="Team Member" checked/>
+            <span class="ds-badge peer-checked:bg-primary-100 peer-checked:text-primary-700 peer-checked:font-semibold">Team Member</span>
+          </label>
+        </div>
+      </td>
+      <td>
+        <input class="ds-input contact-title" placeholder="Job title" />
+      </td>
+      <td>
+        <div class="flex items-center">
+          <button type="button" class="ds-btn ds-btn--tertiary contact-pop" title="View contact">
+            <i data-lucide="contact" class="w-4 h-4"></i>
+            <span>Details</span>
+          </button>
+          <!-- Hidden inputs to store data -->
+          <input class="ds-input contact-email" placeholder="name@company.com" style="display:none" />
+          <input class="ds-input contact-phone" placeholder="(555) 555-5555" style="display:none" />
+        </div>
+      </td>
+      <td>
+        <button type="button" class="remove-row-btn ds-btn-icon ds-btn-icon--danger" aria-label="Remove">
+          <i data-lucide="trash-2"></i>
+        </button>
+      </td>
+    </tr>
+  </template>
+</div>
+
+<!-- Scripts -->
+<script>
+  // Ensure the main app initialization logic runs
+  if (window.__init8D) {
+    window.__init8D(document);
+  }
+
+  (function(){
+    // Helper function to query elements
+    function qs(selector, context = document) { return context.querySelector(selector); }
+    function qsa(selector, context = document) { return Array.from(context.querySelectorAll(selector)); }
+
+    // Function to add a new row to the team table
+    function addRow() {
+      const template = qs('#d1-row-template');
+      const tbody = qs('#d1-team-unified tbody');
+      if (!template || !tbody) return;
+
+      const newRow = template.content.firstElementChild.cloneNode(true);
+      const uniqueId = 'member-role-' + Date.now() + '-' + (tbody.children.length + 1);
+      newRow.querySelectorAll('input.member-role').forEach(radio => {
+        radio.name = uniqueId;
+      });
+      tbody.appendChild(newRow);
+    }
+
+    // Function to create and show the contact details modal
+    function showContactModal(targetButton) {
+        const tr = targetButton.closest('tr');
+        if (!tr) return;
+
+        const name = tr.querySelector('.contact-name')?.value || 'Contact';
+        const emailInput = tr.querySelector('.contact-email');
+        const phoneInput = tr.querySelector('.contact-phone');
+        const email = emailInput?.value || '';
+        const phone = phoneInput?.value || '';
+
+        // Create modal structure with design system classes
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50';
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                modalOverlay.remove();
+            }
+        });
+
+        const modalContent = document.createElement('div');
+        modalContent.className = 'ds-card w-full max-w-md';
+        modalContent.innerHTML = `
+            <div class="ds-card__header flex justify-between items-center">
+                <h3 class="ds-h3">${name}</h3>
+                <button class="ds-btn-icon" id="pop-close" aria-label="Close">
+                    <i data-lucide="x"></i>
+                </button>
             </div>
-          </div>
-        </td>
-        <td>
-          <input class="input contact-title" placeholder="Job title" />
-        </td>
-        <td>
-          <div class="controls">
-            <button type="button" class="btn btn-ghost contact-pop" title="View contact"><i data-lucide="contact"></i> Details</button>
-            <input class="input contact-email" placeholder="name@company.com" style="display:none" />
-            <input class="input contact-phone" placeholder="(555) 555-5555" style="display:none" />
-          </div>
-        </td>
-        <td>
-          <button type="button" class="remove-row-btn btn btn-danger" aria-label="Remove"><i data-lucide="trash-2"></i></button>
-        </td>
-      </tr>
-    </template>
-  </div>
+            <div class="ds-card__body space-y-4">
+                <div>
+                    <label class="ds-caption" for="pop-email">Email</label>
+                    <input id="pop-email" class="ds-input" value="${email}" placeholder="name@company.com" />
+                </div>
+                <div>
+                    <label class="ds-caption" for="pop-phone">Phone</label>
+                    <input id="pop-phone" class="ds-input" value="${phone}" placeholder="(555) 555-5555" />
+                </div>
+                <div class="flex justify-end gap-2 mt-4">
+                    <button class="ds-btn ds-btn--secondary" id="pop-cancel">Cancel</button>
+                    <button class="ds-btn ds-btn--primary" id="pop-save">Save</button>
+                </div>
+            </div>
+        `;
 
-  <div class="card">
-    <div class="section-title sticky-section-title">Visuals</div>
-    <div class="row mt-small">
-      <div class="col">
-        <div class="section-title">Team Cards</div>
-        <div id="d1-team-cards" class="team-cards-grid mt-small"></div>
-      </div>
-      <div class="col">
-        <div class="section-title">Team Org Chart</div>
-        <div id="d1-org-chart" class="mt-small"></div>
-      </div>
-    </div>
-  </div>
+        modalOverlay.appendChild(modalContent);
+        document.body.appendChild(modalOverlay);
 
-  <script src="../assets/8d-forms.js"></script>
-  <script>
-    window.__init8D && window.__init8D(document);
-    (function(){
-      function qs(s, c=document){return c.querySelector(s)}
-      function qsa(s, c=document){return Array.from((c||document).querySelectorAll(s))}
-      function addRow(){
-        const tpl = qs('#d1-row-template'); const tbody = qs('#d1-team-unified tbody'); if(!tpl||!tbody) return;
-        const node = tpl.content.firstElementChild.cloneNode(true);
-        const idx = (tbody.children.length||0) + 1;
-        node.querySelectorAll('input.member-role').forEach(r=>{ r.name = 'member-role-'+Date.now()+'-'+idx; });
-        tbody.appendChild(node);
+        // Add event listeners for modal buttons
+        qs('#pop-close', modalContent).addEventListener('click', () => modalOverlay.remove());
+        qs('#pop-cancel', modalContent).addEventListener('click', () => modalOverlay.remove());
+        qs('#pop-save', modalContent).addEventListener('click', () => {
+            if (emailInput) emailInput.value = qs('#pop-email', modalContent).value;
+            if (phoneInput) phoneInput.value = qs('#pop-phone', modalContent).value;
+            modalOverlay.remove();
+            // Trigger a save or update if necessary
+            if (window.__init8D) window.__init8D(document);
+        });
+    }
+
+    // Main event listener for clicks
+    document.addEventListener('click', (e) => {
+      // Add a new row manually
+      if (e.target.closest('.add-row-btn')) {
+        addRow();
       }
-      document.addEventListener('click', (e)=>{
-        if(e.target.closest('.add-row-btn')){ addRow(); }
-        if(e.target.closest('#d1-add-person')){ addRow(); const v = qs('#d1-person-search').value.trim(); if(v){ const last = qs('#d1-team-unified tbody tr:last-child'); last.querySelector('.contact-name').value = v; last.querySelector('.contact-email').value = (v.split(' ')[0]||'').toLowerCase()+'.'+(v.split(' ')[1]||'').toLowerCase()+'@example.com'; }
-          qs('#d1-person-search').value=''; window.__init8D && window.__init8D(document); }
-        if(e.target.closest('.contact-pop')){ const tr = e.target.closest('tr'); const name = tr.querySelector('.contact-name')?.value||''; const emailInp= tr.querySelector('.contact-email'); const phoneInp= tr.querySelector('.contact-phone'); const email= emailInp?.value||''; const phone= phoneInp?.value||''; const modal=document.createElement('div'); modal.className='modal-overlay'; const card=document.createElement('div'); card.className='card modal-card'; card.innerHTML = `<div class="flex-between"><div class="h-title">${name||'Contact'}</div><button class="icon-btn" id="pop-close">✕</button></div><div class="mt-small"><label class="label">Email</label><input id="pop-email" class="input" value="${email}"/><label class="label mt-small">Phone</label><input id="pop-phone" class="input" value="${phone}"/><div class="controls mt-small"><button class="btn btn-primary" id="pop-save">Save</button></div></div>`; modal.appendChild(card); document.body.appendChild(modal); modal.addEventListener('click', (ev)=>{ if(ev.target.id==='pop-close'||ev.target===modal) modal.remove(); }); card.querySelector('#pop-save')?.addEventListener('click', ()=>{ if(emailInp) emailInp.value = card.querySelector('#pop-email').value; if(phoneInp) phoneInp.value = card.querySelector('#pop-phone').value; modal.remove(); window.__init8D && window.__init8D(document); }); }
+
+      // Add a person from the search input
+      if (e.target.closest('#d1-add-person')) {
+        addRow();
+        const searchInput = qs('#d1-person-search');
+        const searchValue = searchInput.value.trim();
+        if (searchValue) {
+          const lastRow = qs('#d1-team-unified tbody tr:last-child');
+          if (lastRow) {
+            lastRow.querySelector('.contact-name').value = searchValue;
+            // Simple email generation for example purposes
+            const email = (searchValue.split(' ')[0] || '').toLowerCase() + '.' + (searchValue.split(' ')[1] || '').toLowerCase() + '@example.com';
+            lastRow.querySelector('.contact-email').value = email;
+          }
+        }
+        searchInput.value = '';
+        if (window.__init8D) window.__init8D(document);
+      }
+
+      // Show contact details modal
+      const contactButton = e.target.closest('.contact-pop');
+      if (contactButton) {
+          showContactModal(contactButton);
+      }
+    });
+
+    // --- Initial Setup ---
+    // Seed one row if the table is empty on load
+    if (!qs('#d1-team-unified tbody tr')) {
+      addRow();
+    }
+
+    // Ensure unique radio group names for any existing rows (e.g., after a data reload)
+    qsa('#d1-team-unified tbody tr').forEach((tr, i) => {
+      const uniqueId = 'member-role-' + Date.now() + '-' + (i + 1);
+      tr.querySelectorAll('input.member-role').forEach(radio => {
+        if (radio.name === 'member-role-__') {
+          radio.name = uniqueId;
+        }
       });
-      // Seed one row
-      if(!qs('#d1-team-unified tbody tr')) addRow();
-      // Ensure unique radio groups for existing rows (e.g., after reload)
-      Array.from(qs('#d1-team-unified tbody')?.children||[]).forEach((tr,i)=>{
-        tr.querySelectorAll('input.member-role').forEach(r=>{ r.name = r.name && r.name!=='member-role-__' ? r.name : ('member-role-'+Date.now()+'-'+(i+1)); });
-      });
-    })();
-  </script>
-</section>
+    });
+  })();
+</script>

@@ -1,70 +1,123 @@
-<section class="container">
-  <link rel="stylesheet" href="../assets/8d.css">
-  <div class="card header toolbar">
-    <div>
-      <div class="h-title">D8 — Team Recognition 🎉</div>
-      <div class="h-sub">Congratulate the team and formally close the project.</div>
-    </div>
-    <div class="controls">
-      <div class="timestamp">Last updated: <span id="d8-timestamp">Never</span></div>
-      <select id="d8-status-select" class="input select-compact status-select" data-id="d8">
-        <option value="pending">Pending</option>
-        <option value="in-progress">In Progress</option>
-        <option value="completed">Completed</option>
-      </select>
-    </div>
-  </div>
+<!-- D8 — Team Recognition -->
+<div class="space-y-6">
 
-  <div class="card">
-    <div class="section-title">Acknowledge Contributions</div>
-    <div class="controls mt-xs"><button id="d8-autofill-team" class="btn btn-ghost">Auto-populate from D1</button></div>
-    <table id="d8-ack" class="table dynamic-table">
-      <thead><tr><th>Name</th><th>Title</th><th>Responsibility</th><th>Achievements</th><th>Award</th><th></th></tr></thead>
-      <tbody></tbody>
-      <tfoot><tr><td colspan="6"><button class="add-row-btn btn btn-ghost">Add Recognition</button></td></tr></tfoot>
-      <template><tr><td><input class="input ack-name"/></td><td><input class="input ack-title"/></td><td><input class="input"/></td><td><input class="input"/></td><td><select class="input"><option>🏅</option><option>⭐</option><option>👍</option><option>🎖️</option><option>🏆</option></select></td><td><button class="remove-row-btn btn btn-danger">Remove</button></td></tr></template>
-    </table>
-  </div>
-
-  <div class="card">
-    <div class="controls flex-between">
-      <div class="section-title">Final Sign-off</div>
-      <button id="d8-generate" class="btn btn-ghost"><i data-lucide="sparkles"></i> Generate Recognition Summary</button>
-    </div>
-    <div class="row">
-      <div class="col">
-        <label class="label">Approved By - Name</label>
-        <input id="d8-approvedName" class="input" />
-        <canvas id="d8-approved-sign" width="280" height="80" class="mt-xs" style="border:1px solid #e6e9ef;border-radius:8px"></canvas>
-        <button id="d8-approved-save" class="btn btn-ghost mt-xs">Save Signature</button>
-        <div id="d8-approved-img" class="mt-xs"></div>
+  <!-- Team Contributions Card -->
+  <div class="ds-card">
+    <div class="ds-card__header flex justify-between items-center">
+      <div>
+        <h3 class="ds-h3">Acknowledge Contributions</h3>
+        <p class="ds-caption">Recognize team members for their efforts.</p>
       </div>
-      <div class="col">
-        <label class="label">Approved By - Date</label>
-        <input id="d8-approvedDate" class="input" type="date" />
-      </div>
+      <button id="d8-autofill-team" class="ds-btn ds-btn--secondary">
+        <i data-lucide="users"></i>
+        <span>Auto-populate from D1</span>
+      </button>
     </div>
-    <div class="row mt-xs">
-      <div class="col"><label class="label">Submitted By - Name</label><input id="d8-submittedName" class="input"/><canvas id="d8-submitted-sign" width="280" height="80" class="mt-xs" style="border:1px solid #e6e9ef;border-radius:8px"></canvas><button id="d8-submitted-save" class="btn btn-ghost mt-xs">Save Signature</button><div id="d8-submitted-img" class="mt-xs"></div></div>
-      <div class="col"><label class="label">Submitted By - Date</label><input id="d8-submittedDate" class="input" type="date"/></div>
-    </div>
-
-    <div class="mt-small">
-      <label class="label">Documents (final signed report)</label>
-      <div class="file-block drop-zone">
-        <input class="preview-file" type="file" />
-        <div class="file-preview small"></div>
+    <div class="ds-card__body">
+      <div class="overflow-x-auto">
+        <table id="d8-ack" class="ds-table w-full">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Title</th>
+              <th>Responsibility</th>
+              <th>Achievements</th>
+              <th class="w-24">Award</th>
+              <th class="w-12"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr><td colspan="6"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Recognition</button></td></tr>
+          </tfoot>
+          <template>
+            <tr>
+              <td><input class="ds-input ack-name" placeholder="Team member's name"/></td>
+              <td><input class="ds-input ack-title" placeholder="Job title"/></td>
+              <td><input class="ds-input" placeholder="e.g., Lead Investigator"/></td>
+              <td><input class="ds-input" placeholder="e.g., Identified root cause"/></td>
+              <td>
+                <select class="ds-select text-lg">
+                  <option>🏅</option><option>⭐</option><option>👍</option><option>🎖️</option><option>🏆</option>
+                </select>
+              </td>
+              <td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
+            </tr>
+          </template>
+        </table>
       </div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="section-title">Final Report Preview</div>
-    <div id="d8-report" class="small"></div>
+  <!-- Final Sign-off Card -->
+  <div class="ds-card">
+    <div class="ds-card__header flex justify-between items-center">
+      <h3 class="ds-h3">Final Sign-off</h3>
+       <button id="d8-generate" class="ds-btn ds-btn--secondary">
+        <i data-lucide="sparkles"></i>
+        <span>Generate Recognition Summary</span>
+      </button>
+    </div>
+    <div class="ds-card__body grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+      <!-- Approved By Column -->
+      <div class="space-y-2">
+        <h4 class="font-semibold text-slate-700">Approved By</h4>
+        <div>
+            <label class="ds-caption" for="d8-approvedName">Name</label>
+            <input id="d8-approvedName" class="ds-input" />
+        </div>
+        <div>
+            <label class="ds-caption" for="d8-approvedDate">Date</label>
+            <input id="d8-approvedDate" class="ds-input" type="date" />
+        </div>
+        <div>
+            <label class="ds-caption">Signature</label>
+            <canvas id="d8-approved-sign" class="w-full h-24 border border-slate-300 rounded-lg bg-slate-50"></canvas>
+            <button id="d8-approved-save" class="ds-btn ds-btn--secondary mt-2">Save Signature</button>
+            <div id="d8-approved-img" class="mt-2"></div>
+        </div>
+      </div>
+      <!-- Submitted By Column -->
+      <div class="space-y-2">
+        <h4 class="font-semibold text-slate-700">Submitted By</h4>
+        <div>
+            <label class="ds-caption" for="d8-submittedName">Name</label>
+            <input id="d8-submittedName" class="ds-input"/>
+        </div>
+        <div>
+            <label class="ds-caption" for="d8-submittedDate">Date</label>
+            <input id="d8-submittedDate" class="ds-input" type="date"/>
+        </div>
+        <div>
+            <label class="ds-caption">Signature</label>
+            <canvas id="d8-submitted-sign" class="w-full h-24 border border-slate-300 rounded-lg bg-slate-50"></canvas>
+            <button id="d8-submitted-save" class="ds-btn ds-btn--secondary mt-2">Save Signature</button>
+            <div id="d8-submitted-img" class="mt-2"></div>
+        </div>
+      </div>
+    </div>
+    <div class="ds-card__body border-t border-slate-200">
+        <label class="ds-caption" for="d8-docs">Attach Final Signed Report</label>
+        <input id="d8-docs" class="ds-input preview-file mt-1" type="file" />
+        <div class="file-preview mt-2"></div>
+    </div>
   </div>
 
-  <script src="../assets/8d-forms.js"></script>
-  <script>
-    window.__init8D && window.__init8D(document);
-  </script>
-</section>
+  <!-- Report Preview Card -->
+  <div class="ds-card">
+    <div class="ds-card__header">
+        <h3 class="ds-h3">Final Report Preview</h3>
+    </div>
+    <div id="d8-report" class="ds-card__body prose prose-sm max-w-none">
+      <!-- Generated report content will be injected here -->
+    </div>
+  </div>
+
+</div>
+
+<!-- Scripts -->
+<script>
+  if (window.__init8D) {
+    window.__init8D(document);
+  }
+</script>

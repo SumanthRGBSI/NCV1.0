@@ -1,0 +1,26 @@
+<!--
+  Unified 8D Page Layout
+  This template provides a consistent structure for each of the 8D discipline pages.
+  It utilizes the Design System and Tailwind CSS classes for a modern look and feel.
+  The content for each specific discipline page will be injected into the `{{content}}` placeholder.
+-->
+<div class="ds-app-layout">
+  <header class="ds-page-header">
+    <div class="ds-page-header__main">
+      <h1 class="ds-h2">{{title}}</h1>
+      <p class="ds-caption">{{subtitle}}</p>
+    </div>
+    <div class="ds-page-header__actions">
+      <div class="ds-timestamp">Last updated: <span id="{{id}}-timestamp">Never</span></div>
+      <select id="{{id}}-status-select" class="ds-select ds-select--compact" data-id="{{id}}">
+        <option value="pending">Pending</option>
+        <option value="in-progress">In Progress</option>
+        <option value="completed">Completed</option>
+      </select>
+    </div>
+  </header>
+
+  <main class="ds-page-content">
+    {{content}}
+  </main>
+</div>

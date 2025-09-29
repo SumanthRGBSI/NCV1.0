@@ -1,137 +1,164 @@
-<section class="container">
-  <link rel="stylesheet" href="../assets/8d.css">
-  <div class="card header toolbar">
-    <div>
-      <div class="h-title">D3 — Interim Containment 🚧</div>
-      <div class="h-sub">Temporary fixes to protect the customer immediately.</div>
+<!-- D3 — Interim Containment -->
+<div class="space-y-6" x-data="{ activeTab: 'risk' }">
+
+  <!-- Actions & Planning Card -->
+  <div class="ds-card">
+    <div class="ds-card__header">
+      <h3 class="ds-h3">Actions & Planning</h3>
     </div>
-    <div class="controls">
-      <div class="timestamp">Last updated: <span id="d3-timestamp">Never</span></div>
-      <select id="d3-status-select" class="input select-compact status-select" data-id="d3">
-        <option value="pending">Pending</option>
-        <option value="in-progress">In Progress</option>
-        <option value="completed">Completed</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="section-title">Actions & Planning</div>
-    <label class="label">3A. Supplier description of problem / POV</label>
-    <textarea id="d3-supplierDescription" class="input"></textarea>
-
-    <div class="small mt-small">3B. Immediate Actions &amp; Responsibility</div>
-    <table id="d3-actions" class="table dynamic-table table-alt">
-      <thead><tr><th>Action</th><th>Responsibility</th><th>Target Date</th><th>Status</th><th></th></tr></thead>
-      <tbody></tbody>
-      <tfoot><tr><td colspan="5"><button class="add-row-btn btn btn-ghost">Add Action</button></td></tr></tfoot>
-      <template>
-        <tr>
-          <td><input class="input" placeholder="Describe action"/></td>
-          <td><input class="input" placeholder="Owner"/></td>
-          <td><input class="input" type="date"/></td>
-          <td><select class="input"><option>Assigned</option><option>In Progress</option><option>Done</option></select></td>
-          <td><button class="remove-row-btn btn btn-danger">Remove</button></td>
-        </tr>
-      </template>
-    </table>
-
-    <div class="small mt-small">3B. Immediate Actions (Kanban)</div>
-    <div class="controls mt-xs">
-      <input id="d3-new-action" class="input" placeholder="Add action and press Enter" />
-    </div>
-    <div id="d3-kanban" class="row mt-small">
-      <div class="col"><div class="section-title">To Do</div><div class="card" id="d3-col-todo" style="min-height:160px"></div></div>
-      <div class="col"><div class="section-title">In Progress</div><div class="card" id="d3-col-inprogress" style="min-height:160px"></div></div>
-      <div class="col"><div class="section-title">Done</div><div class="card" id="d3-col-done" style="min-height:160px"></div></div>
-    </div>
-
-    <label class="label mt-small">3C. Immediate Action Notes</label>
-    <textarea id="d3-actionNotes" class="input"></textarea>
-  </div>
-
-  <div class="card">
-    <div class="section-title">Risk Assessment & Part Verification</div>
-    <div class="tabs" data-tabs>
-      <div class="tabs-nav">
-        <button class="tab active" data-tab="risk">Other Product/Platform at Risk</button>
-        <button class="tab" data-tab="labels">Identification / Labelling</button>
-        <button class="tab" data-tab="sort">Sorting / Containment</button>
+    <div class="ds-card__body space-y-6">
+      <div>
+        <label class="ds-caption" for="d3-supplierDescription">3A. Supplier Description of Problem / POV</label>
+        <textarea id="d3-supplierDescription" class="ds-textarea" placeholder="Enter the supplier's perspective on the issue..."></textarea>
       </div>
-      <div class="tabs-panels">
-        <div class="tab-panel active" data-panel="risk">
-          <div class="controls mt-xs"><input class="input table-filter" placeholder="Filter by process/part" data-for="#d3-risk" /></div>
-          <table id="d3-risk" class="table dynamic-table table-alt">
-            <thead><tr><th>Process/Part Number</th><th>Risk of Same error (Y/N)</th><th>Add to Containment (Y/N)</th><th></th></tr></thead>
+
+      <!-- Immediate Actions Table -->
+      <div>
+        <h4 class="font-semibold text-slate-700">3B. Immediate Actions & Responsibility</h4>
+        <div class="overflow-x-auto mt-2">
+          <table id="d3-actions" class="ds-table w-full">
+            <thead>
+              <tr><th>Action</th><th>Responsibility</th><th>Target Date</th><th>Status</th><th class="w-12"></th></tr>
+            </thead>
             <tbody></tbody>
-            <tfoot><tr><td colspan="4"><button class="add-row-btn btn btn-ghost">Add Item</button></td></tr></tfoot>
-            <template>
-              <tr><td><input class="input"/></td><td><select class="input"><option>Yes</option><option>No</option></select></td><td><select class="input"><option>Yes</option><option>No</option></select></td><td><button class="remove-row-btn btn btn-danger">Remove</button></td></tr>
-            </template>
-          </table>
-        </div>
-        <div class="tab-panel" data-panel="labels">
-          <div class="controls mt-xs"><input class="input table-filter" placeholder="Filter by cut off/comments" data-for="#d3-labels" /></div>
-          <table id="d3-labels" class="table dynamic-table table-alt">
-            <thead><tr><th>Cut Off Number</th><th>Date / Time</th><th>Image</th><th>Comments</th><th></th></tr></thead>
-            <tbody></tbody>
-            <tfoot><tr><td colspan="5"><button class="add-row-btn btn btn-ghost">Add Label</button></td></tr></tfoot>
+            <tfoot>
+              <tr><td colspan="5"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Action</button></td></tr>
+            </tfoot>
             <template>
               <tr>
-                <td><input class="input"/></td>
-                <td><input class="input" type="datetime-local"/></td>
-                <td><input class="preview-file" type="file"/></td>
-                <td><input class="input"/></td>
-                <td><button class="remove-row-btn btn btn-danger">Remove</button></td>
+                <td><input class="ds-input" placeholder="Describe action"/></td>
+                <td><input class="ds-input" placeholder="Owner"/></td>
+                <td><input class="ds-input" type="date"/></td>
+                <td><select class="ds-select"><option>Assigned</option><option>In Progress</option><option>Done</option></select></td>
+                <td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
               </tr>
             </template>
           </table>
         </div>
-        <div class="tab-panel" data-panel="sort">
-          <div class="controls mt-xs"><input class="input table-filter" placeholder="Filter by task/responsibility" data-for="#d3-sort" /></div>
-          <table id="d3-sort" class="table dynamic-table table-alt">
-            <thead><tr><th>Task/Indicators</th><th>Resp + Target Date</th><th>Qty to be Checked</th><th>Ok Qty</th><th>Not Ok Qty</th><th>Total Checked</th><th>Activity Date</th><th>Comments</th><th></th></tr></thead>
+      </div>
+
+      <!-- Kanban View -->
+      <div>
+        <h4 class="font-semibold text-slate-700">Immediate Actions (Kanban)</h4>
+        <div class="mt-2">
+          <input id="d3-new-action" class="ds-input" placeholder="Type a new action and press Enter to add to 'To Do'" />
+        </div>
+        <div id="d3-kanban" class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <div>
+            <h5 class="font-bold text-sm text-slate-600 mb-2">To Do</h5>
+            <div class="p-3 bg-slate-50 rounded-lg min-h-[160px] space-y-2" id="d3-col-todo"></div>
+          </div>
+          <div>
+            <h5 class="font-bold text-sm text-slate-600 mb-2">In Progress</h5>
+            <div class="p-3 bg-slate-50 rounded-lg min-h-[160px] space-y-2" id="d3-col-inprogress"></div>
+          </div>
+          <div>
+            <h5 class="font-bold text-sm text-slate-600 mb-2">Done</h5>
+            <div class="p-3 bg-slate-50 rounded-lg min-h-[160px] space-y-2" id="d3-col-done"></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="ds-caption" for="d3-actionNotes">3C. Immediate Action Notes</label>
+        <textarea id="d3-actionNotes" class="ds-textarea" placeholder="Add any relevant notes about the immediate actions..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Risk Assessment & Verification Card -->
+  <div class="ds-card">
+    <div class="ds-card__header">
+      <h3 class="ds-h3">Risk Assessment & Part Verification</h3>
+    </div>
+    <!-- Tabs -->
+    <div class="border-b border-slate-200 px-6">
+        <nav class="flex -mb-px">
+            <button @click="activeTab = 'risk'" :class="{'border-primary-500 text-primary-600 font-semibold': activeTab === 'risk'}" class="px-1 py-3 text-sm border-b-2 mr-6 transition-colors">Products/Platforms at Risk</button>
+            <button @click="activeTab = 'labels'" :class="{'border-primary-500 text-primary-600 font-semibold': activeTab === 'labels'}" class="px-1 py-3 text-sm border-b-2 mr-6 transition-colors">Identification / Labelling</button>
+            <button @click="activeTab = 'sort'" :class="{'border-primary-500 text-primary-600 font-semibold': activeTab === 'sort'}" class="px-1 py-3 text-sm border-b-2 mr-6 transition-colors">Sorting / Containment</button>
+        </nav>
+    </div>
+    <div class="ds-card__body">
+      <!-- Risk Panel -->
+      <div x-show="activeTab === 'risk'">
+        <input class="ds-input table-filter mb-4" placeholder="Filter by process or part number..." data-for="#d3-risk" />
+        <div class="overflow-x-auto">
+          <table id="d3-risk" class="ds-table w-full">
+            <thead><tr><th>Process/Part Number</th><th>Risk of Same Error?</th><th>Add to Containment?</th><th class="w-12"></th></tr></thead>
             <tbody></tbody>
-            <tfoot><tr><td colspan="9"><button class="add-row-btn btn btn-ghost">Add Sort Activity</button></td></tr></tfoot>
+            <tfoot><tr><td colspan="4"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Item</button></td></tr></tfoot>
+            <template><tr><td><input class="ds-input"/></td><td><select class="ds-select"><option>Yes</option><option>No</option></select></td><td><select class="ds-select"><option>Yes</option><option>No</option></select></td><td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td></tr></template>
+          </table>
+        </div>
+      </div>
+      <!-- Labels Panel -->
+      <div x-show="activeTab === 'labels'">
+        <input class="ds-input table-filter mb-4" placeholder="Filter by cut off number or comments..." data-for="#d3-labels" />
+        <div class="overflow-x-auto">
+          <table id="d3-labels" class="ds-table w-full">
+            <thead><tr><th>Cut Off Number</th><th>Date / Time</th><th>Image</th><th>Comments</th><th class="w-12"></th></tr></thead>
+            <tbody></tbody>
+            <tfoot><tr><td colspan="5"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Label</button></td></tr></tfoot>
             <template>
               <tr>
-                <td><input class="input"/></td>
+                <td><input class="ds-input"/></td><td><input class="ds-input" type="datetime-local"/></td>
+                <td><input class="ds-input preview-file" type="file"/></td><td><input class="ds-input"/></td>
+                <td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
+              </tr>
+            </template>
+          </table>
+        </div>
+      </div>
+      <!-- Sort Panel -->
+      <div x-show="activeTab === 'sort'">
+        <input class="ds-input table-filter mb-4" placeholder="Filter by task or responsibility..." data-for="#d3-sort" />
+        <div class="overflow-x-auto">
+          <table id="d3-sort" class="ds-table w-full">
+            <thead><tr><th>Task/Indicators</th><th>Resp + Target Date</th><th>Qty to Check</th><th>OK Qty</th><th>Not OK Qty</th><th>Total Checked</th><th>Activity Date</th><th>Comments</th><th class="w-12"></th></tr></thead>
+            <tbody></tbody>
+            <tfoot><tr><td colspan="9"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Sort Activity</button></td></tr></tfoot>
+            <template>
+              <tr>
+                <td><input class="ds-input"/></td>
                 <td>
-                  <div class="small"><input class="input" placeholder="Responsibility" /></div>
-                  <div class="small mt-xs"><input class="input" type="date" placeholder="Target Date"/></div>
+                  <input class="ds-input mb-1" placeholder="Responsibility" />
+                  <input class="ds-input" type="date" placeholder="Target Date"/>
                 </td>
-                <td><input class="input qty-total" type="number"/></td>
-                <td><input class="input qty-ok" type="number"/></td>
-                <td><input class="input qty-nok" type="number"/></td>
-                <td><input class="input qty-checked" type="number" disabled /></td>
-                <td><input class="input" type="date"/></td>
-                <td><input class="input"/></td>
-                <td><button class="remove-row-btn btn btn-danger">Remove</button></td>
+                <td><input class="ds-input qty-total" type="number"/></td><td><input class="ds-input qty-ok" type="number"/></td>
+                <td><input class="ds-input qty-nok" type="number"/></td><td><input class="ds-input qty-checked" type="number" disabled /></td>
+                <td><input class="ds-input" type="date"/></td><td><input class="ds-input"/></td>
+                <td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
               </tr>
             </template>
           </table>
         </div>
       </div>
     </div>
-
-    <div class="mt-small">
-      <label class="label">3G. Documents</label>
-      <div class="file-block drop-zone">
-        <input class="preview-file" type="file" multiple />
-        <div class="file-preview small"></div>
-      </div>
+    <div class="ds-card__body border-t border-slate-200">
+        <label class="ds-caption" for="d3-docs">3G. Supporting Documents</label>
+        <input id="d3-docs" class="ds-input preview-file mt-1" type="file" multiple />
+        <div class="file-preview mt-2"></div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="section-title">Visual Parts Flow Diagram</div>
-    <div class="hint">Upload a diagram showing where parts are held, sorted, and released.</div>
-    <div class="file-block drop-zone" id="d3-flow-zone">
-      <input class="preview-file" id="d3-flow-diagram" type="file" />
-      <div class="file-preview small"></div>
+  <!-- Visuals Card -->
+  <div class="ds-card">
+    <div class="ds-card__header">
+      <h3 class="ds-h3">Visual Parts Flow Diagram</h3>
+      <p class="ds-caption">Upload a diagram showing where parts are held, sorted, and released.</p>
+    </div>
+    <div class="ds-card__body" id="d3-flow-zone">
+      <input class="ds-input preview-file" id="d3-flow-diagram" type="file" />
+      <div class="file-preview mt-2"></div>
     </div>
   </div>
+</div>
 
-  <script src="../assets/8d-forms.js"></script>
-  <script>window.__init8D && window.__init8D(document);</script>
-</section>
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<script>
+  if (window.__init8D) {
+    window.__init8D(document);
+  }
+</script>

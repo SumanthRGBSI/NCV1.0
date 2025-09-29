@@ -1,62 +1,147 @@
-<section class="container">
-  <link rel="stylesheet" href="../assets/8d.css">
-  <div class="card header">
-    <div>
-      <div class="h-title">8D Dashboard</div>
-      <div class="h-sub">Overview of status, team and key details.</div>
-    </div>
-    <div class="controls">
-      <span class="timestamp">Last updated: <span id="dash-updated">-</span></span>
-    </div>
-  </div>
+<!-- 8D Dashboard -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-  <div class="row">
-    <div class="col">
-      <div class="card">
-        <div class="section-title sticky-section-title">Overall Status</div>
-        <div id="dash-status" class="small"></div>
-        <div class="mt-small">
-          <div class="small">Completed Disciplines</div>
-          <div id="dash-progress" class="small"></div>
+  <!-- Left Column -->
+  <div class="lg:col-span-2 space-y-6">
+    <!-- Status & Progress Card -->
+    <div class="ds-card">
+      <div class="ds-card__header">
+        <h3 class="ds-h3">Overview</h3>
+      </div>
+      <div class="ds-card__body grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h4 class="font-semibold text-slate-700">Overall Status</h4>
+          <div id="dash-status" class="text-lg font-bold text-slate-800 mt-1">
+            <div class="ds-skeleton h-6 w-24"></div>
+          </div>
+          <p class="ds-caption mt-1">Last updated: <span id="dash-updated">-</span></p>
         </div>
-      </div>
-      <div class="card">
-        <div class="section-title sticky-section-title">Problem Statement (D2)</div>
-        <div id="dash-problem" class="small"></div>
-      </div>
-    </div>
-    <div class="col">
-      <div class="card">
-        <div class="section-title sticky-section-title">Key Team Members (D1)</div>
-        <div id="dash-team" class="team-cards-grid mt-small"></div>
-      </div>
-      <div class="card">
-        <div class="section-title sticky-section-title">Quick Links</div>
-        <div class="dynamic-list">
-          <a class="btn btn-ghost" href="#d1">Go to D1</a>
-          <a class="btn btn-ghost" href="#d2">Go to D2</a>
-          <a class="btn btn-ghost" href="#d3">Go to D3</a>
+        <div>
+          <h4 class="font-semibold text-slate-700">Completed Disciplines</h4>
+          <div id="dash-progress" class="text-lg font-bold text-slate-800 mt-1">
+            <div class="ds-skeleton h-6 w-20"></div>
+          </div>
+          <div class="w-full bg-slate-200 rounded-full h-2.5 mt-2">
+            <div id="dash-progress-bar" class="bg-emerald-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- Problem Statement Card -->
+    <div class="ds-card">
+      <div class="ds-card__header">
+        <h3 class="ds-h3">Problem Statement (D2)</h3>
+      </div>
+      <div class="ds-card__body">
+        <div id="dash-problem" class="text-slate-600 italic">
+          <div class="ds-skeleton h-5 w-full"></div>
+          <div class="ds-skeleton h-5 w-3/4 mt-2"></div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <script>
-    (function(){
-      function qs(s, c=document){return c.querySelector(s)}
-      function makeCard(name, title){ const div=document.createElement('div'); div.className='team-card'; div.innerHTML = `<div class="avatar">${(name||'').split(/\s+/).map(n=>n[0]||'').slice(0,2).join('').toUpperCase()}</div><div><div class="card-title">${name||''}</div><div class="card-sub">${title||'Member'}</div></div>`; return div; }
-      function render(){
-        const app = window.app; if(!app||!app.data) return setTimeout(render, 100);
-        const meta = app.data.meta||{};
-        qs('#dash-updated').textContent = new Date().toLocaleString();
-        qs('#dash-status').innerHTML = `<div class="small">Overall: <strong>${meta.overallStatus||'Open'}</strong></div>`;
-        const done = (window.disciplines||[]).filter(d=> app.data[d.id]?.status==='completed').length; const total=(window.disciplines||[]).length; qs('#dash-progress').textContent = `${done} of ${total} completed`;
-        const prob = (app.data.d2?.fields?.briefStatement || app.data.d2?.fields?.problemStatement || '').toString(); qs('#dash-problem').innerHTML = prob ? prob : '<span class="small text-gray-500">No problem statement yet.</span>';
-        const teamHost = qs('#dash-team'); teamHost.innerHTML='';
-        const team = (app.data.d1?.fields?.teamMembers)||[];
-        if(team.length){ team.slice(0,6).forEach(p=>{ teamHost.appendChild(makeCard(p.name||'', p.title||'Member')); }); }
-      }
-      if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', render); else render();
-    })();
-  </script>
-</section>
+  <!-- Right Column -->
+  <div class="lg:col-span-1 space-y-6">
+    <!-- Team Card -->
+    <div class="ds-card">
+      <div class="ds-card__header">
+        <h3 class="ds-h3">Key Team Members (D1)</h3>
+      </div>
+      <div id="dash-team" class="ds-card__body space-y-3">
+         <div class="ds-skeleton h-12 w-full"></div>
+         <div class="ds-skeleton h-12 w-full"></div>
+         <div class="ds-skeleton h-12 w-full"></div>
+      </div>
+    </div>
+
+    <!-- Quick Links Card -->
+    <div class="ds-card">
+      <div class="ds-card__header">
+        <h3 class="ds-h3">Quick Links</h3>
+      </div>
+      <div class="ds-card__body grid grid-cols-2 gap-2">
+        <a href="#d1" class="ds-btn ds-btn--secondary justify-start"><i data-lucide="users" class="w-4 h-4 mr-2"></i>D1</a>
+        <a href="#d2" class="ds-btn ds-btn--secondary justify-start"><i data-lucide="file-text" class="w-4 h-4 mr-2"></i>D2</a>
+        <a href="#d3" class="ds-btn ds-btn--secondary justify-start"><i data-lucide="shield-check" class="w-4 h-4 mr-2"></i>D3</a>
+        <a href="#d4" class="ds-btn ds-btn--secondary justify-start"><i data-lucide="search" class="w-4 h-4 mr-2"></i>D4</a>
+        <a href="#d5" class="ds-btn ds-btn--secondary justify-start"><i data-lucide="check-square" class="w-4 h-4 mr-2"></i>D5</a>
+        <a href="#d6" class="ds-btn ds-btn--secondary justify-start"><i data-lucide="tool" class="w-4 h-4 mr-2"></i>D6</a>
+        <a href="#d7" class="ds-btn ds-btn--secondary justify-start"><i data-lucide="ban" class="w-4 h-4 mr-2"></i>D7</a>
+        <a href="#d8" class="ds-btn ds-btn--secondary justify-start"><i data-lucide="award" class="w-4 h-4 mr-2"></i>D8</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script>
+(function(){
+  function qs(selector, context = document) { return context.querySelector(selector); }
+
+  // Creates a team member card using design system classes
+  function makeTeamMemberCard(name, title) {
+    const initials = (name || '').split(/\s+/).map(n => n[0] || '').slice(0, 2).join('').toUpperCase();
+    const card = document.createElement('div');
+    card.className = 'flex items-center gap-3 p-2 bg-slate-50 rounded-lg';
+    card.innerHTML = `
+      <div class="h-10 w-10 rounded-full bg-slate-200 text-slate-600 font-bold text-sm grid place-items-center flex-shrink-0">${initials || '?'}</div>
+      <div>
+        <div class="font-semibold text-slate-800">${name || 'Unnamed'}</div>
+        <div class="text-xs text-slate-500">${title || 'Team Member'}</div>
+      </div>
+    `;
+    return card;
+  }
+
+  // Main render function for the dashboard
+  function renderDashboard() {
+    // Wait for the main app object and data to be available
+    if (!window.app || !window.app.data) {
+      setTimeout(renderDashboard, 100);
+      return;
+    }
+
+    const data = window.app.data;
+    const meta = data.meta || {};
+    const disciplines = window.disciplines || [];
+
+    // Update Overall Status
+    qs('#dash-updated').textContent = data.lastUpdated ? new Date(data.lastUpdated).toLocaleString() : new Date().toLocaleString();
+    qs('#dash-status').textContent = meta.overallStatus || 'Open';
+
+    // Update Progress
+    const completedCount = disciplines.filter(d => data[d.id]?.status === 'completed').length;
+    const totalCount = disciplines.length;
+    qs('#dash-progress').textContent = `${completedCount} of ${totalCount} completed`;
+    const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+    qs('#dash-progress-bar').style.width = `${progressPercent}%`;
+
+    // Update Problem Statement
+    const problemText = data.d2?.fields?.briefStatement || data.d2?.fields?.problemStatement || '';
+    qs('#dash-problem').innerHTML = problemText
+      ? `<p class="italic">“${problemText}”</p>`
+      : '<p class="text-slate-400">No problem statement has been defined in D2 yet.</p>';
+
+    // Update Team Members
+    const teamHost = qs('#dash-team');
+    teamHost.innerHTML = ''; // Clear skeleton loaders
+    const teamMembers = data.d1?.fields?.teamMembers || [];
+    if (teamMembers.length) {
+      teamMembers.slice(0, 5).forEach(member => { // Show up to 5 members
+        teamHost.appendChild(makeTeamMemberCard(member.name || '', member.title || ''));
+      });
+    } else {
+      teamHost.innerHTML = '<p class="text-slate-400 text-sm">No team members added in D1 yet.</p>';
+    }
+  }
+
+  // Run render function when the DOM is ready or immediately if already loaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderDashboard);
+  } else {
+    renderDashboard();
+  }
+})();
+</script>
