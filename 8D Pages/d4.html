@@ -3,7 +3,7 @@
 
   <!-- Root Cause Tools Card -->
   <div class="ds-card">
-    <div class="ds-card__header">
+    <div class="ds-card__header ds-card__header--sticky">
       <h3 class="ds-h3">4A. Root Cause Analysis Tools</h3>
     </div>
     <!-- Tabs -->
@@ -96,7 +96,7 @@
 
   <!-- Verification Card -->
   <div class="ds-card">
-    <div class="ds-card__header">
+    <div class="ds-card__header ds-card__header--sticky">
       <h3 class="ds-h3">Verify Potential Root Causes</h3>
     </div>
     <div class="ds-card__body space-y-6">
@@ -151,4 +151,45 @@
   if (window.__init8D) {
     window.__init8D(document);
   }
+
+  (function() {
+    // Function to calculate RPN for a given row in the D4 root cause table
+    function calculateD4Rpn(row) {
+      const likelihoodEl = row.querySelector('.rc-like');
+      const severityEl = row.querySelector('.rc-sev');
+      const scoreEl = row.querySelector('.rc-score');
+
+      if (!likelihoodEl || !severityEl || !scoreEl) return;
+
+      const likelihood = parseInt(likelihoodEl.value, 10) || 0;
+      const severity = parseInt(severityEl.value, 10) || 0;
+
+      scoreEl.value = likelihood * severity;
+    }
+
+    // Use event delegation to handle changes on the root causes table
+    document.addEventListener('input', function(event) {
+      const target = event.target;
+      if (target.matches('#d4-root-causes .rc-like') || target.matches('#d4-root-causes .rc-sev')) {
+        const row = target.closest('tr');
+        if (row) {
+          calculateD4Rpn(row);
+        }
+      }
+    });
+
+    // Ensure that when new rows are added, the initial score is calculated.
+    // This relies on a generic add-row-btn handler existing elsewhere.
+    // We can also trigger the calculation for all rows on init.
+    function initializeScores() {
+        const rootCauseTable = document.getElementById('d4-root-causes');
+        if (rootCauseTable) {
+            const rows = rootCauseTable.querySelectorAll('tbody tr');
+            rows.forEach(calculateD4Rpn);
+        }
+    }
+
+    // Run initialization after the main app logic has had a chance to populate the table
+    setTimeout(initializeScores, 100);
+  })();
 </script>

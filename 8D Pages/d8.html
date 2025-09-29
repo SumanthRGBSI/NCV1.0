@@ -72,9 +72,15 @@
         </div>
         <div>
             <label class="ds-caption">Signature</label>
-            <canvas id="d8-approved-sign" class="w-full h-24 border border-slate-300 rounded-lg bg-slate-50"></canvas>
-            <button id="d8-approved-save" class="ds-btn ds-btn--secondary mt-2">Save Signature</button>
-            <div id="d8-approved-img" class="mt-2"></div>
+            <canvas id="d8-approved-sign" class="w-full h-24 border border-slate-300 rounded-lg bg-slate-50 cursor-crosshair"></canvas>
+            <div class="flex items-center gap-2 mt-2">
+              <button id="d8-approved-save" class="ds-btn ds-btn--secondary">Save</button>
+              <button id="d8-approved-clear" class="ds-btn ds-btn--tertiary">Clear</button>
+            </div>
+            <div id="d8-approved-img" class="mt-2 hidden">
+              <img class="border rounded-lg" />
+              <button class="ds-link text-xs mt-1">Clear Signature</button>
+            </div>
         </div>
       </div>
       <!-- Submitted By Column -->
@@ -90,16 +96,28 @@
         </div>
         <div>
             <label class="ds-caption">Signature</label>
-            <canvas id="d8-submitted-sign" class="w-full h-24 border border-slate-300 rounded-lg bg-slate-50"></canvas>
-            <button id="d8-submitted-save" class="ds-btn ds-btn--secondary mt-2">Save Signature</button>
-            <div id="d8-submitted-img" class="mt-2"></div>
+            <canvas id="d8-submitted-sign" class="w-full h-24 border border-slate-300 rounded-lg bg-slate-50 cursor-crosshair"></canvas>
+            <div class="flex items-center gap-2 mt-2">
+              <button id="d8-submitted-save" class="ds-btn ds-btn--secondary">Save</button>
+              <button id="d8-submitted-clear" class="ds-btn ds-btn--tertiary">Clear</button>
+            </div>
+            <div id="d8-submitted-img" class="mt-2 hidden">
+              <img class="border rounded-lg" />
+              <button class="ds-link text-xs mt-1">Clear Signature</button>
+            </div>
         </div>
       </div>
     </div>
-    <div class="ds-card__body border-t border-slate-200">
-        <label class="ds-caption" for="d8-docs">Attach Final Signed Report</label>
-        <input id="d8-docs" class="ds-input preview-file mt-1" type="file" />
-        <div class="file-preview mt-2"></div>
+    <div class="ds-card__body border-t border-slate-200 flex items-center justify-between">
+        <div>
+          <label class="ds-caption" for="d8-docs">Attach Final Signed Report</label>
+          <input id="d8-docs" class="ds-input preview-file mt-1" type="file" />
+          <div class="file-preview mt-2"></div>
+        </div>
+        <button id="d8-final-close" class="ds-btn ds-btn--primary ds-btn--lg self-end">
+            <i data-lucide="package-check"></i>
+            <span>Close & Archive 8D</span>
+        </button>
     </div>
   </div>
 
@@ -116,8 +134,166 @@
 </div>
 
 <!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
 <script>
   if (window.__init8D) {
     window.__init8D(document);
   }
+
+  (function() {
+    // --- Signature Pad Logic ---
+    function setupSignaturePad(idPrefix) {
+      const canvas = document.getElementById(`${idPrefix}-sign`);
+      const saveBtn = document.getElementById(`${idPrefix}-save`);
+      const clearBtn = document.getElementById(`${idPrefix}-clear`);
+      const imgContainer = document.getElementById(`${idPrefix}-img`);
+      const imgEl = imgContainer.querySelector('img');
+      const clearImgBtn = imgContainer.querySelector('button');
+
+      if (!canvas || !saveBtn || !clearBtn || !imgContainer || !imgEl || !clearImgBtn) return;
+
+      const signaturePad = new SignaturePad(canvas, {
+          backgroundColor: 'rgb(248, 250, 252)', // bg-slate-50
+      });
+
+      function showCanvas() {
+        canvas.parentElement.style.display = '';
+        saveBtn.parentElement.style.display = '';
+        imgContainer.classList.add('hidden');
+      }
+
+      function showImage(dataUrl) {
+        imgEl.src = dataUrl;
+        canvas.parentElement.style.display = 'none';
+        saveBtn.parentElement.style.display = 'none';
+        imgContainer.classList.remove('hidden');
+      }
+
+      saveBtn.addEventListener('click', () => {
+        if (signaturePad.isEmpty()) {
+          if (window.showToast) {
+            window.showToast("Please provide a signature first.", "warning");
+          } else {
+            alert("Please provide a signature first.");
+          }
+        } else {
+          const dataURL = signaturePad.toDataURL(); // PNG by default
+          showImage(dataURL);
+          if(window.showToast) window.showToast("Signature saved!", "success");
+          // In a real app, you'd save this dataURL to window.app.data here
+        }
+      });
+
+      clearBtn.addEventListener('click', () => {
+        signaturePad.clear();
+      });
+
+      clearImgBtn.addEventListener('click', () => {
+        signaturePad.clear();
+        showCanvas();
+        // In a real app, you'd clear the saved data here
+      });
+    }
+
+    setupSignaturePad('d8-approved');
+    setupSignaturePad('d8-submitted');
+
+
+    // --- Report Generation Logic ---
+    const generateBtn = document.getElementById('d8-generate');
+    const reportContainer = document.getElementById('d8-report');
+
+    if (!generateBtn || !reportContainer) return;
+
+    // Helper to safely get data and provide a fallback
+    const get = (obj, path, fallback = 'N/A') => {
+      const value = path.split('.').reduce((acc, part) => acc && acc[part], obj);
+      return value || fallback;
+    };
+
+    generateBtn.addEventListener('click', () => {
+      if (!window.app || !window.app.data) {
+        reportContainer.innerHTML = '<p class="text-red-500">Error: Application data not found.</p>';
+        return;
+      }
+
+      const data = window.app.data;
+
+      const teamMembers = get(data, 'd1.fields.members', []);
+      const teamListHtml = teamMembers.length > 0
+        ? `<ul>${teamMembers.map(m => `<li>${m.name || m} (${m.role || 'Team Member'})</li>`).join('')}</ul>`
+        : '<p>No team members listed.</p>';
+
+      const rootCauses = get(data, 'd4.fields.finalRootCauses', []);
+      const rootCauseHtml = rootCauses.length > 0
+        ? `<ul>${rootCauses.map(rc => `<li><strong>${rc.cause}:</strong> ${rc.category || 'N/A'} (Score: ${rc.score || 'N/A'})</li>`).join('')}</ul>`
+        : '<p>No final root causes listed.</p>';
+
+      const pcas = get(data, 'd5.fields.correctiveActions', []);
+      const pcasHtml = pcas.length > 0
+        ? `<ul>${pcas.map(pca => `<li><strong>${pca.action}:</strong> Owner: ${pca.responsibility || 'N/A'}, Due: ${pca.endDate || 'N/A'}</li>`).join('')}</ul>`
+        : '<p>No corrective actions listed.</p>';
+
+      const reportHtml = `
+        <div class="space-y-4">
+          <section>
+            <h3>Problem Statement</h3>
+            <p><em>“${get(data, 'd2.fields.briefStatement', 'Not defined.')}”</em></p>
+          </section>
+
+          <section>
+            <h3>Team Members</h3>
+            ${teamListHtml}
+          </section>
+
+          <section>
+            <h3>Identified Root Cause(s)</h3>
+            ${rootCauseHtml}
+          </section>
+
+          <section>
+            <h3>Permanent Corrective Actions</h3>
+            ${pcasHtml}
+          </section>
+
+          <section>
+            <h3>Proof of Effectiveness</h3>
+            <p>${get(data, 'd6.fields.proof', 'Not documented.')}</p>
+          </section>
+
+          <section>
+            <h3>Systemic Preventive Actions</h3>
+            <p>${get(data, 'd7.fields.preventiveActions', 'Not documented.')}</p>
+          </section>
+
+          <hr>
+          <p class="text-xs text-slate-500">Report generated on: ${new Date().toLocaleString()}</p>
+        </div>
+      `;
+
+      reportContainer.innerHTML = reportHtml;
+    });
+
+    // --- Confetti on Final Close ---
+    const closeBtn = document.getElementById('d8-final-close');
+    if (closeBtn && typeof confetti === 'function') {
+      closeBtn.addEventListener('click', () => {
+        // Trigger confetti!
+        confetti({
+          particleCount: 150,
+          spread: 90,
+          origin: { y: 0.6 }
+        });
+
+        // For demonstration, disable the button to show an action was taken.
+        closeBtn.disabled = true;
+        const icon = closeBtn.querySelector('i');
+        if(icon) icon.dataset.lucide = 'check-circle';
+        closeBtn.querySelector('span').textContent = '8D Closed!';
+        if(window.lucide) window.lucide.createIcons();
+      });
+    }
+
+  })();
 </script>
