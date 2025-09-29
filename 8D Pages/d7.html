@@ -55,7 +55,13 @@
       <!-- RPN & Type -->
       <div class="space-y-4">
         <div>
-          <label class="ds-caption">Revised RPN (Severity, Occurrence, Detection)</label>
+          <div class="flex items-center gap-2">
+            <label class="ds-caption">Revised RPN (Severity, Occurrence, Detection)</label>
+            <div class="ds-help">
+              <i data-lucide="help-circle" class="w-4 h-4 ds-help__icon"></i>
+              <div class="ds-help__tooltip">Risk Priority Number = Severity × Occurrence × Detection</div>
+            </div>
+          </div>
           <div class="grid grid-cols-3 gap-2 mt-1">
             <input class="ds-input rpn-s" type="number" min="1" max="10" placeholder="S"/>
             <input class="ds-input rpn-o" type="number" min="1" max="10" placeholder="O"/>
@@ -96,10 +102,8 @@
     </div>
     <div class="ds-card__body flex justify-between items-center">
       <div class="flex items-center gap-2">
-        <div class="flex -space-x-2">
-            <!-- Example avatars -->
-            <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-slate-200 text-slate-600 font-bold text-xs ring-2 ring-white">AV</span>
-            <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-emerald-200 text-emerald-700 font-bold text-xs ring-2 ring-white">SJ</span>
+        <div id="d7-avatar-stack" class="flex -space-x-2">
+            <!-- Avatars will be injected by JS -->
         </div>
         <div id="d7-ack-bar" class="text-sm text-slate-600">0 of 0 acknowledged</div>
       </div>
@@ -108,10 +112,159 @@
   </div>
 </div>
 
+<!-- Acknowledgement Modal -->
+<div id="d7-ack-modal" class="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 hidden">
+  <div class="ds-card w-full max-w-lg">
+    <div class="ds-card__header flex justify-between items-center">
+      <h3 class="ds-h3">Acknowledgement Status</h3>
+      <button id="d7-modal-close" class="ds-btn-icon" aria-label="Close">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <div class="ds-card__body max-h-[60vh] overflow-y-auto">
+      <ul id="d7-ack-list" class="space-y-2">
+        <!-- List items will be injected by JS -->
+      </ul>
+    </div>
+    <div class="ds-card__body border-t flex justify-end">
+      <button id="d7-ack-me" class="ds-btn ds-btn--primary">Acknowledge Now</button>
+    </div>
+  </div>
+</div>
+
+
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 <script>
   if (window.__init8D) {
     window.__init8D(document);
   }
+
+  (function() {
+    // Function to calculate the revised RPN score in the D7 details card
+    function calculateD7Rpn() {
+      const detailCard = document.getElementById('d7-detail');
+      if (!detailCard) return;
+
+      const s = parseInt(detailCard.querySelector('.rpn-s')?.value, 10) || 0;
+      const o = parseInt(detailCard.querySelector('.rpn-o')?.value, 10) || 0;
+      const d = parseInt(detailCard.querySelector('.rpn-d')?.value, 10) || 0;
+      const scoreEl = detailCard.querySelector('#d7-rpn-val');
+
+      if (scoreEl) {
+        scoreEl.textContent = s * o * d;
+      }
+    }
+
+    // Use event delegation on the details card to listen for input changes
+    const detailCard = document.getElementById('d7-detail');
+    if (detailCard) {
+      detailCard.addEventListener('input', function(event) {
+        const target = event.target;
+        if (target.matches('.rpn-s, .rpn-o, .rpn-d')) {
+          calculateD7Rpn();
+        }
+      });
+    }
+
+    // Also, ensure the calculation runs when the details card is shown,
+    // in case it's populated with data before being displayed.
+    const observer = new MutationObserver(function(mutations) {
+        for (let mutation of mutations) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                if (detailCard.style.display !== 'none') {
+                    calculateD7Rpn();
+                }
+            }
+        }
+    });
+
+    if(detailCard) {
+      observer.observe(detailCard, { attributes: true });
+    }
+
+    // --- Acknowledgement Tracking Logic ---
+    const ackModal = document.getElementById('d7-ack-modal');
+    const viewBtn = document.getElementById('d7-view-acks');
+    const closeBtn = document.getElementById('d7-modal-close');
+    const ackMeBtn = document.getElementById('d7-ack-me');
+    const ackList = document.getElementById('d7-ack-list');
+    const ackBar = document.getElementById('d7-ack-bar');
+    const avatarStack = document.getElementById('d7-avatar-stack');
+
+    if (ackModal && viewBtn && closeBtn && ackMeBtn && ackList && ackBar && avatarStack) {
+      // This would normally come from window.app.data.d7.acknowledgements
+      let acknowledgements = new Set(['samantha.jones@example.com']);
+
+      // This would come from window.app.data.d1.fields.members
+      const teamMembers = [
+        { name: 'Alex Vance', email: 'alex.vance@example.com' },
+        { name: 'Samantha Jones', email: 'samantha.jones@example.com' },
+        { name: 'Brad Carter', email: 'brad.carter@example.com' },
+        { name: 'Maria Garcia', email: 'maria.garcia@example.com' },
+      ];
+
+      // Assuming the current user's email is stored somewhere, e.g., localStorage
+      const currentUserEmail = 'alex.vance@example.com';
+
+      function renderAckStatus() {
+        // Render modal list
+        ackList.innerHTML = '';
+        teamMembers.forEach(member => {
+          const isAcked = acknowledgements.has(member.email);
+          const li = document.createElement('li');
+          li.className = 'flex items-center justify-between p-2 rounded-md';
+          li.innerHTML = `
+            <span class="font-semibold text-slate-700">${member.name}</span>
+            ${isAcked
+              ? '<span class="flex items-center gap-1 text-emerald-600"><i data-lucide="check-circle-2" class="w-4 h-4"></i>Acknowledged</span>'
+              : '<span class="text-xs text-slate-500">Pending</span>'
+            }
+          `;
+          ackList.appendChild(li);
+        });
+
+        // Render summary bar
+        ackBar.textContent = `${acknowledgements.size} of ${teamMembers.length} acknowledged`;
+
+        // Render avatar stack
+        avatarStack.innerHTML = '';
+        teamMembers.filter(m => acknowledgements.has(m.email)).slice(0, 5).forEach(m => {
+          const initials = m.name.split(' ').map(n => n[0]).join('');
+          const span = document.createElement('span');
+          span.className = 'inline-flex items-center justify-center h-8 w-8 rounded-full bg-emerald-200 text-emerald-700 font-bold text-xs ring-2 ring-white';
+          span.textContent = initials;
+          span.title = m.name;
+          avatarStack.appendChild(span);
+        });
+
+        // Update button state
+        ackMeBtn.disabled = acknowledgements.has(currentUserEmail);
+        ackMeBtn.textContent = acknowledgements.has(currentUserEmail) ? 'Acknowledged' : 'Acknowledge Now';
+
+        if(window.lucide) window.lucide.createIcons();
+      }
+
+      viewBtn.addEventListener('click', () => {
+        renderAckStatus();
+        ackModal.classList.remove('hidden');
+      });
+
+      closeBtn.addEventListener('click', () => ackModal.classList.add('hidden'));
+      ackModal.addEventListener('click', (e) => {
+        if (e.target === ackModal) ackModal.classList.add('hidden');
+      });
+
+      ackMeBtn.addEventListener('click', () => {
+        if (!acknowledgements.has(currentUserEmail)) {
+          acknowledgements.add(currentUserEmail);
+          // In a real app, you would save this back to window.app.data
+          renderAckStatus();
+        }
+      });
+
+      // Initial render for the summary bar
+      renderAckStatus();
+    }
+  })();
 </script>

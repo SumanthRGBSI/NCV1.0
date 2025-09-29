@@ -157,8 +157,130 @@
 
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<style>
+  .kanban-card.dragging { opacity: 0.5; transform: scale(1.05); }
+  .kanban-col.drag-over { background-color: #e0f2fe; }
+</style>
 <script>
   if (window.__init8D) {
     window.__init8D(document);
   }
+
+  (function() {
+    const todoCol = document.getElementById('d3-col-todo');
+    const actionsTable = document.getElementById('d3-actions');
+    const actionsTableBody = actionsTable?.querySelector('tbody');
+    const kanbanContainer = document.getElementById('d3-kanban');
+
+    if (!todoCol || !actionsTableBody || !kanbanContainer) {
+      console.warn("D3 Kanban automation script: Required elements not found.");
+      return;
+    }
+
+    let draggedCard = null;
+
+    // --- Drag and Drop Logic ---
+    kanbanContainer.addEventListener('dragstart', (e) => {
+      if (e.target.classList.contains('kanban-card')) {
+        draggedCard = e.target;
+        setTimeout(() => e.target.classList.add('dragging'), 0);
+      }
+    });
+
+    kanbanContainer.addEventListener('dragend', (e) => {
+      if (draggedCard) {
+        draggedCard.classList.remove('dragging');
+        draggedCard = null;
+      }
+    });
+
+    kanbanContainer.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      const column = e.target.closest('.kanban-col');
+      if (column) {
+        column.classList.add('drag-over');
+      }
+    });
+
+    kanbanContainer.addEventListener('dragleave', (e) => {
+      const column = e.target.closest('.kanban-col');
+      if (column) {
+        column.classList.remove('drag-over');
+      }
+    });
+
+    kanbanContainer.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const column = e.target.closest('.kanban-col');
+      if (column && draggedCard) {
+        column.classList.remove('drag-over');
+        column.appendChild(draggedCard);
+
+        // Update the status in the corresponding table row
+        const cardId = draggedCard.id;
+        const actionInput = actionsTable.querySelector(`[data-controls-card="${cardId}"]`);
+        const tableRow = actionInput?.closest('tr');
+        const statusSelect = tableRow?.querySelector('select');
+
+        if (statusSelect) {
+          let newStatus = 'Assigned'; // Default
+          if (column.id === 'd3-col-inprogress') newStatus = 'In Progress';
+          if (column.id === 'd3-col-done') newStatus = 'Done';
+          statusSelect.value = newStatus;
+          // Dispatch event to notify framework of the change
+          statusSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+    });
+
+    // --- Kanban Automation via MutationObserver ---
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === 1 && node.tagName === 'TR') {
+            const actionInput = node.querySelector('input[placeholder="Describe action"]');
+            const statusSelect = node.querySelector('select');
+            if (!actionInput || !statusSelect) return;
+
+            const card = document.createElement('div');
+            card.className = 'kanban-card p-3 bg-white rounded-lg border shadow-sm cursor-grab';
+            card.draggable = true;
+            card.innerHTML = `<p class="text-sm font-semibold text-slate-800">${actionInput.value || 'New Action'}</p>`;
+
+            const uniqueId = 'd3-kanban-card-' + Date.now();
+            card.id = uniqueId;
+            actionInput.setAttribute('data-controls-card', uniqueId);
+            statusSelect.setAttribute('data-controls-card', uniqueId);
+
+            todoCol.appendChild(card);
+
+            actionInput.addEventListener('input', () => {
+              const controlledCard = document.getElementById(uniqueId);
+              if (controlledCard) {
+                const p = controlledCard.querySelector('p');
+                if (p) p.textContent = actionInput.value;
+              }
+            });
+
+            // Sync status changes from table TO kanban
+            statusSelect.addEventListener('change', () => {
+              const controlledCard = document.getElementById(uniqueId);
+              if (!controlledCard) return;
+
+              let targetCol = todoCol;
+              if (statusSelect.value === 'In Progress') targetCol = document.getElementById('d3-col-inprogress');
+              if (statusSelect.value === 'Done') targetCol = document.getElementById('d3-col-done');
+
+              if(targetCol) targetCol.appendChild(controlledCard);
+            });
+          }
+        });
+      });
+    });
+
+    observer.observe(actionsTableBody, { childList: true });
+
+    // Add class to columns for easier targeting
+    kanbanContainer.querySelectorAll('div[id^="d3-col-"]').forEach(col => col.classList.add('kanban-col'));
+  })();
 </script>

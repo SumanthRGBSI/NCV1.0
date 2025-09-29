@@ -3,7 +3,7 @@
 
   <!-- Corrective Actions Card -->
   <div class="ds-card">
-    <div class="ds-card__header">
+    <div class="ds-card__header ds-card__header--sticky">
       <h3 class="ds-h3">5A. Selection & Verification of Corrective Actions</h3>
     </div>
     <div class="ds-card__body">
@@ -14,7 +14,8 @@
               <th class="w-8"><i data-lucide="move" title="Drag to reorder"></i></th>
               <th>Action (PCA)</th>
               <th>Root Cause</th>
-              <th>Target Date</th>
+              <th>Start Date</th>
+              <th>End Date</th>
               <th>Responsibility</th>
               <th>Mistake Proof</th>
               <th>Cost / Benefit</th>
@@ -25,14 +26,15 @@
           </thead>
           <tbody></tbody>
           <tfoot>
-            <tr><td colspan="10"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add PCA</button></td></tr>
+            <tr><td colspan="11"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add PCA</button></td></tr>
           </tfoot>
           <template>
             <tr draggable="true">
               <td><span class="drag-handle cursor-grab text-slate-400 hover:text-slate-600" title="Drag to reorder">⋮⋮</span></td>
               <td><input class="ds-input pca-action" placeholder="Describe the action..."/></td>
               <td><select class="ds-select pca-root"><option value="">Select Root Cause</option></select></td>
-              <td><input class="ds-input pca-date" type="date"/></td>
+              <td><input class="ds-input pca-start-date" type="date"/></td>
+              <td><input class="ds-input pca-end-date" type="date"/></td>
               <td><input class="ds-input" placeholder="Owner"/></td>
               <td class="text-center">
                 <label class="relative inline-flex items-center cursor-pointer">
@@ -97,8 +99,91 @@
 </div>
 
 <!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.css">
 <script>
   if (window.__init8D) {
     window.__init8D(document);
   }
+
+  (function() {
+    const ganttContainer = document.getElementById('d5-gantt');
+    const actionsTable = document.getElementById('d5-actions');
+    let gantt = null;
+
+    if (!ganttContainer || !actionsTable) {
+      console.warn("D5 Gantt script: Required elements not found.");
+      return;
+    }
+
+    function getTasksFromTable() {
+      const tasks = [];
+      const rows = actionsTable.querySelectorAll('tbody tr');
+      rows.forEach((row, index) => {
+        const actionInput = row.querySelector('.pca-action');
+        const startInput = row.querySelector('.pca-start-date');
+        const endInput = row.querySelector('.pca-end-date');
+
+        if (actionInput && startInput && endInput && actionInput.value && startInput.value && endInput.value) {
+          tasks.push({
+            id: 'task_' + index,
+            name: actionInput.value,
+            start: startInput.value,
+            end: endInput.value,
+            progress: 0, // This can be enhanced later
+          });
+        }
+      });
+      return tasks;
+    }
+
+    function renderGantt() {
+      const tasks = getTasksFromTable();
+      ganttContainer.innerHTML = ''; // Clear previous chart
+
+      if (tasks.length === 0) {
+        ganttContainer.innerHTML = `
+          <div class="text-center text-slate-500 py-8">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-slate-400">
+              <path d="M2 12h20"/><path d="M12 2v20"/>
+              <path d="M12 2v20"/><path d="M12 2v20"/>
+              <path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6"/>
+              <path d="M4 12V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6"/>
+            </svg>
+            <h4 class="font-bold text-slate-600 mt-3">No Timeline to Display</h4>
+            <p class="text-sm mt-1">Add actions with both a start and end date in the table above to generate the Gantt chart.</p>
+          </div>
+        `;
+        return;
+      }
+
+      gantt = new Gantt(ganttContainer, tasks, {
+        view_mode: 'Day', // Can be Day, Week, Month
+        language: 'en',
+        bar_height: 20,
+        bar_corner_radius: 3,
+        padding: 18,
+        on_date_change: function(task, start, end) {
+            // This can be used to update the table if drag-resizing is enabled
+        },
+      });
+    }
+
+    // Use a MutationObserver to watch for changes to the table and redraw the chart.
+    const observer = new MutationObserver(function(mutations) {
+      // A simple debounce to avoid re-rendering on every small change.
+      clearTimeout(observer.debounce);
+      observer.debounce = setTimeout(renderGantt, 200);
+    });
+
+    observer.observe(actionsTable.querySelector('tbody'), {
+      childList: true, // watch for added/removed rows
+      subtree: true, // watch for changes in inputs within rows
+      attributes: true, // watch for value changes
+      attributeFilter: ['value']
+    });
+
+    // Initial render
+    setTimeout(renderGantt, 100); // Give a moment for initial data to load
+  })();
 </script>

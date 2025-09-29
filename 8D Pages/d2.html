@@ -14,21 +14,51 @@
           <textarea id="d2-problemStatement" class="ds-textarea h-32" placeholder="Provide a detailed description of the problem..."></textarea>
         </div>
         <div>
-          <label class="ds-caption" for="d2-briefStatement" data-required>2B. Problem Statement (One-sentence summary)</label>
-          <input id="d2-briefStatement" class="ds-input" placeholder="e.g., The mounting bracket fails under normal load." data-required />
+          <div class="flex justify-between items-center">
+            <label class="ds-caption" for="d2-briefStatement" data-required>2B. Problem Statement (One-sentence summary)</label>
+            <button id="d2-generate-statement" class="ds-btn ds-btn--sm ds-btn--secondary">
+              <i data-lucide="sparkles" class="w-3 h-3"></i>
+              <span>Generate</span>
+            </button>
+          </div>
+          <input id="d2-briefStatement" class="ds-input mt-1" placeholder="e.g., The mounting bracket fails under normal load." data-required />
         </div>
 
         <!-- 5W's Section -->
-        <div class="space-y-1">
-            <h4 class="font-semibold text-slate-700">2C. Impact Analysis (5W's)</h4>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                <div><label class="ds-caption" for="d2-impactCustomer">Impact</label><input id="d2-impactCustomer" class="ds-input" placeholder="How customers are affected" /></div>
-                <div><label class="ds-caption" for="d2-who">Who</label><input id="d2-who" class="ds-input" placeholder="Who is affected?"/></div>
-                <div><label class="ds-caption" for="d2-what">What</label><input id="d2-what" class="ds-input" placeholder="What is the issue?" /></div>
-                <div><label class="ds-caption" for="d2-when">When</label><input id="d2-when" class="ds-input" placeholder="When does it occur?" /></div>
-                <div><label class="ds-caption" for="d2-where">Where</label><input id="d2-where" class="ds-input" placeholder="Where is it observed?" /></div>
-                <div><label class="ds-caption" for="d2-why">Why</label><input id="d2-why" class="ds-input" placeholder="Why is it a problem?" /></div>
+        <div class="space-y-4 pt-2">
+          <h4 class="font-semibold text-slate-700">2C. Impact Analysis (5W's)</h4>
+
+          <!-- Impact -->
+          <div>
+            <label class="ds-caption" for="d2-impactCustomer">What is the impact on the customer?</label>
+            <input id="d2-impactCustomer" class="ds-input" placeholder="e.g., Production line stoppage, safety concern, cosmetic defect..." />
+          </div>
+
+          <!-- Who, What, When, Where -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+            <div>
+              <label class="ds-caption" for="d2-who">Who is affected?</label>
+              <input id="d2-who" class="ds-input" placeholder="e.g., All customers, specific region..."/>
             </div>
+            <div>
+              <label class="ds-caption" for="d2-what">What is the specific object with the problem?</label>
+              <input id="d2-what" class="ds-input" placeholder="e.g., Part #123, Lot #ABC..." />
+            </div>
+            <div>
+              <label class="ds-caption" for="d2-when">When was the problem first observed?</label>
+              <input id="d2-when" class="ds-input" placeholder="e.g., During assembly, after 3 months of use..." />
+            </div>
+            <div>
+              <label class="ds-caption" for="d2-where">Where is the problem observed?</label>
+              <input id="d2-where" class="ds-input" placeholder="e.g., On the vehicle, at the customer plant..." />
+            </div>
+          </div>
+
+          <!-- Why -->
+          <div>
+            <label class="ds-caption" for="d2-why">Why is this a problem?</label>
+            <input id="d2-why" class="ds-input" placeholder="e.g., It violates regulation X, it prevents function Y..." />
+          </div>
         </div>
       </div>
     </div>
@@ -190,5 +220,83 @@
 
     // Initial render
     renderPartCard(null);
+
+    // --- Automated Problem Statement Generation ---
+    const generateBtn = qs('#d2-generate-statement');
+    const problemDesc = qs('#d2-problemStatement');
+    const briefStatement = qs('#d2-briefStatement');
+
+    if (generateBtn && problemDesc && briefStatement) {
+      generateBtn.addEventListener('click', () => {
+        const fullText = problemDesc.value.trim();
+        if (!fullText) {
+          // Maybe provide some feedback to the user
+          return;
+        }
+        // A simple way to get the first sentence.
+        const firstSentence = fullText.split(/[.!?]/)[0].trim();
+        if (firstSentence) {
+          briefStatement.value = firstSentence + '.';
+          // Trigger an input event so any data binding or autosave logic fires
+          briefStatement.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      });
+    }
+
+    // --- File Preview Thumbnail Generation ---
+    document.addEventListener('change', function(event) {
+      if (!event.target.matches('.preview-file')) return;
+
+      const input = event.target;
+      const previewContainer = input.nextElementSibling;
+
+      if (!previewContainer || !previewContainer.matches('.file-preview')) {
+        console.warn('No .file-preview element found after the input.');
+        return;
+      }
+
+      previewContainer.innerHTML = ''; // Clear previous previews
+
+      if (input.files && input.files.length > 0) {
+        const files = Array.from(input.files);
+        files.forEach(file => {
+          const previewWrapper = document.createElement('div');
+          previewWrapper.className = 'p-2 border rounded-md bg-slate-50 text-sm flex items-center gap-2 mt-1';
+
+          if (file.type.startsWith('image/')) {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.className = 'w-12 h-12 object-cover rounded';
+            img.onload = () => URL.revokeObjectURL(img.src); // Free up memory
+            previewWrapper.appendChild(img);
+          } else {
+            const icon = document.createElement('i');
+            icon.dataset.lucide = 'file-text';
+            icon.className = 'w-8 h-8 text-slate-500';
+            previewWrapper.appendChild(icon);
+          }
+
+          const textContainer = document.createElement('div');
+          const fileName = document.createElement('p');
+          fileName.className = 'font-semibold text-slate-700';
+          fileName.textContent = file.name;
+
+          const fileSize = document.createElement('p');
+          fileSize.className = 'text-xs text-slate-500';
+          fileSize.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+
+          textContainer.appendChild(fileName);
+          textContainer.appendChild(fileSize);
+          previewWrapper.appendChild(textContainer);
+          previewContainer.appendChild(previewWrapper);
+        });
+
+        // Re-initialize icons if a library like Lucide is used dynamically
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+      }
+    });
+
   })();
 </script>

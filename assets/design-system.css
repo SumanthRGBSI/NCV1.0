@@ -41,6 +41,15 @@
 .ds-card--elevated { box-shadow: var(--shadow-md); }
 .ds-card__header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--gray-200); }
 .ds-card__body { padding: 1.25rem; }
+.ds-card__header--sticky {
+  position: -webkit-sticky; /* For Safari */
+  position: sticky;
+  top: -1px; /* Prevents border overlap issues */
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 10;
+}
 
 /* Inputs */
 .ds-input, .ds-select, .ds-textarea {
@@ -109,3 +118,65 @@
 .ds-badge--success { background: #dcfce7; color: #065f46; }
 .ds-badge--warning { background: #fef3c7; color: #92400e; }
 .ds-badge--danger { background: #fee2e2; color: #991b1b; }
+
+/* Toast Notifications */
+.ds-toast {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  color: #fff;
+  font-weight: 600;
+  min-width: 280px;
+  animation: ds-toast-in 0.3s ease-out forwards;
+}
+.ds-toast.ds-toast--success { background-color: var(--success); }
+.ds-toast.ds-toast--danger { background-color: var(--danger); }
+.ds-toast.ds-toast--warning { background-color: #d97706; } /* A bit darker for better contrast */
+.ds-toast.ds-toast--info { background-color: var(--brand-primary); }
+@keyframes ds-toast-in {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Help Tooltips */
+.ds-help {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+}
+.ds-help__icon {
+  color: var(--gray-400);
+}
+.ds-help:hover .ds-help__icon {
+  color: var(--gray-600);
+}
+.ds-help .ds-help__tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 8px;
+  background-color: var(--gray-800);
+  color: #fff;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 500;
+  width: max-content;
+  max-width: 250px;
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+  pointer-events: none;
+  z-index: 20;
+}
+.ds-help:hover .ds-help__tooltip {
+  opacity: 1;
+  visibility: visible;
+}
