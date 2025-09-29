@@ -1,71 +1,104 @@
-<section class="container">
-  <link rel="stylesheet" href="../assets/8d.css">
-  <div class="card header toolbar">
-    <div>
-      <div class="h-title">D5 — Select & Verify Corrective Actions ✅</div>
-      <div class="h-sub">Choose permanent solutions and verify them.</div>
-    </div>
-    <div class="controls">
-      <div class="timestamp">Last updated: <span id="d5-timestamp">Never</span></div>
-      <select id="d5-status-select" class="input select-compact status-select" data-id="d5">
-        <option value="pending">Pending</option>
-        <option value="in-progress">In Progress</option>
-        <option value="completed">Completed</option>
-      </select>
-    </div>
-  </div>
+<!-- D5 — Select & Verify Corrective Actions -->
+<div class="space-y-6">
 
-  <div class="card">
-    <div class="section-title">5A. Selection & Verification of Corrective Action</div>
-    <table id="d5-actions" class="table dynamic-table">
-      <thead><tr><th><i data-lucide="move"></i> Action (PCA)</th><th><i data-lucide="layout"></i> Root Cause</th><th><i data-lucide="calendar"></i> Target Date</th><th><i data-lucide="user"></i> Responsibility</th><th><i data-lucide="shield"></i> Mistake Proof</th><th><i data-lucide="dollar-sign"></i> Cost / Benefit</th><th><i data-lucide="paperclip"></i> Files</th><th><i data-lucide="check-square"></i> Verification</th><th></th></tr></thead>
-      <tbody></tbody>
-      <tfoot><tr><td colspan="9"><button class="add-row-btn btn btn-ghost">Add PCA</button></td></tr></tfoot>
-      <template>
-        <tr draggable="true">
-          <td><span class="drag-handle" title="Drag to reorder">⋮⋮</span> <input class="input pca-action"/></td>
-          <td><select class="input pca-root"><option value="">Select Root Cause</option></select></td>
-          <td><input class="input pca-date" type="date"/></td>
-          <td><input class="input"/></td>
-          <td class="mistake-proof-cell"><label class="switch"><input type="checkbox" class="mp-check"/><span class="slider"></span></label></td>
-          <td><div class="small"><input class="input pca-cost" type="number" placeholder="$"/></div><div class="small mt-xs"><input class="input pca-benefit" placeholder="Benefit"/></div></td>
-          <td><input class="preview-file pca-file" type="file" multiple /></td>
-          <td><select class="input verify-select"><option>Pending</option><option>Verified</option></select></td>
-          <td><button class="remove-row-btn btn btn-danger">Remove</button></td>
-        </tr>
-      </template>
-    </table>
-
-    <div class="mt-small">
-      <label class="label">5B. Corrective Action Images / Documents</label>
-      <div class="file-block drop-zone">
-        <input class="preview-file multi-file-input" type="file" multiple />
-        <div class="file-preview small"></div>
+  <!-- Corrective Actions Card -->
+  <div class="ds-card">
+    <div class="ds-card__header">
+      <h3 class="ds-h3">5A. Selection & Verification of Corrective Actions</h3>
+    </div>
+    <div class="ds-card__body">
+      <div class="overflow-x-auto">
+        <table id="d5-actions" class="ds-table w-full">
+          <thead class="text-sm">
+            <tr>
+              <th class="w-8"><i data-lucide="move" title="Drag to reorder"></i></th>
+              <th>Action (PCA)</th>
+              <th>Root Cause</th>
+              <th>Target Date</th>
+              <th>Responsibility</th>
+              <th>Mistake Proof</th>
+              <th>Cost / Benefit</th>
+              <th>Files</th>
+              <th>Verification</th>
+              <th class="w-12"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr><td colspan="10"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add PCA</button></td></tr>
+          </tfoot>
+          <template>
+            <tr draggable="true">
+              <td><span class="drag-handle cursor-grab text-slate-400 hover:text-slate-600" title="Drag to reorder">⋮⋮</span></td>
+              <td><input class="ds-input pca-action" placeholder="Describe the action..."/></td>
+              <td><select class="ds-select pca-root"><option value="">Select Root Cause</option></select></td>
+              <td><input class="ds-input pca-date" type="date"/></td>
+              <td><input class="ds-input" placeholder="Owner"/></td>
+              <td class="text-center">
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" class="sr-only peer mp-check">
+                  <div class="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
+                </label>
+              </td>
+              <td>
+                <input class="ds-input pca-cost" type="number" placeholder="Cost ($)"/>
+                <input class="ds-input pca-benefit mt-1" placeholder="Benefit"/>
+              </td>
+              <td><input class="ds-input preview-file pca-file" type="file" multiple /></td>
+              <td><select class="ds-select verify-select"><option>Pending</option><option>Verified</option></select></td>
+              <td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
+            </tr>
+          </template>
+        </table>
       </div>
-      <div id="d5-file-list" class="small mt-xs"></div>
     </div>
-
-    <div class="mt-small">
-      <label class="label">5C. Selected Permanent Corrective Action</label>
-      <textarea id="d5-selectedPCA" class="input"></textarea>
-      <div class="small" id="d5-pca-counter">0 characters</div>
-    </div>
-
-    <div class="mt-small">
-      <div class="section-title">Timeline (Gantt)</div>
-      <div id="d5-gantt" class="card" style="padding:.5rem"></div>
+    <div class="ds-card__body border-t border-slate-200 space-y-4">
+        <div>
+            <label class="ds-caption" for="d5-docs">5B. Corrective Action Images / Documents</label>
+            <input id="d5-docs" class="ds-input preview-file mt-1" type="file" multiple />
+            <div class="file-preview mt-2"></div>
+        </div>
+        <div>
+            <label class="ds-caption" for="d5-selectedPCA">5C. Summary of Selected Permanent Corrective Action(s)</label>
+            <textarea id="d5-selectedPCA" class="ds-textarea" placeholder="Summarize the key actions chosen..."></textarea>
+            <div class="text-xs text-slate-500 text-right" id="d5-pca-counter">0 characters</div>
+        </div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="section-title">Verification Checklist</div>
-    <div class="controls mt-xs">
-      <input id="d5-new-check" class="input" placeholder="Add checklist item" />
-      <button id="d5-add-check" class="btn btn-ghost">Add</button>
+  <!-- Timeline & Checklist Card -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="ds-card">
+      <div class="ds-card__header">
+        <h3 class="ds-h3">Implementation Timeline (Gantt)</h3>
+      </div>
+      <div class="ds-card__body">
+        <div id="d5-gantt" class="p-2 bg-slate-50 rounded-lg min-h-[200px]">
+          <!-- Gantt chart will be rendered here by JS -->
+        </div>
+      </div>
     </div>
-    <div id="d5-checklist" class="dynamic-list mt-small"></div>
-  </div>
 
-  <script src="../assets/8d-forms.js"></script>
-  <script>window.__init8D && window.__init8D(document);</script>
-</section>
+    <div class="ds-card">
+      <div class="ds-card__header">
+        <h3 class="ds-h3">Verification Checklist</h3>
+      </div>
+      <div class="ds-card__body">
+        <div class="flex items-center gap-2 mb-4">
+          <input id="d5-new-check" class="ds-input flex-grow" placeholder="Add checklist item..." />
+          <button id="d5-add-check" class="ds-btn ds-btn--primary"><i data-lucide="plus"></i> Add</button>
+        </div>
+        <div id="d5-checklist" class="space-y-2">
+          <!-- Checklist items will be injected here by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script>
+  if (window.__init8D) {
+    window.__init8D(document);
+  }
+</script>

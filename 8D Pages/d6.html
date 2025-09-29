@@ -1,115 +1,160 @@
-<section class="container">
-  <link rel="stylesheet" href="../assets/8d.css">
-  <div class="card header toolbar">
-    <div>
-      <div class="h-title">D6 — Implement & Validate Corrective Actions 🚀</div>
-      <div class="h-sub">Implement the permanent solutions and prove they work.</div>
+<!-- D6 — Implement & Validate Corrective Actions -->
+<div class="space-y-6">
+
+  <!-- Implementation Tracking Card -->
+  <div class="ds-card">
+    <div class="ds-card__header">
+      <h3 class="ds-h3">6A. Implementation Tracking</h3>
     </div>
-    <div class="controls">
-      <div class="timestamp">Last updated: <span id="d6-timestamp">Never</span></div>
-      <select id="d6-status-select" class="input select-compact status-select" data-id="d6">
-        <option value="pending">Pending</option>
-        <option value="in-progress">In Progress</option>
-        <option value="completed">Completed</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="section-title">6A. Implementation Tracking</div>
-    <table id="d6-impl" class="table dynamic-table">
-      <thead><tr><th>Permanent Corrective Action</th><th>Target Date</th><th>Error Proofing Type</th><th>Level</th><th>Score</th><th>Responsibility</th><th>Effectiveness</th><th>Status</th><th></th></tr></thead>
-      <tbody></tbody>
-      <tfoot><tr><td colspan="9"><button class="add-row-btn btn btn-ghost">Add Implementation</button></td></tr></tfoot>
-      <template>
-        <tr>
-          <td><input class="input impl-action"/></td>
-          <td><input class="input" type="date"/></td>
-          <td>
-            <select class="input impl-etype">
-              <option>Detection</option>
-              <option>Warning</option>
-              <option>Control</option>
-              <option>Shutdown</option>
-            </select>
-          </td>
-          <td><input class="input impl-level" type="number" min="1" max="5"/></td>
-          <td><input class="input impl-score" type="number" disabled /></td>
-          <td><input class="input"/></td>
-          <td><input class="input"/></td>
-          <td><input class="input"/></td>
-          <td><button class="remove-row-btn btn btn-danger">Remove</button></td>
-        </tr>
-      </template>
-    </table>
-
-    <div class="card mt-small">
-      <div class="section-title">KPI Dashboard</div>
-      <div class="row mt-small">
-        <div class="col">
-          <label class="label">Defect Rate (Before / After)</label>
-          <div class="controls"><input id="kpi-def-before" class="input" type="number" placeholder="Before"/><input id="kpi-def-after" class="input" type="number" placeholder="After"/></div>
-          <div id="kpi-def-chart" class="mt-xs" style="height:12px;background:#f1f5f9;border-radius:8px;position:relative"><div id="kpi-def-bar" style="position:absolute;left:0;top:0;bottom:0;background:var(--success);width:0%;border-radius:8px"></div></div>
-        </div>
-        <div class="col">
-          <label class="label">RPN (Before / After)</label>
-          <div class="controls"><input id="kpi-rpn-before" class="input" type="number" placeholder="Before"/><input id="kpi-rpn-after" class="input" type="number" placeholder="After"/></div>
-          <div id="kpi-rpn-chart" class="mt-xs" style="height:12px;background:#f1f5f9;border-radius:8px;position:relative"><div id="kpi-rpn-bar" style="position:absolute;left:0;top:0;bottom:0;background:var(--success);width:0%;border-radius:8px"></div></div>
-        </div>
-      </div>
-    </div>
-
-    <label class="label mt-small">6B. Proof of Effectiveness</label>
-    <textarea id="d6-proof" class="input"></textarea>
-
-    <label class="label mt-small">6C. Situation After Countermeasure</label>
-    <textarea id="d6-situationAfter" class="input"></textarea>
-
-    <div class="mt-small">
-      <label class="label">6D. Situation After (Graphs / Images)</label>
-      <div class="file-block drop-zone">
-        <input id="d6-after-graphs" class="preview-file" type="file" multiple />
-        <div class="file-preview small"></div>
-      </div>
-    </div>
-
-    <div class="mt-small">
-      <div class="section-title">Before vs After Comparison</div>
-      <div class="row">
-        <div class="col">
-          <div class="small">Before (from D2)</div>
-          <div id="d6-compare-before" class="card" style="padding:.5rem"></div>
-        </div>
-        <div class="col">
-          <div class="small">After (D6)</div>
-          <div id="d6-compare-after" class="card" style="padding:.5rem"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="mt-small">
-      <div class="section-title">6E. Improvement Verification</div>
-      <table id="d6-verify" class="table dynamic-table">
-        <thead><tr><th>Element</th><th>YES/NO</th><th>Comments</th><th></th></tr></thead>
-        <tbody></tbody>
-        <tfoot><tr><td colspan="4"><button class="add-row-btn btn btn-ghost">Add Verification Item</button></td></tr></tfoot>
-        <template>
-          <tr><td><input class="input"/></td><td><select class="input"><option>Yes</option><option>No</option></select></td><td><input class="input"/></td><td><button class="remove-row-btn btn btn-danger">Remove</button></td></tr>
-        </template>
-      </table>
-      <div class="controls mt-xs"><button id="d6-approve" class="btn btn-primary" aria-label="Manager sign off"><i data-lucide="check"></i> Manager Sign-off</button></div>
-      <div id="d6-approval-status" class="small mt-xs"></div>
-    </div>
-
-    <div class="mt-small">
-      <label class="label">6F. Documents</label>
-      <div class="file-block drop-zone">
-        <input class="preview-file" type="file" multiple />
-        <div class="file-preview small"></div>
+    <div class="ds-card__body">
+      <div class="overflow-x-auto">
+        <table id="d6-impl" class="ds-table w-full">
+          <thead class="text-sm">
+            <tr>
+              <th>Permanent Corrective Action</th>
+              <th>Target Date</th>
+              <th>Error Proofing Type</th>
+              <th>Level</th>
+              <th>Score</th>
+              <th>Responsibility</th>
+              <th>Effectiveness</th>
+              <th>Status</th>
+              <th class="w-12"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr><td colspan="9"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Implementation</button></td></tr>
+          </tfoot>
+          <template>
+            <tr>
+              <td><input class="ds-input impl-action" placeholder="Action from D5"/></td>
+              <td><input class="ds-input" type="date"/></td>
+              <td>
+                <select class="ds-select impl-etype">
+                  <option>Detection</option>
+                  <option>Warning</option>
+                  <option>Control</option>
+                  <option>Shutdown</option>
+                </select>
+              </td>
+              <td><input class="ds-input impl-level" type="number" min="1" max="5"/></td>
+              <td><input class="ds-input impl-score" type="number" disabled /></td>
+              <td><input class="ds-input" placeholder="Owner"/></td>
+              <td><input class="ds-input" placeholder="e.g., 95% reduction"/></td>
+              <td><input class="ds-input" placeholder="e.g., Complete"/></td>
+              <td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
+            </tr>
+          </template>
+        </table>
       </div>
     </div>
   </div>
 
-  <script src="../assets/8d-forms.js"></script>
-  <script>window.__init8D && window.__init8D(document);</script>
-</section>
+  <!-- Validation & Comparison Card -->
+  <div class="ds-card">
+    <div class="ds-card__header">
+        <h3 class="ds-h3">Validation & Comparison</h3>
+    </div>
+    <div class="ds-card__body grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- KPI Dashboard -->
+        <div class="space-y-4">
+            <h4 class="font-semibold text-slate-700">KPI Dashboard</h4>
+            <div>
+                <label class="ds-caption">Defect Rate (Before / After)</label>
+                <div class="flex items-center gap-2">
+                    <input id="kpi-def-before" class="ds-input" type="number" placeholder="Before"/>
+                    <span class="text-slate-400">→</span>
+                    <input id="kpi-def-after" class="ds-input" type="number" placeholder="After"/>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2.5 mt-2">
+                    <div id="kpi-def-bar" class="bg-emerald-500 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+            </div>
+            <div>
+                <label class="ds-caption">RPN (Before / After)</label>
+                <div class="flex items-center gap-2">
+                    <input id="kpi-rpn-before" class="ds-input" type="number" placeholder="Before"/>
+                    <span class="text-slate-400">→</span>
+                    <input id="kpi-rpn-after" class="ds-input" type="number" placeholder="After"/>
+                </div>
+                 <div class="w-full bg-slate-200 rounded-full h-2.5 mt-2">
+                    <div id="kpi-rpn-bar" class="bg-emerald-500 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+        <!-- Before vs After Comparison -->
+        <div class="space-y-4">
+            <h4 class="font-semibold text-slate-700">Before vs. After Comparison</h4>
+            <div class="grid grid-cols-2 gap-4">
+                 <div>
+                    <p class="ds-caption">Before (from D2)</p>
+                    <div id="d6-compare-before" class="p-2 bg-slate-50 rounded-lg min-h-[80px] mt-1"></div>
+                </div>
+                <div>
+                    <p class="ds-caption">After (from D6)</p>
+                    <div id="d6-compare-after" class="p-2 bg-slate-50 rounded-lg min-h-[80px] mt-1"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ds-card__body border-t border-slate-200 space-y-4">
+        <div>
+            <label class="ds-caption" for="d6-proof">6B. Proof of Effectiveness</label>
+            <textarea id="d6-proof" class="ds-textarea" placeholder="Describe how the effectiveness of the actions was proven..."></textarea>
+        </div>
+        <div>
+            <label class="ds-caption" for="d6-situationAfter">6C. Situation After Countermeasure</label>
+            <textarea id="d6-situationAfter" class="ds-textarea" placeholder="Describe the new state after the countermeasures were implemented..."></textarea>
+        </div>
+        <div>
+            <label class="ds-caption" for="d6-after-graphs">6D. Situation After (Graphs / Images)</label>
+            <input id="d6-after-graphs" class="ds-input preview-file mt-1" type="file" multiple />
+            <div class="file-preview mt-2"></div>
+        </div>
+    </div>
+  </div>
+
+  <!-- Verification & Sign-off Card -->
+  <div class="ds-card">
+    <div class="ds-card__header">
+      <h3 class="ds-h3">6E. Improvement Verification & Sign-off</h3>
+    </div>
+    <div class="ds-card__body">
+        <div class="overflow-x-auto">
+            <table id="d6-verify" class="ds-table w-full">
+              <thead><tr><th>Element</th><th>Verified (Y/N)</th><th>Comments</th><th class="w-12"></th></tr></thead>
+              <tbody></tbody>
+              <tfoot><tr><td colspan="4"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Verification Item</button></td></tr></tfoot>
+              <template>
+                <tr>
+                    <td><input class="ds-input" placeholder="e.g., No failures in 1000 cycles"/></td>
+                    <td><select class="ds-select"><option>Yes</option><option>No</option></select></td>
+                    <td><input class="ds-input" placeholder="Notes..."/></td>
+                    <td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
+                </tr>
+              </template>
+            </table>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+            <div id="d6-approval-status" class="text-sm text-slate-500"></div>
+            <button id="d6-approve" class="ds-btn ds-btn--primary">
+                <i data-lucide="check-circle"></i>
+                <span>Manager Sign-off</span>
+            </button>
+        </div>
+    </div>
+     <div class="ds-card__body border-t border-slate-200">
+        <label class="ds-caption" for="d6-docs">6F. Supporting Documents</label>
+        <input id="d6-docs" class="ds-input preview-file mt-1" type="file" multiple />
+        <div class="file-preview mt-2"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script>
+  if (window.__init8D) {
+    window.__init8D(document);
+  }
+</script>

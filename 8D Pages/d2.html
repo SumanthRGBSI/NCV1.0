@@ -1,136 +1,194 @@
-<section class="container">
-  <link rel="stylesheet" href="../assets/8d.css">
-  <div class="card header toolbar">
-    <div>
-      <div class="h-title">D2 — Problem Description 📝</div>
-      <div class="h-sub">Define the problem clearly. Add context, files, and complete analyses.</div>
-    </div>
-    <div class="controls">
-      <div class="timestamp">Last updated: <span id="d2-timestamp">Never</span></div>
-      <select id="d2-status-select" class="input select-compact status-select" data-id="d2">
-        <option value="pending">Pending</option>
-        <option value="in-progress">In Progress</option>
-        <option value="completed">Completed</option>
-      </select>
-    </div>
-  </div>
+<!-- D2 — Problem Description -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-  <div class="row">
-    <div class="col">
-      <div class="card">
-        <div class="section-title sticky-section-title">Problem Definition</div>
-        <label class="label" for="d2-problemStatement">2A. Problem Description</label>
-        <textarea id="d2-problemStatement" class="input textarea-lg" placeholder="Provide a detailed description of the problem..."></textarea>
-
-        <label class="label mt-small" for="d2-briefStatement" data-required>2B. Problem Statement</label>
-        <input id="d2-briefStatement" class="input" placeholder="One-sentence problem statement" data-required />
-
-        <div class="row mt-small">
-          <div class="col"><label class="label" for="d2-impactCustomer">2C. Impact</label><input id="d2-impactCustomer" class="input" placeholder="How customers are affected" /></div>
-          <div class="col"><label class="label" for="d2-who">Who</label><input id="d2-who" class="input" /></div>
+  <!-- Left Column -->
+  <div class="lg:col-span-2 space-y-6">
+    <!-- Problem Definition Card -->
+    <div class="ds-card">
+      <div class="ds-card__header">
+        <h3 class="ds-h3">Problem Definition</h3>
+      </div>
+      <div class="ds-card__body space-y-4">
+        <div>
+          <label class="ds-caption" for="d2-problemStatement">2A. Problem Description</label>
+          <textarea id="d2-problemStatement" class="ds-textarea h-32" placeholder="Provide a detailed description of the problem..."></textarea>
         </div>
-        <div class="row">
-          <div class="col"><label class="label" for="d2-what">What</label><input id="d2-what" class="input" /></div>
-          <div class="col"><label class="label" for="d2-when">When</label><input id="d2-when" class="input" /></div>
+        <div>
+          <label class="ds-caption" for="d2-briefStatement" data-required>2B. Problem Statement (One-sentence summary)</label>
+          <input id="d2-briefStatement" class="ds-input" placeholder="e.g., The mounting bracket fails under normal load." data-required />
         </div>
-        <div class="row">
-          <div class="col"><label class="label" for="d2-where">Where</label><input id="d2-where" class="input" /></div>
-          <div class="col"><label class="label" for="d2-why">Why</label><input id="d2-why" class="input" /></div>
+
+        <!-- 5W's Section -->
+        <div class="space-y-1">
+            <h4 class="font-semibold text-slate-700">2C. Impact Analysis (5W's)</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <div><label class="ds-caption" for="d2-impactCustomer">Impact</label><input id="d2-impactCustomer" class="ds-input" placeholder="How customers are affected" /></div>
+                <div><label class="ds-caption" for="d2-who">Who</label><input id="d2-who" class="ds-input" placeholder="Who is affected?"/></div>
+                <div><label class="ds-caption" for="d2-what">What</label><input id="d2-what" class="ds-input" placeholder="What is the issue?" /></div>
+                <div><label class="ds-caption" for="d2-when">When</label><input id="d2-when" class="ds-input" placeholder="When does it occur?" /></div>
+                <div><label class="ds-caption" for="d2-where">Where</label><input id="d2-where" class="ds-input" placeholder="Where is it observed?" /></div>
+                <div><label class="ds-caption" for="d2-why">Why</label><input id="d2-why" class="ds-input" placeholder="Why is it a problem?" /></div>
+            </div>
         </div>
       </div>
     </div>
-    <div class="col">
-      <div class="card">
-        <div class="section-title sticky-section-title">Part Information</div>
-        <div class="controls">
-          <input id="d2-partSearch" class="input" placeholder="Search part by name/number" />
+
+    <!-- Process Analysis Card -->
+    <div class="ds-card" x-data="{ activeTab: 'audit' }">
+      <div class="ds-card__header border-b-0">
+        <div class="flex border-b border-slate-200">
+            <button @click="activeTab = 'audit'" :class="{'border-primary-500 text-primary-600 font-semibold': activeTab === 'audit', 'border-transparent text-slate-500 hover:text-slate-700': activeTab !== 'audit'}" class="px-4 py-2 text-sm border-b-2 transition-colors">2E. Process Audit</button>
+            <button @click="activeTab = 'docs'" :class="{'border-primary-500 text-primary-600 font-semibold': activeTab === 'docs', 'border-transparent text-slate-500 hover:text-slate-700': activeTab !== 'docs'}" class="px-4 py-2 text-sm border-b-2 transition-colors">2F. Control Documentary</button>
         </div>
-        <div id="d2-partCard" class="mt-small small"></div>
       </div>
-      <div class="card">
-        <div class="section-title sticky-section-title">Problem Description Images / Documents</div>
-        <div class="file-block drop-zone" id="d2-evidence-zone">
-          <label class="label">Upload images or documents</label>
-          <div class="file-input">
-            <input class="preview-file" type="file" id="d2-evidence" />
-            <div class="file-preview small"></div>
+      <div class="ds-card__body">
+          <!-- Process Audit Panel -->
+          <div x-show="activeTab === 'audit'" class="overflow-x-auto">
+              <table class="ds-table w-full" id="d2-process-audit">
+                  <thead><tr><th>Process Step</th><th>Potential Root Cause</th><th>Action (Y/N)</th><th class="w-12"></th></tr></thead>
+                  <tbody></tbody>
+                  <tfoot><tr><td colspan="4"><button type="button" class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Row</button></td></tr></tfoot>
+                  <template>
+                      <tr>
+                          <td><input class="ds-input" placeholder="Step (e.g., Assembly)" /></td>
+                          <td><input class="ds-input" placeholder="Possible cause" /></td>
+                          <td><select class="ds-select"><option>Yes</option><option>No</option></select></td>
+                          <td><button type="button" class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
+                      </tr>
+                  </template>
+              </table>
           </div>
-          <div class="mt-xs">
-            <button class="btn btn-ghost annotate-btn" data-for="#d2-evidence">Annotate</button>
+          <!-- Control Documentary Panel -->
+          <div x-show="activeTab === 'docs'" class="overflow-x-auto">
+              <table class="ds-table w-full" id="d2-docs">
+                  <thead><tr><th>Document</th><th>Reviewed (Y/N)</th><th>Current RPN</th><th class="w-12"></th></tr></thead>
+                  <tbody></tbody>
+                  <tfoot><tr><td colspan="4"><button type="button" class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Document</button></td></tr></tfoot>
+                  <template>
+                      <tr>
+                          <td><input class="ds-input" placeholder="Document name (PFMEA, Control Plan)" /></td>
+                          <td><select class="ds-select"><option>Yes</option><option>No</option></select></td>
+                          <td><input class="ds-input" placeholder="Current RPN" type="number" /></td>
+                          <td><button type="button" class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
+                      </tr>
+                  </template>
+              </table>
           </div>
-        </div>
       </div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="section-title sticky-section-title">2G. Situation Before Countermeasure Implementation</div>
-    <textarea id="d2-situationBefore" class="input textarea-lg" placeholder="Describe the baseline state before countermeasures..."></textarea>
-  </div>
-
-  <div class="card">
-    <div class="section-title sticky-section-title">2H. Situation Before &amp; Graphs (Images/Documents)</div>
-    <div class="file-block drop-zone" id="d2-before-zone">
-      <label class="label">Upload charts, graphs, or photos</label>
-      <div class="file-input">
-        <input class="preview-file" type="file" id="d2-before-files" multiple />
-        <div class="file-preview small"></div>
+  <!-- Right Column -->
+  <div class="lg:col-span-1 space-y-6">
+    <!-- Part Information Card -->
+    <div class="ds-card">
+      <div class="ds-card__header">
+        <h3 class="ds-h3">Part Information</h3>
+      </div>
+      <div class="ds-card__body">
+        <label for="d2-partSearch" class="ds-caption">Search by part name or number</label>
+        <input id="d2-partSearch" class="ds-input" placeholder="Search..." />
+        <div id="d2-partCard" class="mt-4 text-sm text-slate-500"></div>
       </div>
     </div>
-  </div>
 
-  <div class="card">
-    <div class="tabs" data-tabs>
-      <div class="tabs-nav">
-        <button class="tab active" data-tab="audit">Process Audit</button>
-        <button class="tab" data-tab="docs">Control Documentary</button>
+    <!-- File Upload Card -->
+    <div class="ds-card">
+      <div class="ds-card__header">
+        <h3 class="ds-h3">Evidence</h3>
       </div>
-      <div class="tabs-panels">
-        <div class="tab-panel active" data-panel="audit">
-          <div class="small">2E. Current Process Audit</div>
-          <table class="table dynamic-table" id="d2-process-audit">
-            <thead><tr><th>Process Step</th><th>Potential Root Cause</th><th>Action (Y/N)</th><th></th></tr></thead>
-            <tbody></tbody>
-            <tfoot><tr><td colspan="4"><button type="button" class="add-row-btn btn btn-ghost">Add Row</button></td></tr></tfoot>
-            <template>
-              <tr>
-                <td><input class="input" placeholder="Step (e.g., Assembly)" /></td>
-                <td><input class="input" placeholder="Possible cause" /></td>
-                <td><select class="input"><option>Yes</option><option>No</option></select></td>
-                <td><button type="button" class="remove-row-btn btn btn-danger">Remove</button></td>
-              </tr>
-            </template>
-          </table>
+      <div class="ds-card__body">
+        <label for="d2-evidence" class="ds-caption">Upload images or documents</label>
+        <div class="mt-1">
+          <input class="ds-input preview-file" type="file" id="d2-evidence" />
+          <div class="file-preview mt-2"></div>
         </div>
-        <div class="tab-panel" data-panel="docs">
-          <div class="small">2F. Current Process Control Documentary</div>
-          <table class="table dynamic-table" id="d2-docs">
-            <thead><tr><th>Document</th><th>Reviewed (Y/N)</th><th>Current RPN</th><th></th></tr></thead>
-            <tbody></tbody>
-            <tfoot><tr><td colspan="4"><button type="button" class="add-row-btn btn btn-ghost">Add Document</button></td></tr></tfoot>
-            <template>
-              <tr>
-                <td><input class="input" placeholder="Document name (PFMEA, Control Plan)" /></td>
-                <td><select class="input"><option>Yes</option><option>No</option></select></td>
-                <td><input class="input" placeholder="Current RPN" type="number" /></td>
-                <td><button type="button" class="remove-row-btn btn btn-danger">Remove</button></td>
-              </tr>
-            </template>
-          </table>
+        <div class="mt-2">
+            <button class="ds-btn ds-btn--secondary annotate-btn" data-for="#d2-evidence"><i data-lucide="edit-3"></i> Annotate</button>
         </div>
       </div>
     </div>
-  </div>
 
-  <script src="../assets/8d-forms.js"></script>
-  <script>
-    window.__init8D && window.__init8D(document);
-    (function(){
-      function qs(s, c=document){return c.querySelector(s)}
-      function renderPartCard(part){ const host = qs('#d2-partCard'); if(!host) return; if(!part){ host.innerHTML = '<div class="small text-gray-500">No part selected.</div>'; return; } host.innerHTML = `<table class="table"><tbody><tr><td><strong>Name</strong></td><td>${part.name||'-'}</td></tr><tr><td><strong>Number</strong></td><td>${part.number||'-'}</td></tr><tr><td><strong>Supplier</strong></td><td>${part.supplier||'-'}</td></tr><tr><td><strong>Rev</strong></td><td>${part.revision||'-'}</td></tr></tbody></table>`; }
-      async function lookupPart(q){ try{ if(window.DataStore){ const idx = await window.DataStore.get('parts-index'); if(Array.isArray(idx)){ const f = idx.find(p=> (p.name||'').toLowerCase().includes(q) || (p.number||'').toLowerCase().includes(q)); return f||null; } } }catch(_){ } return null; }
-      const input = qs('#d2-partSearch'); if(input){ input.addEventListener('change', async ()=>{ const q=(input.value||'').toLowerCase().trim(); const part = q? await lookupPart(q) : null; renderPartCard(part); }); }
-      renderPartCard(null);
-    })();
-  </script>
-</section>
+    <!-- Before State Card -->
+    <div class="ds-card">
+        <div class="ds-card__header">
+            <h3 class="ds-h3">Baseline State</h3>
+        </div>
+        <div class="ds-card__body space-y-4">
+            <div>
+                <label class="ds-caption" for="d2-situationBefore">2G. Situation Before Countermeasures</label>
+                <textarea id="d2-situationBefore" class="ds-textarea" placeholder="Describe the baseline state before countermeasures..."></textarea>
+            </div>
+            <div>
+                <label class="ds-caption" for="d2-before-files">2H. Graphs & Images (Before)</label>
+                <input class="ds-input preview-file" type="file" id="d2-before-files" multiple />
+                <div class="file-preview mt-2"></div>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<script>
+  // Ensure the main app initialization logic runs
+  if (window.__init8D) {
+    window.__init8D(document);
+  }
+
+  (function(){
+    function qs(selector, context = document) { return context.querySelector(selector); }
+
+    // Renders the part card with new DS styles
+    function renderPartCard(part) {
+      const host = qs('#d2-partCard');
+      if (!host) return;
+      if (!part) {
+        host.innerHTML = '<div class="text-slate-500 text-sm">No part selected.</div>';
+        return;
+      }
+      host.innerHTML = `
+        <table class="ds-table w-full text-sm">
+          <tbody>
+            <tr><td class="font-semibold text-slate-600 w-1/3">Name</td><td>${part.name || '-'}</td></tr>
+            <tr><td class="font-semibold text-slate-600">Number</td><td>${part.number || '-'}</td></tr>
+            <tr><td class="font-semibold text-slate-600">Supplier</td><td>${part.supplier || '-'}</td></tr>
+            <tr><td class="font-semibold text-slate-600">Revision</td><td>${part.revision || '-'}</td></tr>
+          </tbody>
+        </table>`;
+    }
+
+    // Async function to look up part data
+    async function lookupPart(query) {
+      try {
+        if (window.DataStore) {
+          const index = await window.DataStore.get('parts-index');
+          if (Array.isArray(index)) {
+            const found = index.find(p =>
+              (p.name || '').toLowerCase().includes(query) ||
+              (p.number || '').toLowerCase().includes(query)
+            );
+            return found || null;
+          }
+        }
+      } catch (err) {
+        console.error("Part lookup failed:", err);
+      }
+      return null;
+    }
+
+    // Attach event listener to the part search input
+    const searchInput = qs('#d2-partSearch');
+    if (searchInput) {
+      searchInput.addEventListener('change', async () => {
+        const query = (searchInput.value || '').toLowerCase().trim();
+        const part = query ? await lookupPart(query) : null;
+        renderPartCard(part);
+      });
+    }
+
+    // Initial render
+    renderPartCard(null);
+  })();
+</script>

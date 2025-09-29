@@ -1,133 +1,154 @@
-<section class="container">
-  <link rel="stylesheet" href="../assets/8d.css">
-  <div class="card header toolbar">
-    <div>
-      <div class="h-title">D4 — Root Cause Analysis 🔬</div>
-      <div class="h-sub">Identify and verify the true root cause of the problem.</div>
-    </div>
-    <div class="controls">
-      <div class="timestamp">Last updated: <span id="d4-timestamp">Never</span></div>
-      <select id="d4-status-select" class="input select-compact status-select" data-id="d4">
-        <option value="pending">Pending</option>
-        <option value="in-progress">In Progress</option>
-        <option value="completed">Completed</option>
-      </select>
-    </div>
-  </div>
+<!-- D4 — Root Cause Analysis -->
+<div class="space-y-6" x-data="{ activeTab: 'fishbone' }">
 
-  <div class="card">
-    <div class="section-title">4A. Root Cause Tools</div>
-    <div class="tabs" data-tabs>
-      <div class="tabs-nav">
-        <button class="tab active" data-tab="fishbone">Fishbone</button>
-        <button class="tab" data-tab="whys">5 Whys</button>
-        <button class="tab" data-tab="causes">Potential Causes</button>
-      </div>
-      <div class="tabs-panels">
-        <div class="tab-panel active" data-panel="fishbone">
-          <div class="small">Click a bone to add a cause; edit in the table below.</div>
-          <div id="d4-fishbone-canvas" class="mt-small"></div>
-          <table id="d4-fishbone-table" class="table dynamic-table mt-small">
-            <thead><tr><th>Category</th><th>Potential Cause</th><th>Evidence/Notes</th><th></th></tr></thead>
+  <!-- Root Cause Tools Card -->
+  <div class="ds-card">
+    <div class="ds-card__header">
+      <h3 class="ds-h3">4A. Root Cause Analysis Tools</h3>
+    </div>
+    <!-- Tabs -->
+    <div class="border-b border-slate-200 px-6">
+        <nav class="flex -mb-px space-x-6">
+            <button @click="activeTab = 'fishbone'" :class="{'border-primary-500 text-primary-600 font-semibold': activeTab === 'fishbone'}" class="px-1 py-3 text-sm border-b-2 transition-colors">Fishbone Diagram</button>
+            <button @click="activeTab = 'whys'" :class="{'border-primary-500 text-primary-600 font-semibold': activeTab === 'whys'}" class="px-1 py-3 text-sm border-b-2 transition-colors">5 Whys</button>
+            <button @click="activeTab = 'causes'" :class="{'border-primary-500 text-primary-600 font-semibold': activeTab === 'causes'}" class="px-1 py-3 text-sm border-b-2 transition-colors">Potential Causes</button>
+        </nav>
+    </div>
+    <div class="ds-card__body">
+      <!-- Fishbone Panel -->
+      <div x-show="activeTab === 'fishbone'">
+        <p class="ds-caption mb-4">Click a bone on the diagram to add a potential cause, or add it directly to the table below.</p>
+        <div id="d4-fishbone-canvas" class="p-4 bg-slate-50 rounded-lg min-h-[200px]">
+          <!-- Fishbone diagram will be rendered here by JS -->
+        </div>
+        <div class="overflow-x-auto mt-4">
+          <table id="d4-fishbone-table" class="ds-table w-full">
+            <thead><tr><th>Category</th><th>Potential Cause</th><th>Evidence/Notes</th><th class="w-12"></th></tr></thead>
             <tbody></tbody>
-            <tfoot><tr><td colspan="4"><button class="add-row-btn btn btn-ghost">Add Cause</button></td></tr></tfoot>
-            <template><tr><td><select class="input"><option>Man</option><option>Machine</option><option>Method</option><option>Material</option><option>Measurement</option><option>Environment</option></select></td><td><input class="input d4-cause-text"/></td><td><input class="input"/></td><td><button class="remove-row-btn btn btn-danger">Remove</button></td></tr></template>
+            <tfoot><tr><td colspan="4"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Cause</button></td></tr></tfoot>
+            <template>
+              <tr>
+                <td><select class="ds-select"><option>Man</option><option>Machine</option><option>Method</option><option>Material</option><option>Measurement</option><option>Environment</option></select></td>
+                <td><input class="ds-input d4-cause-text"/></td>
+                <td><input class="ds-input"/></td>
+                <td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
+              </tr>
+            </template>
           </table>
         </div>
-        <div class="tab-panel" data-panel="whys">
-          <div id="d4-fivewhys" class="dynamic-list"></div>
-          <div class="mt-small"><input id="d4-why-target" class="input" placeholder="Link to potential cause text"/><button id="d4-start-whys" class="btn btn-ghost">Start 5 Whys</button></div>
+      </div>
+      <!-- 5 Whys Panel -->
+      <div x-show="activeTab === 'whys'">
+        <div class="flex items-end gap-2 mb-4">
+            <div class="flex-grow">
+                <label for="d4-why-target" class="ds-caption">Link to a potential cause from the Fishbone analysis</label>
+                <input id="d4-why-target" class="ds-input" placeholder="e.g., Operator fatigue"/>
+            </div>
+            <button id="d4-start-whys" class="ds-btn ds-btn--secondary"><i data-lucide="play"></i> Start 5 Whys</button>
         </div>
-        <div class="tab-panel" data-panel="causes">
-          <div class="small">Collected potential causes</div>
-          <div id="d4-cause-list" class="dynamic-list mt-small"></div>
+        <div id="d4-fivewhys" class="space-y-3">
+          <!-- 5 Whys analysis will be injected here by JS -->
+        </div>
+      </div>
+      <!-- Potential Causes Panel -->
+      <div x-show="activeTab === 'causes'">
+         <p class="ds-caption mb-2">This is a collection of all potential causes identified in the tools above.</p>
+         <div id="d4-cause-list" class="space-y-2">
+           <!-- Potential causes list will be injected here by JS -->
+         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Examples Card -->
+  <details class="ds-card bg-slate-50 overflow-hidden">
+    <summary class="ds-card__header cursor-pointer flex justify-between items-center">
+        <h3 class="ds-h3 text-base">Examples</h3>
+        <i data-lucide="chevron-down" class="transition-transform duration-300 group-open:rotate-180"></i>
+    </summary>
+    <div class="ds-card__body grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+            <h4 class="font-bold text-sm text-slate-700">Sample Fishbone (6M)</h4>
+            <svg viewBox="0 0 700 220" width="100%" height="220" aria-label="Fishbone Sample" class="mt-2">
+              <line x1="40" y1="110" x2="660" y2="110" stroke="#334155" stroke-width="3"/>
+              <polygon points="660,110 640,100 640,120" fill="#334155"/>
+              <line x1="140" y1="110" x2="220" y2="60" stroke="#64748b" stroke-width="2"/><text x="225" y="58" font-size="12" fill="#0f172a">Man</text>
+              <line x1="260" y1="110" x2="340" y2="60" stroke="#64748b" stroke-width="2"/><text x="345" y="58" font-size="12" fill="#0f172a">Machine</text>
+              <line x1="380" y1="110" x2="460" y2="60" stroke="#64748b" stroke-width="2"/><text x="465" y="58" font-size="12" fill="#0f172a">Method</text>
+              <line x1="140" y1="110" x2="220" y2="160" stroke="#64748b" stroke-width="2"/><text x="225" y="170" font-size="12" fill="#0f172a">Material</text>
+              <line x1="260" y1="110" x2="340" y2="160" stroke="#64748b" stroke-width="2"/><text x="345" y="170" font-size="12" fill="#0f172a">Measurement</text>
+              <line x1="380" y1="110" x2="460" y2="160" stroke="#64748b" stroke-width="2"/><text x="465" y="170" font-size="12" fill="#0f172a">Environment</text>
+              <text x="60" y="105" font-size="13" fill="#0f172a">Effect / Problem</text>
+            </svg>
+        </div>
+        <div>
+            <h4 class="font-bold text-sm text-slate-700">Sample 5 Whys</h4>
+            <ol class="list-decimal list-inside text-sm text-slate-600 space-y-1 mt-2">
+              <li><strong>Why 1:</strong> Process output failed spec due to excess variation.</li>
+              <li><strong>Why 2:</strong> Variation increased because fixture alignment drifts.</li>
+              <li><strong>Why 3:</strong> Alignment drifts because set screws loosen.</li>
+              <li><strong>Why 4:</strong> Set screws loosen because torque was below spec.</li>
+              <li><strong>Why 5:</strong> Torque below spec because SOP lacks torque verification step.</li>
+            </ol>
+        </div>
+    </div>
+  </details>
+
+  <!-- Verification Card -->
+  <div class="ds-card">
+    <div class="ds-card__header">
+      <h3 class="ds-h3">Verify Potential Root Causes</h3>
+    </div>
+    <div class="ds-card__body space-y-6">
+      <div>
+        <h4 class="font-semibold text-slate-700">Verification Actions</h4>
+        <div class="overflow-x-auto mt-2">
+            <table class="ds-table w-full">
+              <thead><tr><th>Action</th><th>Responsibility</th><th>Target Date</th><th>Status</th><th class="w-12"></th></tr></thead>
+              <tbody></tbody>
+              <tfoot><tr><td colspan="5"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Verification Action</button></td></tr></tfoot>
+              <template><tr><td><input class="ds-input"/></td><td><input class="ds-input"/></td><td><input class="ds-input" type="date"/></td><td><input class="ds-input"/></td><td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td></tr></template>
+            </table>
+        </div>
+      </div>
+      <div>
+        <label class="ds-caption" for="d4-verificationSummary">4D. Summary of Root Cause Verifications</label>
+        <textarea id="d4-verificationSummary" class="ds-textarea" placeholder="Summarize the findings from the verification actions..."></textarea>
+      </div>
+      <div>
+        <h4 class="font-semibold text-slate-700">4E. Final Root Cause(s)</h4>
+        <div class="overflow-x-auto mt-2">
+            <table id="d4-root-causes" class="ds-table w-full">
+              <thead><tr><th>Root Cause</th><th>Category</th><th>Likelihood (1-5)</th><th>Severity (1-5)</th><th>Score</th><th>Link to D5</th><th class="w-12"></th></tr></thead>
+              <tbody></tbody>
+              <tfoot><tr><td colspan="7"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Root Cause</button></td></tr></tfoot>
+              <template>
+                <tr>
+                  <td><input class="ds-input rc-text"/></td>
+                  <td><select class="ds-select"><option>Process</option><option>Design</option><option>Materials</option><option>Human</option><option>Other</option></select></td>
+                  <td><select class="ds-select rc-like"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+                  <td><select class="ds-select rc-sev"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+                  <td><input class="ds-input rc-score" type="number" disabled /></td>
+                  <td><button type="button" class="ds-btn ds-btn--secondary rc-link w-full"><i data-lucide="link"></i> Link</button></td>
+                  <td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
+                </tr>
+              </template>
+            </table>
         </div>
       </div>
     </div>
-  </div>
-
-  <div class="card">
-    <details>
-      <summary class="section-title">Show Example</summary>
-    <div class="hint">Use these references as a guide. Replace with your investigation.</div>
-    <div class="row mt-small">
-      <div class="col">
-        <div class="small">Sample Fishbone (6M)</div>
-        <svg viewBox="0 0 700 220" width="100%" height="220" aria-label="Fishbone Sample">
-          <line x1="40" y1="110" x2="660" y2="110" stroke="#334155" stroke-width="3"/>
-          <polygon points="660,110 640,100 640,120" fill="#334155"/>
-          <!-- Upper branches -->
-          <line x1="140" y1="110" x2="220" y2="60" stroke="#64748b" stroke-width="2"/>
-          <text x="225" y="58" font-size="12" fill="#0f172a">Man</text>
-          <line x1="260" y1="110" x2="340" y2="60" stroke="#64748b" stroke-width="2"/>
-          <text x="345" y="58" font-size="12" fill="#0f172a">Machine</text>
-          <line x1="380" y1="110" x2="460" y2="60" stroke="#64748b" stroke-width="2"/>
-          <text x="465" y="58" font-size="12" fill="#0f172a">Method</text>
-          <!-- Lower branches -->
-          <line x1="140" y1="110" x2="220" y2="160" stroke="#64748b" stroke-width="2"/>
-          <text x="225" y="170" font-size="12" fill="#0f172a">Material</text>
-          <line x1="260" y1="110" x2="340" y2="160" stroke="#64748b" stroke-width="2"/>
-          <text x="345" y="170" font-size="12" fill="#0f172a">Measurement</text>
-          <line x1="380" y1="110" x2="460" y2="160" stroke="#64748b" stroke-width="2"/>
-          <text x="465" y="170" font-size="12" fill="#0f172a">Environment</text>
-          <text x="60" y="105" font-size="13" fill="#0f172a">Effect / Problem</text>
-        </svg>
-      </div>
-      <div class="col">
-        <div class="small">Sample 5 Whys</div>
-        <ol class="small">
-          <li><strong>Why 1:</strong> Process output failed spec due to excess variation.</li>
-          <li><strong>Why 2:</strong> Variation increased because fixture alignment drifts.</li>
-          <li><strong>Why 3:</strong> Alignment drifts because set screws loosen.</li>
-          <li><strong>Why 4:</strong> Set screws loosen because torque was below spec.</li>
-          <li><strong>Why 5:</strong> Torque below spec because SOP lacks torque verification step.</li>
-        </ol>
-      </div>
-    </div>
-    </details>
-  </div>
-
-  <div class="card">
-    <div class="section-title">Verify Potential Root Causes <span class="badge badge-pending" id="d4-verify-badge">Guide</span></div>
-    <table class="table dynamic-table">
-      <thead><tr><th>Action</th><th>Responsibility</th><th>Target Date</th><th>Status</th><th></th></tr></thead>
-      <tbody></tbody>
-      <tfoot><tr><td colspan="5"><button class="add-row-btn btn btn-ghost">Add Verification Action</button></td></tr></tfoot>
-      <template><tr><td><input class="input"/></td><td><input class="input"/></td><td><input class="input" type="date"/></td><td><input class="input"/></td><td><button class="remove-row-btn btn btn-danger">Remove</button></td></tr></template>
-    </table>
-
-    <label class="label mt-small">4D. Summary of Root Cause Verifications</label>
-    <textarea id="d4-verificationSummary" class="input"></textarea>
-
-    <div class="small mt-small">4E. Final Root Cause</div>
-    <table id="d4-root-causes" class="table dynamic-table">
-      <thead><tr><th>Root Cause</th><th>Category</th><th>Likelihood (1-5)</th><th>Severity (1-5)</th><th>Score</th><th>Link to D5</th><th></th></tr></thead>
-      <tbody></tbody>
-      <tfoot><tr><td colspan="7"><button class="add-row-btn btn btn-ghost">Add Root Cause</button></td></tr></tfoot>
-      <template>
-        <tr>
-          <td><input class="input rc-text"/></td>
-          <td><select class="input"><option>Process</option><option>Design</option><option>Materials</option><option>Human</option><option>Other</option></select></td>
-          <td><select class="input rc-like"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
-          <td><select class="input rc-sev"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
-          <td><input class="input rc-score" type="number" disabled /></td>
-          <td><button type="button" class="btn btn-ghost rc-link">Link</button></td>
-          <td><button class="remove-row-btn btn btn-danger">Remove</button></td>
-        </tr>
-      </template>
-    </table>
-
-    <div class="mt-small">
-      <label class="label">4F. Documents</label>
-      <div class="file-block drop-zone">
-        <input class="preview-file" type="file" multiple />
-        <div class="file-preview small"></div>
-      </div>
+     <div class="ds-card__body border-t border-slate-200">
+        <label class="ds-caption" for="d4-docs">4F. Supporting Documents</label>
+        <input id="d4-docs" class="ds-input preview-file mt-1" type="file" multiple />
+        <div class="file-preview mt-2"></div>
     </div>
   </div>
+</div>
 
-  <script src="../assets/8d-forms.js"></script>
-  <script>
-    window.__init8D && window.__init8D(document);
-  </script>
-</section>
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<script>
+  if (window.__init8D) {
+    window.__init8D(document);
+  }
+</script>
