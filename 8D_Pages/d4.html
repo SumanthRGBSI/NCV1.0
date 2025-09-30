@@ -191,5 +191,55 @@
 
     // Run initialization after the main app logic has had a chance to populate the table
     setTimeout(initializeScores, 100);
+
+    // --- Sample Data Population ---
+    function populateSampleData() {
+        if (!window.app || !window.app.data.d4 || !window.app.data.d4.fields) return;
+
+        // Populate Fishbone Table
+        const fishboneTable = document.getElementById('d4-fishbone-table');
+        const fishboneTbody = fishboneTable?.querySelector('tbody');
+        const fishboneTemplate = fishboneTable?.querySelector('template');
+        if (fishboneTbody && fishboneTemplate && window.app.data.d4.fields.fishbone) {
+            fishboneTbody.innerHTML = ''; // Clear existing
+            window.app.data.d4.fields.fishbone.forEach(item => {
+                const newRow = fishboneTemplate.content.cloneNode(true);
+                newRow.querySelector('select').value = item.category;
+                newRow.querySelector('.d4-cause-text').value = item.cause;
+                newRow.querySelector('input:not([class])').value = item.notes;
+                fishboneTbody.appendChild(newRow);
+            });
+        }
+
+        // Populate 5 Whys
+        const fiveWhysContainer = document.getElementById('d4-fivewhys');
+        if (fiveWhysContainer && window.app.data.d4.fields.fiveWhys) {
+            fiveWhysContainer.innerHTML = ''; // Clear existing
+            window.app.data.d4.fields.fiveWhys.forEach((item, index) => {
+                const whyElement = document.createElement('div');
+                whyElement.innerHTML = `
+                    <label class="ds-caption font-semibold">Why ${index + 1}?</label>
+                    <input class="ds-input mt-1" value="${item.why}" readonly />
+                    <label class="ds-caption mt-2">Because...</label>
+                    <input class="ds-input mt-1" value="${item.because}" readonly/>
+                `;
+                fiveWhysContainer.appendChild(whyElement);
+            });
+        }
+    }
+
+    // Hook into the main initializer to populate data when D4 is loaded
+    const originalInitD4 = window.__init8D;
+    window.__init8D = function(context) {
+        if (originalInitD4) originalInitD4(context);
+        if (context.querySelector('#d4-fishbone-table')) {
+            populateSampleData();
+        }
+    };
+
+    // Also run on initial load if the content is already there
+    if(document.getElementById('d4-fishbone-table')) {
+        populateSampleData();
+    }
   })();
 </script>

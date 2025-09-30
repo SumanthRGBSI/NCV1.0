@@ -51,7 +51,7 @@
             <div class="ds-create-wrap" style="position:relative">
               <button id="ds-create" class="ds-btn ds-btn--primary">Create New…</button>
               <div id="ds-create-pop" class="ds-popover" role="menu" aria-labelledby="ds-create">
-                <div class="ds-popover__section"><a href="${ROOT}8D Pages/8D View page.html#dashboard" class="ds-btn ds-btn--tertiary" style="width:100%">8D</a></div>
+                <div class="ds-popover__section"><a href="${ROOT}8D_Pages/8D_View_page.html#dashboard" class="ds-btn ds-btn--tertiary" style="width:100%">8D</a></div>
                 <div class="ds-popover__section"><a href="${ROOT}NC Creation and Edit Page.html" class="ds-btn ds-btn--tertiary" style="width:100%">Non-Conformance</a></div>
                 <div class="ds-popover__section"><a href="${ROOT}index.html#capa_create" class="ds-btn ds-btn--tertiary" style="width:100%">CAPA</a></div>
               </div>
@@ -116,7 +116,7 @@
       <div class=\"ds-create-wrap\" style=\"position:relative\">
         <button id=\"ds-create\" class=\"ds-btn ds-btn--primary\">Create New…</button>
         <div id=\"ds-create-pop\" class=\"ds-popover\" role=\"menu\" aria-labelledby=\"ds-create\">
-          <div class=\"ds-popover__section\"><a href=\"${ROOT}8D Pages/8D View page.html#dashboard\" class=\"ds-btn ds-btn--tertiary\" style=\"width:100%\">8D</a></div>
+          <div class=\"ds-popover__section\"><a href=\"${ROOT}8D_Pages/8D_View_page.html#dashboard\" class=\"ds-btn ds-btn--tertiary\" style=\"width:100%\">8D</a></div>
           <div class=\"ds-popover__section\"><a href=\"${ROOT}NC Creation and Edit Page.html\" class=\"ds-btn ds-btn--tertiary\" style=\"width:100%\">Non-Conformance</a></div>
           <div class=\"ds-popover__section\"><a href=\"${ROOT}index.html#capa_create\" class=\"ds-btn ds-btn--tertiary\" style=\"width:100%\">CAPA</a></div>
         </div>
@@ -164,7 +164,7 @@
     function openPalette(q='') { palette.style.display='flex'; cmdInput.value=q; cmdInput.focus(); renderCmdResults(''); }
     function closePalette(){ palette.style.display='none'; cmdHost.innerHTML=''; }
     function renderCmdResults(filter){ const cmds = [
-        {id:'new8d',label:'Create New 8D',action:()=> location.href= ROOT + '8D Pages/8D View page.html#d1'},
+        {id:'new8d',label:'Create New 8D',action:()=> location.href= ROOT + '8D_Pages/8D_View_page.html#d1'},
         {id:'nc-list',label:'Open NC Listing',action:()=> location.href= ROOT + 'NC Listing Page.html'},
         {id:'nc-create',label:'Create NC',action:()=> location.href= ROOT + 'NC Creation and Edit Page.html'},
         {id:'goto-d1',label:'Go to D1 - Identify Team',action:()=> location.hash='#d1'},
@@ -187,6 +187,25 @@
     });
     on(palette,'click', (ev)=>{ if(ev.target === palette) closePalette(); });
 
+    // Delegated event for adding table rows
+    on(document, 'click', (e) => {
+      const addBtn = e.target.closest('.add-row-btn');
+      if (!addBtn) return;
+
+      const table = addBtn.closest('table');
+      const template = table ? table.querySelector('template') : null;
+      const tbody = table ? table.querySelector('tbody') : null;
+
+      if (template && tbody) {
+        const newRow = template.content.cloneNode(true);
+        tbody.appendChild(newRow);
+
+        // If the new row has icons, make sure they are rendered
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      }
+    });
   }
 
   function enhanceAccessibility(){

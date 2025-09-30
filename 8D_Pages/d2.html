@@ -24,40 +24,38 @@
           <input id="d2-briefStatement" class="ds-input mt-1" placeholder="e.g., The mounting bracket fails under normal load." data-required />
         </div>
 
-        <!-- 5W's Section -->
+        <!-- 5W2H Section -->
         <div class="space-y-4 pt-2">
-          <h4 class="font-semibold text-slate-700">2C. Impact Analysis (5W's)</h4>
-
-          <!-- Impact -->
-          <div>
-            <label class="ds-caption" for="d2-impactCustomer">What is the impact on the customer?</label>
-            <input id="d2-impactCustomer" class="ds-input" placeholder="e.g., Production line stoppage, safety concern, cosmetic defect..." />
-          </div>
-
-          <!-- Who, What, When, Where -->
+          <h4 class="font-semibold text-slate-700">2C. 5W2H Analysis</h4>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-            <div>
-              <label class="ds-caption" for="d2-who">Who is affected?</label>
-              <input id="d2-who" class="ds-input" placeholder="e.g., All customers, specific region..."/>
+            <div class="sm:col-span-2">
+              <label class="ds-caption" for="d2-what">What Happened? (Problem description)</label>
+              <input id="d2-what" class="ds-input" placeholder="e.g., The mounting bracket fails under normal load."/>
             </div>
             <div>
-              <label class="ds-caption" for="d2-what">What is the specific object with the problem?</label>
-              <input id="d2-what" class="ds-input" placeholder="e.g., Part #123, Lot #ABC..." />
-            </div>
-            <div>
-              <label class="ds-caption" for="d2-when">When was the problem first observed?</label>
+              <label class="ds-caption" for="d2-when">When Detected? (Timeline/date of discovery)</label>
               <input id="d2-when" class="ds-input" placeholder="e.g., During assembly, after 3 months of use..." />
             </div>
             <div>
-              <label class="ds-caption" for="d2-where">Where is the problem observed?</label>
+              <label class="ds-caption" for="d2-where">Where Detected? (Location/process stage)</label>
               <input id="d2-where" class="ds-input" placeholder="e.g., On the vehicle, at the customer plant..." />
             </div>
-          </div>
-
-          <!-- Why -->
-          <div>
-            <label class="ds-caption" for="d2-why">Why is this a problem?</label>
-            <input id="d2-why" class="ds-input" placeholder="e.g., It violates regulation X, it prevents function Y..." />
+            <div>
+              <label class="ds-caption" for="d2-who">Who Detected? (Person/team who identified the issue)</label>
+              <input id="d2-who" class="ds-input" placeholder="e.g., QA Team C, Operator 5"/>
+            </div>
+            <div>
+              <label class="ds-caption" for="d2-how">How Detected? (Detection method/mechanism)</label>
+              <input id="d2-how" class="ds-input" placeholder="e.g., Visual inspection, customer report"/>
+            </div>
+            <div class="sm:col-span-2">
+                <label class="ds-caption" for="d2-why">Why is this a problem? (Impact)</label>
+                <input id="d2-why" class="ds-input" placeholder="e.g., It violates regulation X, it prevents function Y..." />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="ds-caption" for="d2-howMany">How Many? (Scope/quantity affected)</label>
+              <input id="d2-howMany" class="ds-input" type="number" placeholder="e.g., 1500"/>
+            </div>
           </div>
         </div>
       </div>
@@ -71,13 +69,12 @@
       </div>
       <div class="ds-card__body overflow-x-auto">
         <table class="ds-table w-full" id="d2-process-audit">
-            <thead><tr><th>Process Step</th><th>Potential Root Cause</th><th>Action (Y/N)</th><th class="w-12"></th></tr></thead>
+            <thead><tr><th>Process Step</th><th>Action (Y/N)</th><th class="w-12"></th></tr></thead>
             <tbody></tbody>
-            <tfoot><tr><td colspan="4"><button type="button" class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Row</button></td></tr></tfoot>
+            <tfoot><tr><td colspan="3"><button type="button" class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Row</button></td></tr></tfoot>
             <template>
                 <tr>
                     <td><input class="ds-input" placeholder="Step (e.g., Assembly)" /></td>
-                    <td><input class="ds-input" placeholder="Possible cause" /></td>
                     <td><select class="ds-select"><option>Yes</option><option>No</option></select></td>
                     <td><button type="button" class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
                 </tr>
@@ -232,7 +229,8 @@
       generateBtn.addEventListener('click', () => {
         const fullText = problemDesc.value.trim();
         if (!fullText) {
-          // Maybe provide some feedback to the user
+          problemDesc.focus();
+          problemDesc.placeholder = 'Please provide a description first.';
           return;
         }
         // A simple way to get the first sentence.
