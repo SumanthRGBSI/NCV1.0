@@ -281,7 +281,16 @@
         }
 
         // --- Initial Population ---
-        populateTableFromData();
+        function render() {
+            if (!window.app || !window.app.data || !window.app.data.d1) return;
+            populateTableFromData();
+            renderVisuals();
+        }
+
+        document.addEventListener('appDataReady', render, { once: true });
+        if (window.app && window.app.data && window.app.data.d1) {
+            render();
+        }
     }
 
     // --- Hook into the global initializer ---

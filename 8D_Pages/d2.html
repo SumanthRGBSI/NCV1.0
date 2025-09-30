@@ -74,9 +74,9 @@
             <tfoot><tr><td colspan="4"><button type="button" class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Row</button></td></tr></tfoot>
             <template>
                 <tr>
-                    <td><input class="ds-input" placeholder="Step (e.g., Assembly)" /></td>
-                    <td><input class="ds-input" placeholder="Possible cause" /></td>
-                    <td><select class="ds-select"><option>Yes</option><option>No</option></select></td>
+                    <td><input class="ds-input audit-step" placeholder="Step (e.g., Assembly)" /></td>
+                    <td><input class="ds-input audit-cause" placeholder="Possible cause" /></td>
+                    <td><select class="ds-select audit-action"><option>Yes</option><option>No</option></select></td>
                     <td><button type="button" class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
                 </tr>
             </template>
@@ -97,9 +97,9 @@
             <tfoot><tr><td colspan="4"><button type="button" class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Document</button></td></tr></tfoot>
             <template>
                 <tr>
-                    <td><input class="ds-input" placeholder="Document name (PFMEA, Control Plan)" /></td>
-                    <td><select class="ds-select"><option>Yes</option><option>No</option></select></td>
-                    <td><input class="ds-input" placeholder="Current RPN" type="number" /></td>
+                    <td><input class="ds-input doc-name" placeholder="Document name (PFMEA, Control Plan)" /></td>
+                    <td><select class="ds-select doc-reviewed"><option>Yes</option><option>No</option></select></td>
+                    <td><input class="ds-input doc-rpn" placeholder="Current RPN" type="number" /></td>
                     <td><button type="button" class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
                 </tr>
             </template>
@@ -162,142 +162,116 @@
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 <script>
-  // Ensure the main app initialization logic runs
-  if (window.__init8D) {
-    window.__init8D(document);
-  }
+(function() {
+    if (window.d2Initialized) return;
+    window.d2Initialized = true;
 
-  (function(){
     function qs(selector, context = document) { return context.querySelector(selector); }
 
-    // Renders the part card with new DS styles
-    function renderPartCard(part) {
-      const host = qs('#d2-partCard');
-      if (!host) return;
-      if (!part) {
-        host.innerHTML = '<div class="text-slate-500 text-sm">No part selected.</div>';
-        return;
-      }
-      host.innerHTML = `
-        <table class="ds-table w-full text-sm">
-          <tbody>
-            <tr><td class="font-semibold text-slate-600 w-1/3">Name</td><td>${part.name || '-'}</td></tr>
-            <tr><td class="font-semibold text-slate-600">Number</td><td>${part.number || '-'}</td></tr>
-            <tr><td class="font-semibold text-slate-600">Supplier</td><td>${part.supplier || '-'}</td></tr>
-            <tr><td class="font-semibold text-slate-600">Revision</td><td>${part.revision || '-'}</td></tr>
-          </tbody>
-        </table>`;
+    function initializeD2Logic(context) {
+        // --- Part Card Logic ---
+        function renderPartCard(part) {
+            const host = qs('#d2-partCard', context);
+            if (!host) return;
+            host.innerHTML = !part ? '<div class="text-slate-500 text-sm">No part selected.</div>' : `
+                <table class="ds-table w-full text-sm"><tbody>
+                    <tr><td class="font-semibold text-slate-600 w-1/3">Name</td><td>${part.name || '-'}</td></tr>
+                    <tr><td class="font-semibold text-slate-600">Number</td><td>${part.number || '-'}</td></tr>
+                    <tr><td class="font-semibold text-slate-600">Supplier</td><td>${part.supplier || '-'}</td></tr>
+                    <tr><td class="font-semibold text-slate-600">Revision</td><td>${part.revision || '-'}</td></tr>
+                </tbody></table>`;
+        }
+
+        async function lookupPart(query) {
+            try {
+                if (window.DataStore) {
+                    const index = await window.DataStore.get('parts-index');
+                    return Array.isArray(index) ? index.find(p => (p.name || '').toLowerCase().includes(query) || (p.number || '').toLowerCase().includes(query)) || null : null;
+                }
+            } catch (err) { console.error("Part lookup failed:", err); }
+            return null;
+        }
+
+        const searchInput = qs('#d2-partSearch', context);
+        if (searchInput && !searchInput.dataset.listenerAttached) {
+            searchInput.addEventListener('change', async () => {
+                const query = (searchInput.value || '').toLowerCase().trim();
+                renderPartCard(query ? await lookupPart(query) : null);
+            });
+            searchInput.dataset.listenerAttached = 'true';
+        }
+        renderPartCard(null);
+
+        // --- Statement Generation ---
+        const generateBtn = qs('#d2-generate-statement', context);
+        if (generateBtn && !generateBtn.dataset.listenerAttached) {
+            generateBtn.addEventListener('click', () => {
+                const problemDesc = qs('#d2-problemStatement', context);
+                const briefStatement = qs('#d2-briefStatement', context);
+                const fullText = problemDesc.value.trim();
+                if (!fullText) {
+                    problemDesc.focus();
+                    return;
+                }
+                const firstSentence = fullText.split(/[.!?]/)[0].trim();
+                if (firstSentence) {
+                    briefStatement.value = firstSentence + '.';
+                    briefStatement.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            });
+            generateBtn.dataset.listenerAttached = 'true';
+        }
+
+        // --- Table Rendering Logic ---
+        function renderTables() {
+            if (!window.app || !window.app.data || !window.app.data.d2) return;
+
+            const auditTbody = qs('#d2-process-audit tbody', context);
+            const auditData = window.app.data.d2.fields.processAudit || [];
+            const auditTemplate = qs('#d2-process-audit template', context);
+            if (auditTbody && auditTemplate) {
+                auditTbody.innerHTML = '';
+                auditData.forEach(item => {
+                    const newRow = auditTemplate.content.cloneNode(true);
+                    qs('.audit-step', newRow).value = item.step || '';
+                    qs('.audit-cause', newRow).value = item.cause || '';
+                    qs('.audit-action', newRow).value = item.action || 'No';
+                    auditTbody.appendChild(newRow);
+                });
+            }
+
+            const docsTbody = qs('#d2-docs tbody', context);
+            const docsData = window.app.data.d2.fields.controlDocs || [];
+            const docsTemplate = qs('#d2-docs template', context);
+            if (docsTbody && docsTemplate) {
+                docsTbody.innerHTML = '';
+                docsData.forEach(item => {
+                    const newRow = docsTemplate.content.cloneNode(true);
+                    qs('.doc-name', newRow).value = item.document || '';
+                    qs('.doc-reviewed', newRow).value = item.reviewed || 'No';
+                    qs('.doc-rpn', newRow).value = item.rpn || '';
+                    docsTbody.appendChild(newRow);
+                });
+            }
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        document.addEventListener('appDataReady', renderTables, { once: true });
+        if (window.app && window.app.data && window.app.data.d2) {
+            renderTables();
+        }
     }
 
-    // Async function to look up part data
-    async function lookupPart(query) {
-      try {
-        if (window.DataStore) {
-          const index = await window.DataStore.get('parts-index');
-          if (Array.isArray(index)) {
-            const found = index.find(p =>
-              (p.name || '').toLowerCase().includes(query) ||
-              (p.number || '').toLowerCase().includes(query)
-            );
-            return found || null;
-          }
+    const originalInit = window.__init8D;
+    window.__init8D = function(context) {
+        if (originalInit) originalInit(context);
+        if (qs('#d2-problemStatement', context)) {
+            initializeD2Logic(context);
         }
-      } catch (err) {
-        console.error("Part lookup failed:", err);
-      }
-      return null;
+    };
+
+    if (qs('#d2-problemStatement')) {
+        initializeD2Logic(document);
     }
-
-    // Attach event listener to the part search input
-    const searchInput = qs('#d2-partSearch');
-    if (searchInput) {
-      searchInput.addEventListener('change', async () => {
-        const query = (searchInput.value || '').toLowerCase().trim();
-        const part = query ? await lookupPart(query) : null;
-        renderPartCard(part);
-      });
-    }
-
-    // Initial render
-    renderPartCard(null);
-
-    // --- Automated Problem Statement Generation ---
-    const generateBtn = qs('#d2-generate-statement');
-    const problemDesc = qs('#d2-problemStatement');
-    const briefStatement = qs('#d2-briefStatement');
-
-    if (generateBtn && problemDesc && briefStatement) {
-      generateBtn.addEventListener('click', () => {
-        const fullText = problemDesc.value.trim();
-        if (!fullText) {
-          problemDesc.focus();
-          problemDesc.placeholder = 'Please provide a description first.';
-          return;
-        }
-        // A simple way to get the first sentence.
-        const firstSentence = fullText.split(/[.!?]/)[0].trim();
-        if (firstSentence) {
-          briefStatement.value = firstSentence + '.';
-          // Trigger an input event so any data binding or autosave logic fires
-          briefStatement.dispatchEvent(new Event('input', { bubbles: true }));
-        }
-      });
-    }
-
-    // --- File Preview Thumbnail Generation ---
-    document.addEventListener('change', function(event) {
-      if (!event.target.matches('.preview-file')) return;
-
-      const input = event.target;
-      const previewContainer = input.nextElementSibling;
-
-      if (!previewContainer || !previewContainer.matches('.file-preview')) {
-        console.warn('No .file-preview element found after the input.');
-        return;
-      }
-
-      previewContainer.innerHTML = ''; // Clear previous previews
-
-      if (input.files && input.files.length > 0) {
-        const files = Array.from(input.files);
-        files.forEach(file => {
-          const previewWrapper = document.createElement('div');
-          previewWrapper.className = 'p-2 border rounded-md bg-slate-50 text-sm flex items-center gap-2 mt-1';
-
-          if (file.type.startsWith('image/')) {
-            const img = document.createElement('img');
-            img.src = URL.createObjectURL(file);
-            img.className = 'w-12 h-12 object-cover rounded';
-            img.onload = () => URL.revokeObjectURL(img.src); // Free up memory
-            previewWrapper.appendChild(img);
-          } else {
-            const icon = document.createElement('i');
-            icon.dataset.lucide = 'file-text';
-            icon.className = 'w-8 h-8 text-slate-500';
-            previewWrapper.appendChild(icon);
-          }
-
-          const textContainer = document.createElement('div');
-          const fileName = document.createElement('p');
-          fileName.className = 'font-semibold text-slate-700';
-          fileName.textContent = file.name;
-
-          const fileSize = document.createElement('p');
-          fileSize.className = 'text-xs text-slate-500';
-          fileSize.textContent = `${(file.size / 1024).toFixed(1)} KB`;
-
-          textContainer.appendChild(fileName);
-          textContainer.appendChild(fileSize);
-          previewWrapper.appendChild(textContainer);
-          previewContainer.appendChild(previewWrapper);
-        });
-
-        // Re-initialize icons if a library like Lucide is used dynamically
-        if (window.lucide) {
-            window.lucide.createIcons();
-        }
-      }
-    });
-
-  })();
+})();
 </script>

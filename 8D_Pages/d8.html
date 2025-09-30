@@ -35,7 +35,7 @@
               <td><input class="ds-input ack-name" placeholder="Team member's name"/></td>
               <td><input class="ds-input ack-title" placeholder="Job title"/></td>
               <td><input class="ds-input" placeholder="e.g., Lead Investigator"/></td>
-              <td><input class="ds-input" placeholder="e.g., Identified root cause"/></td>
+              <td><input class="ds-input ack-achievements" placeholder="e.g., Identified root cause"/></td>
               <td>
                 <select class="ds-select text-lg">
                   <option>🏅</option><option>⭐</option><option>👍</option><option>🎖️</option><option>🏆</option>
@@ -144,6 +144,54 @@
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+<script>
+(function() {
+    if (window.d8Initialized) return;
+    window.d8Initialized = true;
+
+    function qs(selector, context = document) { return context.querySelector(selector); }
+
+    function initializeD8Logic(context) {
+        const ackTbody = qs('#d8-ack tbody', context);
+        if (!ackTbody) return;
+
+        function render() {
+            if (!window.app || !window.app.data || !window.app.data.d8) return;
+
+            const acks = window.app.data.d8.fields.acknowledgements || [];
+            const template = qs('#d8-ack template', context);
+            ackTbody.innerHTML = '';
+
+            acks.forEach(item => {
+                const newRow = template.content.cloneNode(true);
+                qs('.ack-name', newRow).value = item.team_member || '';
+                qs('.ack-achievements', newRow).value = item.achievements || '';
+                // In a real app, you'd map the other fields too.
+                ackTbody.appendChild(newRow);
+            });
+            if(window.lucide) window.lucide.createIcons();
+        }
+
+        document.addEventListener('appDataReady', render, { once: true });
+        if (window.app && window.app.data) {
+            render();
+        }
+    }
+
+    const originalInit = window.__init8D;
+    window.__init8D = function(context) {
+        if (originalInit) originalInit(context);
+        if (qs('#d8-ack', context)) {
+            initializeD8Logic(context);
+        }
+    };
+
+    // Initial call in case the script is loaded after the main app init
+    if (qs('#d8-ack')) {
+        initializeD8Logic(document);
+    }
+})();
+</script>
 <script>
   if (window.__init8D) {
     window.__init8D(document);

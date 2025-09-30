@@ -31,15 +31,15 @@
               <td><textarea class="ds-textarea pca-action" placeholder="Describe the permanent corrective action..."></textarea></td>
               <td><select class="ds-select pca-root"><option value="">Select Root Cause</option></select></td>
               <td><input class="ds-input pca-target-date" type="date"/></td>
-              <td><input class="ds-input" placeholder="Owner"/></td>
+              <td><input class="ds-input pca-responsibility" placeholder="Owner"/></td>
               <td class="text-center">
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" class="sr-only peer mp-check">
                   <div class="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
                 </label>
               </td>
-              <td><select class="ds-select"><option>Pending</option><option>In Progress</option><option>Completed</option><option>Verified</option></select></td>
-              <td><input class="ds-input" type="number" placeholder="RPN"/></td>
+              <td><select class="ds-select pca-status"><option>Pending</option><option>In Progress</option><option>Completed</option><option>Verified</option></select></td>
+              <td><input class="ds-input pca-risk" type="number" placeholder="RPN"/></td>
               <td><button class="ds-btn ds-btn--secondary ds-btn--sm w-full"><i data-lucide="history"></i> View</button></td>
               <td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
             </tr>
@@ -95,87 +95,83 @@
 <script src="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.css">
 <script>
-  if (window.__init8D) {
-    window.__init8D(document);
-  }
-
   (function() {
-    const ganttContainer = document.getElementById('d5-gantt');
-    const actionsTable = document.getElementById('d5-actions');
-    let gantt = null;
+    if (window.d5Initialized) return;
+    window.d5Initialized = true;
 
-    if (!ganttContainer || !actionsTable) {
-      console.warn("D5 Gantt script: Required elements not found.");
-      return;
-    }
+    function qs(selector, context = document) { return context.querySelector(selector); }
 
-    function getTasksFromTable() {
-      const tasks = [];
-      const rows = actionsTable.querySelectorAll('tbody tr');
-      rows.forEach((row, index) => {
-        const actionInput = row.querySelector('.pca-action');
-        const targetDateInput = row.querySelector('.pca-target-date');
+    function initializeD5Logic(context) {
+        const actionsTable = qs('#d5-actions', context);
+        const checklistContainer = qs('#d5-checklist', context);
 
-        if (actionInput && targetDateInput && actionInput.value && targetDateInput.value) {
-          tasks.push({
-            id: 'task_' + index,
-            name: actionInput.value,
-            start: targetDateInput.value,
-            end: targetDateInput.value, // Treat target date as a milestone
-            progress: 0,
-          });
+        if (!actionsTable || !checklistContainer) return;
+
+        const actionsTbody = actionsTable.querySelector('tbody');
+        const actionsTemplate = actionsTable.querySelector('template');
+
+        function render() {
+            if (!window.app || !window.app.data || !window.app.data.d5) return;
+
+            const actions = window.app.data.d5.fields.correctiveActions || [];
+            const rootCauses = (window.app.data.d4?.fields?.fiveWhys || []).map(item => item.because);
+            actionsTbody.innerHTML = '';
+
+            actions.forEach(action => {
+                const newRow = actionsTemplate.content.cloneNode(true);
+                qs('.pca-action', newRow).value = action.action || '';
+                qs('.pca-target-date', newRow).value = action.targetDate || '';
+                qs('.pca-responsibility', newRow).value = action.responsibility || '';
+                qs('.mp-check', newRow).checked = !!action.mistakeProof;
+                qs('.pca-status', newRow).value = action.status || 'Pending';
+                qs('.pca-risk', newRow).value = action.risk || '';
+
+                const rootCauseSelect = qs('.pca-root', newRow);
+                rootCauses.forEach(rc => {
+                    const option = document.createElement('option');
+                    option.value = rc;
+                    option.textContent = rc;
+                    rootCauseSelect.appendChild(option);
+                });
+                rootCauseSelect.value = action.rootCause || '';
+                actionsTbody.appendChild(newRow);
+            });
+
+            const checklist = window.app.data.d5.fields.verificationChecklist || [];
+            checklistContainer.innerHTML = '';
+            checklist.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between ds-checkbox';
+                div.innerHTML = `
+                    <label for="d5-check-${index}" class="flex items-center gap-2">
+                        <input type="checkbox" id="d5-check-${index}" data-index="${index}" ${item.done ? 'checked' : ''}>
+                        <span>${item.item}</span>
+                    </label>
+                    <button class="ds-btn-icon ds-btn-icon--danger remove-check-btn" data-index="${index}"><i data-lucide="trash-2"></i></button>
+                `;
+                checklistContainer.appendChild(div);
+            });
+            if(window.lucide) window.lucide.createIcons();
         }
-      });
-      return tasks;
+
+        // Listen for the appDataReady event
+        document.addEventListener('appDataReady', render, { once: true });
+        // If data is already available, render immediately
+        if (window.app && window.app.data) {
+            render();
+        }
     }
 
-    function renderGantt() {
-      const tasks = getTasksFromTable();
-      ganttContainer.innerHTML = ''; // Clear previous chart
+    const originalInit = window.__init8D;
+    window.__init8D = function(context) {
+        if (originalInit) originalInit(context);
+        if (qs('#d5-actions', context)) {
+            initializeD5Logic(context);
+        }
+    };
 
-      if (tasks.length === 0) {
-        ganttContainer.innerHTML = `
-          <div class="text-center text-slate-500 py-8">
-            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-slate-400">
-              <path d="M2 12h20"/><path d="M12 2v20"/>
-              <path d="M12 2v20"/><path d="M12 2v20"/>
-              <path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6"/>
-              <path d="M4 12V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6"/>
-            </svg>
-            <h4 class="font-bold text-slate-600 mt-3">No Timeline to Display</h4>
-            <p class="text-sm mt-1">Add actions with both a start and end date in the table above to generate the Gantt chart.</p>
-          </div>
-        `;
-        return;
-      }
-
-      gantt = new Gantt(ganttContainer, tasks, {
-        view_mode: 'Day', // Can be Day, Week, Month
-        language: 'en',
-        bar_height: 20,
-        bar_corner_radius: 3,
-        padding: 18,
-        on_date_change: function(task, start, end) {
-            // This can be used to update the table if drag-resizing is enabled
-        },
-      });
+    if (qs('#d5-actions')) {
+        initializeD5Logic(document);
     }
-
-    // Use a MutationObserver to watch for changes to the table and redraw the chart.
-    const observer = new MutationObserver(function(mutations) {
-      // A simple debounce to avoid re-rendering on every small change.
-      clearTimeout(observer.debounce);
-      observer.debounce = setTimeout(renderGantt, 200);
-    });
-
-    observer.observe(actionsTable.querySelector('tbody'), {
-      childList: true, // watch for added/removed rows
-      subtree: true, // watch for changes in inputs within rows
-      attributes: true, // watch for value changes
-      attributeFilter: ['value']
-    });
-
-    // Initial render
-    setTimeout(renderGantt, 100); // Give a moment for initial data to load
   })();
 </script>
