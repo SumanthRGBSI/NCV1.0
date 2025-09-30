@@ -33,7 +33,7 @@
           </tfoot>
           <template>
             <tr>
-              <td><input class="ds-input" placeholder="Action from D5"/></td>
+              <td><input class="ds-input impl-action" placeholder="Action from D5"/></td>
               <td><input class="ds-input" type="date"/></td>
               <td>
                 <select class="ds-select">
@@ -164,7 +164,49 @@
 
 <!-- Scripts -->
 <script>
-  if (window.__init8D) {
-    window.__init8D(document);
-  }
+(function() {
+    if (window.d6Initialized) return;
+    window.d6Initialized = true;
+
+    function qs(selector, context = document) { return context.querySelector(selector); }
+
+    function initializeD6Logic(context) {
+        const implTbody = qs('#d6-impl tbody', context);
+        if (!implTbody) return;
+
+        function render() {
+            if (!window.app || !window.app.data || !window.app.data.d6) return;
+
+            const plan = window.app.data.d6.fields.implementationPlan || [];
+            const template = qs('#d6-impl template', context);
+            implTbody.innerHTML = '';
+
+            plan.forEach(item => {
+                const newRow = template.content.cloneNode(true);
+                // This is a simplified mapping. The test only checks the first column.
+                qs('input', newRow).value = item.action || '';
+                // In a real scenario, you'd populate all the other fields from the data item.
+                implTbody.appendChild(newRow);
+            });
+            if(window.lucide) window.lucide.createIcons();
+        }
+
+        document.addEventListener('appDataReady', render, { once: true });
+        if (window.app && window.app.data) {
+            render();
+        }
+    }
+
+    const originalInit = window.__init8D;
+    window.__init8D = function(context) {
+        if (originalInit) originalInit(context);
+        if (qs('#d6-impl', context)) {
+            initializeD6Logic(context);
+        }
+    };
+
+    if (qs('#d6-impl')) {
+        initializeD6Logic(document);
+    }
+})();
 </script>

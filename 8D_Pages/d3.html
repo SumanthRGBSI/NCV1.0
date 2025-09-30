@@ -26,10 +26,10 @@
             </tfoot>
             <template>
               <tr>
-                <td><input class="ds-input" placeholder="Describe action"/></td>
-                <td><input class="ds-input" placeholder="Owner"/></td>
-                <td><input class="ds-input" type="date"/></td>
-                <td><select class="ds-select"><option>Assigned</option><option>In Progress</option><option>Done</option></select></td>
+                <td><input class="ds-input action-desc" placeholder="Describe action"/></td>
+                <td><input class="ds-input action-owner" placeholder="Owner"/></td>
+                <td><input class="ds-input action-date" type="date"/></td>
+                <td><select class="ds-select action-status"><option>To Do</option><option>In Progress</option><option>Done</option></select></td>
                 <td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
               </tr>
             </template>
@@ -81,7 +81,7 @@
             <thead><tr><th>Process/Part Number</th><th>Risk of Same Error?</th><th>Add to Containment?</th><th class="w-12"></th></tr></thead>
             <tbody></tbody>
             <tfoot><tr><td colspan="4"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Item</button></td></tr></tfoot>
-            <template><tr><td><input class="ds-input"/></td><td><select class="ds-select"><option>Yes</option><option>No</option></select></td><td><select class="ds-select"><option>Yes</option><option>No</option></select></td><td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td></tr></template>
+            <template><tr><td><input class="ds-input risk-process"/></td><td><select class="ds-select risk-is-risk"><option>Yes</option><option>No</option></select></td><td><select class="ds-select risk-in-containment"><option>Yes</option><option>No</option></select></td><td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td></tr></template>
           </table>
         </div>
       </div>
@@ -96,8 +96,8 @@
             <tfoot><tr><td colspan="5"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Label</button></td></tr></tfoot>
             <template>
               <tr>
-                <td><input class="ds-input"/></td><td><input class="ds-input" type="datetime-local"/></td>
-                <td><input class="ds-input preview-file" type="file"/></td><td><input class="ds-input"/></td>
+                <td><input class="ds-input label-cutoff"/></td><td><input class="ds-input label-datetime" type="datetime-local"/></td>
+                <td><input class="ds-input preview-file" type="file"/></td><td><input class="ds-input label-comments"/></td>
                 <td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
               </tr>
             </template>
@@ -115,13 +115,13 @@
             <tfoot><tr><td colspan="9"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Sort Activity</button></td></tr></tfoot>
             <template>
               <tr>
-                <td><input class="ds-input"/></td>
+                <td><input class="ds-input sort-task"/></td>
                 <td>
-                  <input class="ds-input" placeholder="Responsibility" />
+                  <input class="ds-input sort-resp" placeholder="Responsibility" />
                 </td>
-                <td><input class="ds-input qty-total" type="number"/></td><td><input class="ds-input qty-ok" type="number"/></td>
-                <td><input class="ds-input qty-nok" type="number"/></td><td><input class="ds-input qty-checked" type="number" disabled /></td>
-                <td><input class="ds-input" type="date"/></td><td><input class="ds-input"/></td>
+                <td><input class="ds-input qty-total sort-total" type="number"/></td><td><input class="ds-input qty-ok sort-ok" type="number"/></td>
+                <td><input class="ds-input qty-nok sort-nok" type="number"/></td><td><input class="ds-input qty-checked sort-checked" type="number" disabled /></td>
+                <td><input class="ds-input sort-date" type="date"/></td><td><input class="ds-input sort-comments"/></td>
                 <td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
               </tr>
             </template>
@@ -156,125 +156,153 @@
   .kanban-col.drag-over { background-color: #e0f2fe; }
 </style>
 <script>
-  if (window.__init8D) {
-    window.__init8D(document);
-  }
+(function() {
+    if (window.d3Initialized) return;
+    window.d3Initialized = true;
 
-  (function() {
-    const todoCol = document.getElementById('d3-col-todo');
-    const actionsTable = document.getElementById('d3-actions');
-    const actionsTableBody = actionsTable?.querySelector('tbody');
-    const kanbanContainer = document.getElementById('d3-kanban');
+    function qs(selector, context = document) { return context.querySelector(selector); }
 
-    if (!todoCol || !actionsTableBody || !kanbanContainer) {
-      console.warn("D3 Kanban automation script: Required elements not found.");
-      return;
+    function initializeD3Logic(context) {
+        function render() {
+            if (!window.app || !window.app.data || !window.app.data.d3) return;
+            const fields = window.app.data.d3.fields;
+
+            const tableConfigs = [
+                { id: '#d3-actions', data: fields.containmentActions, template: qs('#d3-actions template', context), map: (row, item) => {
+                    qs('.action-desc', row).value = item.action || '';
+                    qs('.action-owner', row).value = item.owner || '';
+                    qs('.action-date', row).value = item.date || '';
+                    qs('.action-status', row).value = item.status || 'To Do';
+                }},
+                { id: '#d3-risk', data: fields.riskItems, template: qs('#d3-risk template', context), map: (row, item) => {
+                    qs('.risk-process', row).value = item.process || '';
+                    qs('.risk-is-risk', row).value = item.risk || 'No';
+                    qs('.risk-in-containment', row).value = item.containment || 'No';
+                }},
+                { id: '#d3-labels', data: fields.labels, template: qs('#d3-labels template', context), map: (row, item) => {
+                    qs('.label-cutoff', row).value = item.cutoff || '';
+                    qs('.label-datetime', row).value = item.datetime || '';
+                    qs('.label-comments', row).value = item.comments || '';
+                }},
+                { id: '#d3-sort', data: fields.sorting, template: qs('#d3-sort template', context), map: (row, item) => {
+                    qs('.sort-task', row).value = item.task || '';
+                    qs('.sort-resp', row).value = item.responsibility || '';
+                    qs('.sort-total', row).value = item.toCheck || '';
+                    qs('.sort-ok', row).value = item.ok || '';
+                    qs('.sort-nok', row).value = item.notOk || '';
+                    qs('.sort-checked', row).value = item.checked || '';
+                    qs('.sort-date', row).value = item.date || '';
+                    qs('.sort-comments', row).value = item.comments || '';
+                }}
+            ];
+
+            tableConfigs.forEach(config => {
+                const tbody = qs(`${config.id} tbody`, context);
+                if (tbody && config.template && config.data) {
+                    tbody.innerHTML = '';
+                    config.data.forEach(item => {
+                        const row = config.template.content.cloneNode(true);
+                        config.map(row, item);
+                        tbody.appendChild(row);
+                    });
+                }
+            });
+
+            if(window.lucide) window.lucide.createIcons();
+        }
+
+        function initKanban() {
+            const todoCol = qs('#d3-col-todo', context);
+            const actionsTableBody = qs('#d3-actions tbody', context);
+            const kanbanContainer = qs('#d3-kanban', context);
+            if (!todoCol || !actionsTableBody || !kanbanContainer) return;
+
+            let draggedCard = null;
+            kanbanContainer.addEventListener('dragstart', e => { if (e.target.classList.contains('kanban-card')) { draggedCard = e.target; setTimeout(() => e.target.classList.add('dragging'), 0); } });
+            kanbanContainer.addEventListener('dragend', () => { if (draggedCard) { draggedCard.classList.remove('dragging'); draggedCard = null; } });
+            kanbanContainer.addEventListener('dragover', e => { e.preventDefault(); const col = e.target.closest('.kanban-col'); if (col) col.classList.add('drag-over'); });
+            kanbanContainer.addEventListener('dragleave', e => { const col = e.target.closest('.kanban-col'); if (col) col.classList.remove('drag-over'); });
+            kanbanContainer.addEventListener('drop', e => {
+                e.preventDefault();
+                const column = e.target.closest('.kanban-col');
+                if (column && draggedCard) {
+                    column.classList.remove('drag-over');
+                    column.appendChild(draggedCard);
+                    const cardId = draggedCard.id;
+                    const actionInput = qs(`[data-controls-card="${cardId}"]`, context);
+                    const tableRow = actionInput?.closest('tr');
+                    const statusSelect = tableRow?.querySelector('.action-status');
+                    if (statusSelect) {
+                        let newStatus = 'To Do';
+                        if (column.id === 'd3-col-inprogress') newStatus = 'In Progress';
+                        if (column.id === 'd3-col-done') newStatus = 'Done';
+                        statusSelect.value = newStatus;
+                        statusSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                }
+            });
+
+            const observer = new MutationObserver(mutations => {
+                mutations.forEach(mutation => {
+                    mutation.addedNodes.forEach(node => {
+                        if (node.nodeType !== 1 || node.tagName !== 'TR') return;
+                        const actionInput = qs('.action-desc', node);
+                        const statusSelect = qs('.action-status', node);
+                        if (!actionInput || !statusSelect) return;
+
+                        const card = document.createElement('div');
+                        card.className = 'kanban-card p-3 bg-white rounded-lg border shadow-sm cursor-grab';
+                        card.draggable = true;
+                        card.innerHTML = `<p class="text-sm font-semibold text-slate-800">${actionInput.value || 'New Action'}</p>`;
+                        const uniqueId = 'd3-kanban-card-' + Date.now() + Math.random();
+                        card.id = uniqueId;
+                        actionInput.setAttribute('data-controls-card', uniqueId);
+
+                        const syncCardStatus = () => {
+                            const controlledCard = qs(`#${uniqueId}`, context);
+                            if (!controlledCard) return;
+                            let targetColId = 'd3-col-todo';
+                            if (statusSelect.value === 'In Progress') targetColId = 'd3-col-inprogress';
+                            if (statusSelect.value === 'Done') targetColId = 'd3-col-done';
+                            const targetCol = qs(`#${targetColId}`, context);
+                            if (targetCol) targetCol.appendChild(controlledCard);
+                        };
+
+                        actionInput.addEventListener('input', () => {
+                            const controlledCard = qs(`#${uniqueId}`, context);
+                            if (controlledCard) controlledCard.querySelector('p').textContent = actionInput.value;
+                        });
+
+                        statusSelect.addEventListener('change', syncCardStatus);
+                        syncCardStatus();
+                    });
+                });
+            });
+            observer.observe(actionsTableBody, { childList: true });
+            kanbanContainer.querySelectorAll('div[id^="d3-col-"]').forEach(col => col.classList.add('kanban-col'));
+        }
+
+        function main() {
+            render();
+            initKanban();
+        }
+
+        document.addEventListener('appDataReady', main, { once: true });
+        if (window.app && window.app.data) {
+            main();
+        }
     }
 
-    let draggedCard = null;
-
-    // --- Drag and Drop Logic ---
-    kanbanContainer.addEventListener('dragstart', (e) => {
-      if (e.target.classList.contains('kanban-card')) {
-        draggedCard = e.target;
-        setTimeout(() => e.target.classList.add('dragging'), 0);
-      }
-    });
-
-    kanbanContainer.addEventListener('dragend', (e) => {
-      if (draggedCard) {
-        draggedCard.classList.remove('dragging');
-        draggedCard = null;
-      }
-    });
-
-    kanbanContainer.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      const column = e.target.closest('.kanban-col');
-      if (column) {
-        column.classList.add('drag-over');
-      }
-    });
-
-    kanbanContainer.addEventListener('dragleave', (e) => {
-      const column = e.target.closest('.kanban-col');
-      if (column) {
-        column.classList.remove('drag-over');
-      }
-    });
-
-    kanbanContainer.addEventListener('drop', (e) => {
-      e.preventDefault();
-      const column = e.target.closest('.kanban-col');
-      if (column && draggedCard) {
-        column.classList.remove('drag-over');
-        column.appendChild(draggedCard);
-
-        // Update the status in the corresponding table row
-        const cardId = draggedCard.id;
-        const actionInput = actionsTable.querySelector(`[data-controls-card="${cardId}"]`);
-        const tableRow = actionInput?.closest('tr');
-        const statusSelect = tableRow?.querySelector('select');
-
-        if (statusSelect) {
-          let newStatus = 'Assigned'; // Default
-          if (column.id === 'd3-col-inprogress') newStatus = 'In Progress';
-          if (column.id === 'd3-col-done') newStatus = 'Done';
-          statusSelect.value = newStatus;
-          // Dispatch event to notify framework of the change
-          statusSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    const originalInit = window.__init8D;
+    window.__init8D = function(context) {
+        if(originalInit) originalInit(context);
+        if(qs('#d3-actions', context)) {
+            initializeD3Logic(context);
         }
-      }
-    });
+    };
 
-    // --- Kanban Automation via MutationObserver ---
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach((node) => {
-          if (node.nodeType === 1 && node.tagName === 'TR') {
-            const actionInput = node.querySelector('input[placeholder="Describe action"]');
-            const statusSelect = node.querySelector('select');
-            if (!actionInput || !statusSelect) return;
-
-            const card = document.createElement('div');
-            card.className = 'kanban-card p-3 bg-white rounded-lg border shadow-sm cursor-grab';
-            card.draggable = true;
-            card.innerHTML = `<p class="text-sm font-semibold text-slate-800">${actionInput.value || 'New Action'}</p>`;
-
-            const uniqueId = 'd3-kanban-card-' + Date.now();
-            card.id = uniqueId;
-            actionInput.setAttribute('data-controls-card', uniqueId);
-            statusSelect.setAttribute('data-controls-card', uniqueId);
-
-            todoCol.appendChild(card);
-
-            actionInput.addEventListener('input', () => {
-              const controlledCard = document.getElementById(uniqueId);
-              if (controlledCard) {
-                const p = controlledCard.querySelector('p');
-                if (p) p.textContent = actionInput.value;
-              }
-            });
-
-            // Sync status changes from table TO kanban
-            statusSelect.addEventListener('change', () => {
-              const controlledCard = document.getElementById(uniqueId);
-              if (!controlledCard) return;
-
-              let targetCol = todoCol;
-              if (statusSelect.value === 'In Progress') targetCol = document.getElementById('d3-col-inprogress');
-              if (statusSelect.value === 'Done') targetCol = document.getElementById('d3-col-done');
-
-              if(targetCol) targetCol.appendChild(controlledCard);
-            });
-          }
-        });
-      });
-    });
-
-    observer.observe(actionsTableBody, { childList: true });
-
-    // Add class to columns for easier targeting
-    kanbanContainer.querySelectorAll('div[id^="d3-col-"]').forEach(col => col.classList.add('kanban-col'));
-  })();
+    if(qs('#d3-actions')) {
+        initializeD3Logic(document);
+    }
+})();
 </script>

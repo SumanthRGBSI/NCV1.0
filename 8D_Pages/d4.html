@@ -319,6 +319,38 @@
             });
         }
 
+        // Populate Verification Actions table
+        const verificationTbody = qs('#d4-verification-actions tbody');
+        const verificationTemplate = qs('#d4-verification-actions template');
+        if (verificationTbody && verificationTemplate && data.verificationActions) {
+            verificationTbody.innerHTML = '';
+            data.verificationActions.forEach(item => {
+                const newRow = verificationTemplate.content.cloneNode(true);
+                qs('input:nth-of-type(1)', newRow).value = item.action;
+                qs('input:nth-of-type(2)', newRow).value = item.owner;
+                qs('input:nth-of-type(3)', newRow).value = item.date;
+                qs('input:nth-of-type(4)', newRow).value = item.status;
+                verificationTbody.appendChild(newRow);
+            });
+        }
+
+        // Populate Final Root Causes table
+        const rootCauseTbody = qs('#d4-root-causes tbody');
+        const rootCauseTemplate = qs('#d4-root-causes template');
+        if (rootCauseTbody && rootCauseTemplate && data.finalRootCauses) {
+            rootCauseTbody.innerHTML = '';
+            data.finalRootCauses.forEach(item => {
+                const newRow = rootCauseTemplate.content.cloneNode(true);
+                qs('.rc-text', newRow).value = item.cause;
+                qs('select:nth-of-type(1)', newRow).value = item.category;
+                qs('.rc-like', newRow).value = item.likelihood;
+                qs('.rc-sev', newRow).value = item.severity;
+                qs('.rc-score', newRow).value = item.likelihood * item.severity;
+                rootCauseTbody.appendChild(newRow);
+            });
+        }
+
+
         renderFishboneDiagram(data.fishbone || []);
         renderFiveWhys(data.fiveWhys || []);
     }
