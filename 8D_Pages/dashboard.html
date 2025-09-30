@@ -1,4 +1,82 @@
 <!-- 8D Dashboard -->
+<style>
+.gantt-chart-container {
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+  font-size: 12px;
+  border-left: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+}
+.gantt-grid {
+  display: grid;
+  grid-template-columns: 100px repeat(12, 1fr); /* Label column + 12 months */
+  grid-auto-rows: 40px;
+}
+.gantt-header {
+  grid-column: 2 / -1;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  text-align: center;
+  font-weight: 600;
+  color: #475569;
+  border-bottom: 1px solid #e2e8f0;
+}
+.gantt-month {
+  padding: 4px;
+  border-right: 1px solid #e2e8f0;
+}
+.gantt-row-label {
+  grid-column: 1 / 2;
+  padding: 0 8px;
+  font-weight: 500;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-top: 1px solid #e2e8f0;
+}
+.gantt-row-bars {
+  grid-column: 2 / -1;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(365, 1fr); /* Days in a year */
+  border-top: 1px solid #e2e8f0;
+}
+.gantt-bar {
+  position: absolute;
+  height: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #3b82f6;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.gantt-bar:hover {
+  background-color: #2563eb;
+}
+.gantt-bar.status-completed { background-color: #10b981; }
+.gantt-bar.status-completed:hover { background-color: #059669; }
+.gantt-bar.status-in-progress { background-color: #f59e0b; }
+.gantt-bar.status-in-progress:hover { background-color: #d97706; }
+
+.gantt-tooltip {
+  position: absolute;
+  background: #1e293b;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  z-index: 10;
+  display: none;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  white-space: nowrap;
+}
+</style>
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
   <!-- Left Column -->
@@ -37,6 +115,18 @@
         <div id="dash-problem" class="text-slate-600 italic">
           <div class="ds-skeleton h-5 w-full"></div>
           <div class="ds-skeleton h-5 w-3/4 mt-2"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gantt Chart Card -->
+    <div class="ds-card">
+      <div class="ds-card__header">
+        <h3 class="ds-h3">Project Timeline</h3>
+      </div>
+      <div class="ds-card__body">
+        <div id="gantt-chart-container" class="gantt-chart-container">
+          <div class="ds-skeleton h-48 w-full"></div>
         </div>
       </div>
     </div>
@@ -127,7 +217,7 @@
     // Update Team Members
     const teamHost = qs('#dash-team');
     teamHost.innerHTML = ''; // Clear skeleton loaders
-    const teamMembers = data.d1?.fields?.teamMembers || [];
+    const teamMembers = data.d1?.fields?.members || [];
     if (teamMembers.length) {
       teamMembers.slice(0, 5).forEach(member => { // Show up to 5 members
         teamHost.appendChild(makeTeamMemberCard(member.name || '', member.title || ''));
@@ -137,11 +227,120 @@
     }
   }
 
+  function renderGanttChart() {
+    const container = qs('#gantt-chart-container');
+    if (!container || !window.app || !window.app.data) {
+        setTimeout(renderGanttChart, 100);
+        return;
+    }
+    container.innerHTML = ''; // Clear skeleton
+
+    const data = window.app.data;
+    const today = new Date();
+    const d = (days) => new Date(today.getTime() - (days * 24 * 60 * 60 * 1000));
+
+    const tasks = [
+        { id: 'd1', name: 'D1 Team', start: d(30), end: d(28) },
+        { id: 'd2', name: 'D2 Problem Desc', start: d(28), end: d(27) },
+        { id: 'd3', name: 'D3 Containment', start: d(27), end: d(25) },
+        { id: 'd4', name: 'D4 Root Cause', start: d(25), end: d(14) },
+        { id: 'd5', name: 'D5 Corrective Action', start: d(14), end: d(7) },
+        { id: 'd6', name: 'D6 Implementation', start: d(7), end: d(2) },
+        { id: 'd7', name: 'D7 Prevention', start: d(2), end: new Date() },
+        { id: 'd8', name: 'D8 Recognition', start: new Date(), end: new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000) },
+    ].map(task => ({ ...task, status: data[task.id]?.status || 'pending' }));
+
+    const year = today.getFullYear();
+    const chartStartDate = new Date(Math.min(...tasks.map(t => t.start)));
+    const chartEndDate = new Date(Math.max(...tasks.map(t => t.end)));
+
+    // Adjust to month boundaries
+    chartStartDate.setDate(1);
+    chartEndDate.setMonth(chartEndDate.getMonth() + 1);
+    chartEndDate.setDate(0);
+
+    let months = [];
+    let d_iter = new Date(chartStartDate);
+    while (d_iter <= chartEndDate) {
+        months.push(new Date(d_iter));
+        d_iter.setMonth(d_iter.getMonth() + 1);
+    }
+
+    const totalDays = (chartEndDate - chartStartDate) / (1000 * 60 * 60 * 24);
+
+    const grid = document.createElement('div');
+    grid.className = 'gantt-grid';
+    grid.style.gridTemplateColumns = `100px repeat(${months.length}, 1fr)`;
+
+    const emptyCell = document.createElement('div');
+    grid.appendChild(emptyCell);
+
+    const header = document.createElement('div');
+    header.className = 'gantt-header';
+    header.style.gridTemplateColumns = `repeat(${months.length}, 1fr)`;
+    header.innerHTML = months.map(m => `<div class="gantt-month">${m.toLocaleString('default', { month: 'short' })}</div>`).join('');
+    grid.appendChild(header);
+
+    tasks.forEach(task => {
+        const label = document.createElement('div');
+        label.className = 'gantt-row-label';
+        label.textContent = task.name;
+        grid.appendChild(label);
+
+        const barsContainer = document.createElement('div');
+        barsContainer.className = 'gantt-row-bars';
+        barsContainer.style.gridTemplateColumns = `repeat(${totalDays}, 1fr)`;
+
+        const startDay = Math.floor((task.start - chartStartDate) / (1000 * 60 * 60 * 24));
+        const endDay = Math.floor((task.end - chartStartDate) / (1000 * 60 * 60 * 24));
+        const duration = Math.max(1, endDay - startDay);
+
+        if (startDay >= 0) {
+            const bar = document.createElement('div');
+            bar.className = `gantt-bar status-${task.status}`;
+            bar.style.left = `${(startDay / totalDays) * 100}%`;
+            bar.style.width = `${(duration / totalDays) * 100}%`;
+            bar.dataset.tooltip = `${task.name}: ${task.start.toLocaleDateString()} - ${task.end.toLocaleDateString()}`;
+            barsContainer.appendChild(bar);
+        }
+        grid.appendChild(barsContainer);
+    });
+
+    container.appendChild(grid);
+
+    const tooltip = document.createElement('div');
+    tooltip.className = 'gantt-tooltip';
+    document.body.appendChild(tooltip);
+
+    container.addEventListener('mouseover', e => {
+      if (e.target.classList.contains('gantt-bar')) {
+        tooltip.textContent = e.target.dataset.tooltip;
+        tooltip.style.display = 'block';
+      }
+    });
+    container.addEventListener('mousemove', e => {
+      if (tooltip.style.display === 'block') {
+        tooltip.style.left = `${e.pageX + 15}px`;
+        tooltip.style.top = `${e.pageY}px`;
+      }
+    });
+    container.addEventListener('mouseout', e => {
+      if (e.target.classList.contains('gantt-bar')) {
+        tooltip.style.display = 'none';
+      }
+    });
+    window.addEventListener('hashchange', () => tooltip.remove(), { once: true });
+  }
+
   // Run render function when the DOM is ready or immediately if already loaded
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', renderDashboard);
+    document.addEventListener('DOMContentLoaded', () => {
+      renderDashboard();
+      renderGanttChart();
+    });
   } else {
     renderDashboard();
+    renderGanttChart();
   }
 })();
 </script>

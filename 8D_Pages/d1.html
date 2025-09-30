@@ -81,25 +81,12 @@
         <input class="ds-input contact-name" list="contact-directory" placeholder="Full name" />
       </td>
       <td>
-        <!-- Modern Radio/Tag Pills -->
-        <div class="flex flex-wrap gap-2" role="radiogroup">
-          <label class="cursor-pointer">
-            <input type="radio" class="sr-only peer member-role" name="member-role-__" value="KPOC"/>
-            <span class="ds-badge peer-checked:bg-primary-100 peer-checked:text-primary-700 peer-checked:font-semibold">KPOC</span>
-          </label>
-          <label class="cursor-pointer">
-            <input type="radio" class="sr-only peer member-role" name="member-role-__" value="Champion"/>
-            <span class="ds-badge peer-checked:bg-primary-100 peer-checked:text-primary-700 peer-checked:font-semibold">Champion</span>
-          </label>
-          <label class="cursor-pointer">
-            <input type="radio" class="sr-only peer member-role" name="member-role-__" value="Team Lead"/>
-            <span class="ds-badge peer-checked:bg-primary-100 peer-checked:text-primary-700 peer-checked:font-semibold">Team Lead</span>
-          </label>
-          <label class="cursor-pointer">
-            <input type="radio" class="sr-only peer member-role" name="member-role-__" value="Team Member" checked/>
-            <span class="ds-badge peer-checked:bg-primary-100 peer-checked:text-primary-700 peer-checked:font-semibold">Team Member</span>
-          </label>
-        </div>
+        <select class="ds-select member-role">
+          <option>Team Member</option>
+          <option>Team Lead</option>
+          <option>Champion</option>
+          <option>KPOC</option>
+        </select>
       </td>
       <td>
         <input class="ds-input contact-title" placeholder="Job title" />
@@ -139,7 +126,7 @@
 
             const members = qsa('tr', tableBody).map(tr => ({
                 name: qs('.contact-name', tr)?.value || '',
-                role: qs('.member-role:checked', tr)?.value || 'Team Member',
+                role: qs('.member-role', tr)?.value || 'Team Member',
                 title: qs('.contact-title', tr)?.value || '',
                 email: qs('.contact-email', tr)?.value || '',
                 phone: qs('.contact-phone', tr)?.value || ''
@@ -228,17 +215,13 @@
             if (!template) return;
 
             const newRow = template.content.firstElementChild.cloneNode(true);
-            const uniqueId = `member-role-${Date.now()}-${tableBody.children.length}`;
-            newRow.querySelectorAll('.member-role').forEach(radio => radio.name = uniqueId);
 
             if (memberData) {
                 qs('.contact-name', newRow).value = memberData.name || '';
                 qs('.contact-title', newRow).value = memberData.title || '';
                 qs('.contact-email', newRow).value = memberData.email || '';
                 qs('.contact-phone', newRow).value = memberData.phone || '';
-                const roleRadio = qs(`.member-role[value="${memberData.role}"]`, newRow);
-                if (roleRadio) roleRadio.checked = true;
-                else (qs('.member-role[value="Team Member"]', newRow) || {}).checked = true;
+                qs('.member-role', newRow).value = memberData.role || 'Team Member';
             }
 
             tableBody.appendChild(newRow);
