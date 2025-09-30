@@ -69,12 +69,13 @@
       </div>
       <div class="ds-card__body overflow-x-auto">
         <table class="ds-table w-full" id="d2-process-audit">
-            <thead><tr><th>Process Step</th><th>Action (Y/N)</th><th class="w-12"></th></tr></thead>
+            <thead><tr><th>Process Step</th><th>Potential Root Cause</th><th>Action (Y/N)</th><th class="w-12"></th></tr></thead>
             <tbody></tbody>
-            <tfoot><tr><td colspan="3"><button type="button" class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Row</button></td></tr></tfoot>
+            <tfoot><tr><td colspan="4"><button type="button" class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Row</button></td></tr></tfoot>
             <template>
                 <tr>
                     <td><input class="ds-input" placeholder="Step (e.g., Assembly)" /></td>
+                    <td><input class="ds-input" placeholder="Possible cause" /></td>
                     <td><select class="ds-select"><option>Yes</option><option>No</option></select></td>
                     <td><button type="button" class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
                 </tr>

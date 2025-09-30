@@ -14,35 +14,45 @@
               <th>Permanent Corrective Action</th>
               <th>Target Date</th>
               <th>Error Proofing Type</th>
-              <th>Level</th>
-              <th>Score</th>
+              <th>Error Proofing Level</th>
+              <th>Error Proof Impact</th>
+              <th>Applied to similar risks?</th>
+              <th>Qty Parts</th>
+              <th>Qty Places/Tools</th>
+              <th>Error Proofing Score</th>
               <th>Responsibility</th>
               <th>Effectiveness</th>
               <th>Status</th>
+              <th>History</th>
               <th class="w-12"></th>
             </tr>
           </thead>
           <tbody></tbody>
           <tfoot>
-            <tr><td colspan="9"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Implementation</button></td></tr>
+            <tr><td colspan="14"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Implementation</button></td></tr>
           </tfoot>
           <template>
             <tr>
-              <td><input class="ds-input impl-action" placeholder="Action from D5"/></td>
+              <td><input class="ds-input" placeholder="Action from D5"/></td>
               <td><input class="ds-input" type="date"/></td>
               <td>
-                <select class="ds-select impl-etype">
+                <select class="ds-select">
                   <option>Detection</option>
                   <option>Warning</option>
                   <option>Control</option>
                   <option>Shutdown</option>
                 </select>
               </td>
-              <td><input class="ds-input impl-level" type="number" min="1" max="5"/></td>
-              <td><input class="ds-input impl-score" type="number" disabled /></td>
+              <td><input class="ds-input" type="number" min="1" max="5" placeholder="Level"/></td>
+              <td><input class="ds-input" type="number" min="1" max="5" placeholder="Impact"/></td>
+              <td><select class="ds-select"><option>Yes</option><option>No</option></select></td>
+              <td><input class="ds-input" type="number" placeholder="Qty"/></td>
+              <td><input class="ds-input" type="number" placeholder="Qty"/></td>
+              <td><input class="ds-input" type="number" disabled placeholder="Score"/></td>
               <td><input class="ds-input" placeholder="Owner"/></td>
               <td><input class="ds-input" placeholder="e.g., 95% reduction"/></td>
-              <td><input class="ds-input" placeholder="e.g., Complete"/></td>
+              <td><select class="ds-select"><option>Open</option><option>In Progress</option><option>Completed</option></select></td>
+              <td><button class="ds-btn ds-btn--secondary ds-btn--sm w-full"><i data-lucide="history"></i> View</button></td>
               <td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
             </tr>
           </template>

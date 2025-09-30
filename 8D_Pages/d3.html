@@ -110,15 +110,14 @@
         <input class="ds-input table-filter mb-4" placeholder="Filter by task or responsibility..." data-for="#d3-sort" />
         <div class="overflow-x-auto">
           <table id="d3-sort" class="ds-table w-full">
-            <thead><tr><th>Task/Indicators</th><th>Resp + Target Date</th><th>Qty to Check</th><th>OK Qty</th><th>Not OK Qty</th><th>Total Checked</th><th>Activity Date</th><th>Comments</th><th class="w-12"></th></tr></thead>
+            <thead><tr><th>Task/Indicators</th><th>Responsibility</th><th>Qty to Check</th><th>OK Qty</th><th>Not OK Qty</th><th>Total Checked</th><th>Activity Date</th><th>Comments</th><th class="w-12"></th></tr></thead>
             <tbody></tbody>
             <tfoot><tr><td colspan="9"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Sort Activity</button></td></tr></tfoot>
             <template>
               <tr>
                 <td><input class="ds-input"/></td>
                 <td>
-                  <input class="ds-input mb-1" placeholder="Responsibility" />
-                  <input class="ds-input" type="date" placeholder="Target Date"/>
+                  <input class="ds-input" placeholder="Responsibility" />
                 </td>
                 <td><input class="ds-input qty-total" type="number"/></td><td><input class="ds-input qty-ok" type="number"/></td>
                 <td><input class="ds-input qty-nok" type="number"/></td><td><input class="ds-input qty-checked" type="number" disabled /></td>

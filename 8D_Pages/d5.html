@@ -11,30 +11,26 @@
         <table id="d5-actions" class="ds-table w-full">
           <thead class="text-sm">
             <tr>
-              <th class="w-8"><i data-lucide="move" title="Drag to reorder"></i></th>
-              <th>Action (PCA)</th>
+              <th>Action</th>
               <th>Root Cause</th>
-              <th>Start Date</th>
-              <th>End Date</th>
+              <th>Target Date</th>
               <th>Responsibility</th>
               <th>Mistake Proof</th>
-              <th>Cost / Benefit</th>
-              <th>Files</th>
-              <th>Verification</th>
+              <th>Status</th>
+              <th>Risk</th>
+              <th>History</th>
               <th class="w-12"></th>
             </tr>
           </thead>
           <tbody></tbody>
           <tfoot>
-            <tr><td colspan="11"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add PCA</button></td></tr>
+            <tr><td colspan="9"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add PCA</button></td></tr>
           </tfoot>
           <template>
-            <tr draggable="true">
-              <td><span class="drag-handle cursor-grab text-slate-400 hover:text-slate-600" title="Drag to reorder">⋮⋮</span></td>
-              <td><input class="ds-input pca-action" placeholder="Describe the action..."/></td>
+            <tr>
+              <td><textarea class="ds-textarea pca-action" placeholder="Describe the permanent corrective action..."></textarea></td>
               <td><select class="ds-select pca-root"><option value="">Select Root Cause</option></select></td>
-              <td><input class="ds-input pca-start-date" type="date"/></td>
-              <td><input class="ds-input pca-end-date" type="date"/></td>
+              <td><input class="ds-input pca-target-date" type="date"/></td>
               <td><input class="ds-input" placeholder="Owner"/></td>
               <td class="text-center">
                 <label class="relative inline-flex items-center cursor-pointer">
@@ -42,12 +38,9 @@
                   <div class="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
                 </label>
               </td>
-              <td>
-                <input class="ds-input pca-cost" type="number" placeholder="Cost ($)"/>
-                <input class="ds-input pca-benefit mt-1" placeholder="Benefit"/>
-              </td>
-              <td><input class="ds-input preview-file pca-file" type="file" multiple /></td>
-              <td><select class="ds-select verify-select"><option>Pending</option><option>Verified</option></select></td>
+              <td><select class="ds-select"><option>Pending</option><option>In Progress</option><option>Completed</option><option>Verified</option></select></td>
+              <td><input class="ds-input" type="number" placeholder="RPN"/></td>
+              <td><button class="ds-btn ds-btn--secondary ds-btn--sm w-full"><i data-lucide="history"></i> View</button></td>
               <td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
             </tr>
           </template>
@@ -121,16 +114,15 @@
       const rows = actionsTable.querySelectorAll('tbody tr');
       rows.forEach((row, index) => {
         const actionInput = row.querySelector('.pca-action');
-        const startInput = row.querySelector('.pca-start-date');
-        const endInput = row.querySelector('.pca-end-date');
+        const targetDateInput = row.querySelector('.pca-target-date');
 
-        if (actionInput && startInput && endInput && actionInput.value && startInput.value && endInput.value) {
+        if (actionInput && targetDateInput && actionInput.value && targetDateInput.value) {
           tasks.push({
             id: 'task_' + index,
             name: actionInput.value,
-            start: startInput.value,
-            end: endInput.value,
-            progress: 0, // This can be enhanced later
+            start: targetDateInput.value,
+            end: targetDateInput.value, // Treat target date as a milestone
+            progress: 0,
           });
         }
       });
