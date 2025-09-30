@@ -4,93 +4,66 @@
   <!-- Preventive Actions Card -->
   <div class="ds-card">
     <div class="ds-card__header">
-      <h3 class="ds-h3">Preventive Actions</h3>
+      <h3 class="ds-h3">7A. Preventive Actions</h3>
       <p class="ds-caption">Define systemic changes to prevent recurrence of this and similar problems.</p>
     </div>
     <div class="ds-card__body">
       <div class="overflow-x-auto">
-        <table id="d7-prevent-slim" class="ds-table w-full">
-          <thead>
+        <table id="d7-preventive-actions" class="ds-table w-full">
+          <thead class="text-sm">
             <tr>
               <th>Action</th>
-              <th>Owner</th>
-              <th>Due Date</th>
+              <th>Type</th>
+              <th>Available</th>
+              <th>Responsible</th>
+              <th>Target Date</th>
               <th>Status</th>
-              <th class="w-28 text-right"></th>
+              <th>History</th>
+              <th>Revised RPN</th>
+              <th class="w-12"></th>
             </tr>
           </thead>
-          <tbody></tbody>
+          <tbody>
+            <!-- Rows will be injected by JS -->
+          </tbody>
           <tfoot>
-            <tr><td colspan="5"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> New Preventive Action</button></td></tr>
+            <tr>
+              <td colspan="9"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Preventive Action</button></td>
+            </tr>
           </tfoot>
           <template>
-            <tr class="d7-row">
-              <td><input class="ds-input d7-action" placeholder="Describe the preventive action..."/></td>
-              <td><input class="ds-input d7-owner" placeholder="Owner's name"/></td>
-              <td><input class="ds-input d7-date" type="date"/></td>
+            <tr>
+              <td><textarea class="ds-textarea" placeholder="Description of preventive measure"></textarea></td>
               <td>
-                <select class="ds-select prevent-status">
-                  <option>Planned</option>
-                  <option>In Progress</option>
-                  <option>Done</option>
+                <select class="ds-select">
+                  <option>Corrective</option>
+                  <option>Preventive</option>
+                  <option>Detective</option>
                 </select>
               </td>
-              <td class="text-right">
-                <button class="ds-btn ds-btn--secondary d7-expand">Details</button>
+              <td>
+                <select class="ds-select">
+                  <option>Yes</option>
+                  <option>No</option>
+                  <option>Partial</option>
+                </select>
               </td>
+              <td><input class="ds-input" placeholder="Assigned owner"/></td>
+              <td><input class="ds-input" type="date"/></td>
+              <td>
+                <select class="ds-select">
+                  <option>Open</option>
+                  <option>In Progress</option>
+                  <option>Completed</option>
+                  <option>Overdue</option>
+                </select>
+              </td>
+              <td><button class="ds-btn ds-btn--secondary ds-btn--sm w-full"><i data-lucide="history"></i> View</button></td>
+              <td><input class="ds-input" type="number" placeholder="RPN"/></td>
+              <td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
             </tr>
           </template>
         </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- Action Details Card -->
-  <div id="d7-detail" class="ds-card" style="display:none;">
-    <div class="ds-card__header flex justify-between items-center">
-        <h3 class="ds-h3">Action Details</h3>
-        <button class="ds-btn-icon" onclick="document.getElementById('d7-detail').style.display='none'"><i data-lucide="x"></i></button>
-    </div>
-    <div class="ds-card__body grid grid-cols-1 md:grid-cols-2 gap-6">
-      <!-- RPN & Type -->
-      <div class="space-y-4">
-        <div>
-          <div class="flex items-center gap-2">
-            <label class="ds-caption">Revised RPN (Severity, Occurrence, Detection)</label>
-            <div class="ds-help">
-              <i data-lucide="help-circle" class="w-4 h-4 ds-help__icon"></i>
-              <div class="ds-help__tooltip">Risk Priority Number = Severity × Occurrence × Detection</div>
-            </div>
-          </div>
-          <div class="grid grid-cols-3 gap-2 mt-1">
-            <input class="ds-input rpn-s" type="number" min="1" max="10" placeholder="S"/>
-            <input class="ds-input rpn-o" type="number" min="1" max="10" placeholder="O"/>
-            <input class="ds-input rpn-d" type="number" min="1" max="10" placeholder="D"/>
-          </div>
-          <div class="text-sm mt-2">Revised RPN Score: <strong id="d7-rpn-val" class="font-bold text-slate-800">0</strong></div>
-        </div>
-        <div>
-          <label class="ds-caption" for="d7-type">Action Type</label>
-          <select id="d7-type" class="ds-select d7-type mt-1">
-            <option selected>Prevent</option>
-            <option>Detect</option>
-            <option>Control</option>
-            <option>Training</option>
-            <option>Other</option>
-          </select>
-        </div>
-        <div>
-          <label class="ds-caption">Supporting Documents</label>
-          <input class="ds-input preview-file mt-1" type="file" multiple />
-          <div class="file-preview mt-2"></div>
-        </div>
-      </div>
-      <!-- Related Standards -->
-      <div>
-        <label class="ds-caption">Related Standards (FMEA, Control Plan, SOPs)</label>
-        <div id="d7-std-list" class="mt-1 p-2 bg-slate-50 rounded-lg min-h-[150px]">
-          <!-- Related standards list will be injected by JS -->
-        </div>
       </div>
     </div>
   </div>

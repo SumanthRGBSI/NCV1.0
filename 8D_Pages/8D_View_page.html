@@ -120,6 +120,10 @@
             <div class="border-t my-6"></div>
             <div id="stepper-nav" class="stepper flex-grow overflow-y-auto pr-2"></div>
             <div class="mt-auto pt-6 border-t">
+                <div class="flex items-center justify-between sidebar-text mb-2">
+                    <button id="expand-all-btn" class="ds-btn ds-btn--sm ds-btn--tertiary text-xs">Expand All</button>
+                    <button id="collapse-all-btn" class="ds-btn ds-btn--sm ds-btn--tertiary text-xs">Collapse All</button>
+                </div>
                 <button id="sidebar-toggle-btn" class="w-full flex items-center p-3 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">
                     <i id="toggle-btn-icon" data-lucide="chevron-left" class="transition-transform duration-300"></i>
                     <span class="ml-4 font-semibold sidebar-text">Collapse</span>
@@ -171,78 +175,104 @@
 
     function getInitialData() {
         const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        const twoDaysAgo = new Date(today);
-        twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+        const d = (days) => new Date(today.getTime() - (days * 24 * 60 * 60 * 1000));
 
         const data = {};
-        disciplines.forEach(d => {
-            data[d.id] = { status: 'pending', lastUpdated: null, fields: {}, checklist: {} };
+        disciplines.forEach(d_item => {
+            data[d_item.id] = { status: 'pending', lastUpdated: null, fields: {}, checklist: {} };
         });
 
         // --- Pre-populated Demo Data ---
         data.d1 = {
             status: 'completed',
-            lastUpdated: twoDaysAgo.toISOString(),
+            lastUpdated: d(28).toISOString(), // 4 weeks ago
             fields: {
                 members: [
                     { name: 'Sarah Jenkins', role: 'KPOC', title: 'Quality Engineer', email: 's.jenkins@example.com', phone: '555-123-4567' },
                     { name: 'Tom Wilson', role: 'Champion', title: 'Production Manager', email: 't.wilson@example.com', phone: '555-987-6543' },
-                    { name: 'Maria Garcia', role: 'Team Member', title: 'Materials Scientist', email: 'm.garcia@example.com', phone: '555-234-5678' },
-                    { name: 'David Chen', role: 'Team Member', title: 'Supplier Quality', email: 'd.chen@example.com', phone: '555-876-5432' }
+                    { name: 'Maria Garcia', role: 'Team Lead', title: 'Materials Scientist', email: 'm.garcia@example.com', phone: '555-234-5678' },
+                    { name: 'David Chen', role: 'Team Member', title: 'Supplier Quality Eng.', email: 'd.chen@example.com', phone: '555-876-5432' },
+                    { name: 'Frank Miller', role: 'Team Member', title: 'Process Engineer', email: 'f.miller@example.com', phone: '555-456-1234' }
                 ]
             }
         };
 
         data.d2 = {
             status: 'completed',
-            lastUpdated: twoDaysAgo.toISOString(),
+            lastUpdated: d(27).toISOString(),
             fields: {
                 problemStatement: 'During routine quality checks, it was discovered that the Z-80 mounting brackets from our new supplier (Supplier-B, Lot #B-456) are fracturing under standard operational stress tests. This issue was not present with the previous supplier.',
                 briefStatement: 'The new Z-80 mounting brackets are fracturing under standard operational stress.',
-                impactCustomer: 'Potential for in-field failure of the final assembly, leading to safety risks and warranty claims.',
-                who: 'All units manufactured in the last 2 weeks using Lot #B-456.',
-                what: 'Z-80 mounting bracket (Part #45-113B)',
-                when: 'First observed during afternoon shift quality testing yesterday.',
-                where: 'In-house quality assurance lab.',
-                why: 'The failure prevents the final product from meeting safety and durability standards.',
+                what: 'Z-80 mounting bracket (Part #45-113B) is fracturing.',
+                when: d(28).toLocaleDateString(),
+                where: 'In-house quality assurance lab, Station 3.',
+                who: 'QA Inspector, John Doe.',
+                how: 'Standard 50kg load stress test.',
+                why: 'Fracturing poses a critical safety risk and will lead to in-field failures.',
+                howMany: '157',
                 situationBefore: 'Brackets from the previous supplier (Supplier-A) had a 0.01% failure rate. New supplier brackets are failing at a rate of 15% in initial testing.'
             }
         };
 
         data.d3 = {
             status: 'completed',
-            lastUpdated: yesterday.toISOString(),
+            lastUpdated: d(25).toISOString(),
             fields: {
                 supplierDescription: 'All inventory from Lot #B-456 has been quarantined and tagged as non-conforming. A 100% inspection and stress test process has been implemented for all incoming Z-80 brackets until the root cause is identified and resolved.',
-                actionNotes: 'Contacted Supplier-B and informed them of the issue. They have started an internal investigation.'
+                actionNotes: 'Contacted Supplier-B and informed them of the issue. They have started an internal investigation. All outbound shipments containing this lot have been stopped.'
             }
         };
 
         data.d4 = {
-            status: 'completed',
-            lastUpdated: yesterday.toISOString(),
+            status: 'in-progress',
+            lastUpdated: d(14).toISOString(),
             fields: {
                 rootCause: 'Improper heat treatment during the manufacturing process by Supplier-B resulted in reduced material tensile strength, making the brackets brittle.',
                 verificationMethod: 'Metallurgical analysis (Rockwell hardness test) of failed parts compared to the engineering specification.',
-                verificationSummary: 'Lab analysis confirmed the material hardness of failed brackets is 20% below the required HRC 45 specification. Brackets from a good lot tested within spec.'
+                verificationSummary: 'Lab analysis confirmed the material hardness of failed brackets is 20% below the required HRC 45 specification. Brackets from a good lot tested within spec.',
+                fishbone: [
+                    { category: 'Material', cause: 'Incorrect alloy specification', notes: 'Supplier used 6061-T4 instead of 6061-T6 aluminum.' },
+                    { category: 'Method', cause: 'Improper heat treatment', notes: 'Oven temperature was not properly calibrated.' },
+                    { category: 'Machine', cause: 'Old stamping die', notes: 'Die is showing signs of wear, causing micro-fractures.' }
+                ],
+                fiveWhys: [
+                    { why: 'Why did the bracket fail?', because: 'The material was too brittle and fractured under load.' },
+                    { why: 'Why was the material brittle?', because: 'The heat treatment process was not performed to specification.' },
+                    { why: 'Why was the process not to spec?', because: 'The oven temperature was too low.' },
+                    { why: 'Why was the temperature too low?', because: 'The oven controller is faulty and reads incorrectly.' },
+                    { why: 'Why was the controller faulty?', because: 'It was not included in the regular calibration schedule.' }
+                ]
             }
         };
 
         data.d5 = {
             status: 'in-progress',
-            lastUpdated: today.toISOString(),
+            lastUpdated: d(7).toISOString(),
             fields: {
-                correctiveAction: 'Issue a corrective action to Supplier-B detailing the required heat treatment process. Implement mandatory batch testing for hardness on all incoming shipments from Supplier-B.',
-                verificationPlan: 'Test 10 samples from the next 5 shipments from Supplier-B. All samples must pass hardness testing. Failure rate must return to <0.1% for 30 days.',
-                selectedPCA: 'Implement mandatory batch testing for hardness.'
+                selectedPCA: '1. Mandate supplier provides certs for heat treatment per batch. 2. Implement mandatory incoming batch testing for material hardness.'
             }
         };
 
-        data.d6 = { status: 'pending', lastUpdated: null, fields: { proof: '', situationAfter: '' } };
-        data.d7 = { status: 'pending', lastUpdated: null, fields: { preventiveActions: '', responsiblePerson: '', completionDate: '' } };
-        data.d8 = { status: 'pending', lastUpdated: null, fields: { recognitionSummary: '', teamFeedback: '', approvedName: '', approvedDate: '', submittedName: '', submittedDate: '' } };
+        data.d6 = {
+            status: 'in-progress',
+            lastUpdated: d(2).toISOString(),
+            fields: {
+                proof: 'First batch from Supplier-B with new process controls arrived. 10/10 samples passed hardness testing. Failure rate is 0% on this batch.',
+                situationAfter: 'The new process controls appear to be effective. The brackets from the new batch meet all performance and safety standards.'
+            }
+        };
+
+        data.d7 = {
+            status: 'pending',
+            lastUpdated: d(1).toISOString(),
+            fields: {}
+        };
+
+        data.d8 = {
+            status: 'pending',
+            lastUpdated: null,
+            fields: {}
+        };
 
         return data;
     }
@@ -262,6 +292,7 @@
             ensureCoreStyles();
             this.handleRouting();
             this.updateStepperStatusColors();
+            this.applyStepState();
         },
         loadData() {
             const savedData = localStorage.getItem('8d-data-v2');
@@ -293,19 +324,24 @@
                 const badge = this.renderStatusBadge(status);
                 const icon = (typeof stepIcons !== 'undefined' && stepIcons[d.id]) ? stepIcons[d.id] : 'fa-circle-dot';
                 return `
-                <a href="#${d.id}" id="nav-${d.id}" data-id="${d.id}" class="step-link block focus-ring" data-tooltip="${d.shortDesc}">
-                    <div class="step flex items-center mb-4">
-                        <div class="step-circle z-10">
-                            <span class="step-abbr">${d.id.toUpperCase()}</span>
-                            <i data-lucide="${icon}" class="step-icon-circle"></i>
-                            <span class="step-badge">${d.id.toUpperCase()}</span>
+                <div id="step-container-${d.id}" class="step-container">
+                    <a href="#${d.id}" id="nav-${d.id}" data-id="${d.id}" class="step-link block focus-ring" data-tooltip="${d.shortDesc}">
+                        <div class="step flex items-center mb-1">
+                            <div class="step-circle z-10">
+                                <span class="step-abbr">${d.id.toUpperCase()}</span>
+                                <i data-lucide="${icon}" class="step-icon-circle"></i>
+                                <span class="step-badge">${d.id.toUpperCase()}</span>
+                            </div>
+                            <div class="ml-4 p-3 rounded-lg w-full step-content font-semibold text-gray-600 flex justify-between items-center">
+                                <span class="flex items-center gap-2">${d.title} <span class="inline-flex items-center gap-1 text-xs font-medium" id="badge-${d.id}">${badge}</span></span>
+                                <i data-lucide="chevron-right" class="step-arrow"></i>
+                            </div>
                         </div>
-                        <div class="ml-4 p-3 rounded-lg w-full step-content font-semibold text-gray-600 flex justify-between items-center">
-                            <span class="flex items-center gap-2"><i data-lucide="${icon}" class="text-gray-500"></i> ${d.title} <span class="inline-flex items-center gap-1 text-xs font-medium" id="badge-${d.id}">${badge}</span></span>
-                            <i data-lucide="chevron-right" class="step-arrow"></i>
-                        </div>
+                    </a>
+                    <div class="step-details ml-16 mb-4 pl-3 pr-2 text-xs text-gray-500 border-l-2 border-gray-200" style="display: none;">
+                        <p>${d.shortDesc}</p>
                     </div>
-                </a>`;
+                </div>`;
             }).join('');
             nav.innerHTML = `<div id="stepper-progress"></div>` + stepsHtml;
             this.updateProgressSummary();
@@ -334,7 +370,21 @@
                 Array.from(container.querySelectorAll('link[rel="stylesheet"]')).forEach(link=>{ const href = link.getAttribute('href'); if(href && !document.querySelector(`link[rel="stylesheet"][href="${href}"]`)){ const l = document.createElement('link'); l.rel='stylesheet'; l.href=href; document.head.appendChild(l); } link.remove(); });
                 const scripts = Array.from(container.querySelectorAll('script'));
                 for (const oldScript of scripts) {
-                    try { if (oldScript.src) { if (!document.querySelector(`script[src="${oldScript.src}"]`)) { const s = document.createElement('script'); s.src = oldScript.src; s.async = false; document.body.appendChild(s); } } else { const code = oldScript.textContent || ''; if (code.trim()) { try { new Function(code)(); } catch (inlineErr) { const s = document.createElement('script'); s.textContent = code; document.body.appendChild(s); } } } } catch (e) { console.warn('Error executing injected script:', e); } finally { oldScript.remove(); }
+                    const newScript = document.createElement('script');
+                    if (oldScript.src) {
+                        // If the script has a src, we need to handle it carefully to avoid re-execution
+                        // For this app, we assume inline scripts are the main concern
+                        if (!document.querySelector(`script[src="${oldScript.src}"]`)) {
+                            newScript.src = oldScript.src;
+                            newScript.async = false; // Ensure sequential execution if needed
+                            document.body.appendChild(newScript);
+                        }
+                    } else {
+                        // For inline scripts, just create and append
+                        newScript.textContent = oldScript.textContent;
+                        document.body.appendChild(newScript);
+                    }
+                    oldScript.remove(); // Remove the original script from the inert document fragment
                 }
                 this.populateForm(id);
                 if (window.__init8D) window.__init8D(container);
@@ -346,6 +396,29 @@
         attachEventListeners() {
             window.addEventListener('hashchange', this.handleRouting.bind(this));
             document.getElementById('sidebar-toggle-btn').addEventListener('click', this.toggleSidebar.bind(this));
+
+            const stepperNav = document.getElementById('stepper-nav');
+            stepperNav.addEventListener('click', (e) => {
+                const link = e.target.closest('.step-link');
+                if (link && !e.target.closest('a')) { // Only toggle if not clicking the main link
+                    this.toggleStep(link.dataset.id);
+                }
+            });
+
+            document.getElementById('expand-all-btn').addEventListener('click', () => this.expandAllSteps());
+            document.getElementById('collapse-all-btn').addEventListener('click', () => this.collapseAllSteps());
+
+            window.addEventListener('keydown', (e) => {
+                if (e.altKey && e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    this.expandAllSteps();
+                }
+                if (e.altKey && e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    this.collapseAllSteps();
+                }
+            });
+
             const contentEl = document.getElementById('content-container');
             contentEl.addEventListener('click', (e) => {
                 const target = e.target.closest('#d1-add-member-btn, .remove-member-btn, .remove-row-btn');
@@ -517,6 +590,43 @@
             this.updateProgressSummary(); this.updateStepperProgressLine && this.updateStepperProgressLine();
         },
         updateSidebarToggleUI(isCollapsed){ const btn = document.getElementById('sidebar-toggle-btn'); const icon = document.getElementById('toggle-btn-icon'); const label = btn ? btn.querySelector('.sidebar-text') : null; if(label) label.textContent = isCollapsed ? 'Expand' : 'Collapse'; if(btn) btn.setAttribute('aria-expanded', (!isCollapsed).toString()); if(icon) icon.setAttribute('aria-hidden','true'); },
+
+        toggleStep(id, forceState) {
+            const container = document.getElementById(`step-container-${id}`);
+            const details = container?.querySelector('.step-details');
+            if (!details) return;
+
+            const isExpanded = details.style.display !== 'none';
+            const shouldBeExpanded = forceState !== undefined ? forceState : !isExpanded;
+
+            details.style.display = shouldBeExpanded ? 'block' : 'none';
+            this.saveStepState();
+        },
+
+        expandAllSteps() {
+            disciplines.forEach(d => this.toggleStep(d.id, true));
+        },
+
+        collapseAllSteps() {
+            disciplines.forEach(d => this.toggleStep(d.id, false));
+        },
+
+        saveStepState() {
+            const state = {};
+            disciplines.forEach(d => {
+                const details = document.getElementById(`step-container-${d.id}`)?.querySelector('.step-details');
+                state[d.id] = details ? details.style.display !== 'none' : false;
+            });
+            sessionStorage.setItem('stepperState', JSON.stringify(state));
+        },
+
+        applyStepState() {
+            const state = JSON.parse(sessionStorage.getItem('stepperState') || '{}');
+            disciplines.forEach(d => {
+                this.toggleStep(d.id, state[d.id] === true);
+            });
+        },
+
         showSkeleton(container){ const host = container || document.getElementById('content-container'); if(!host) return; host.innerHTML = `
           <div class="card">
             <div class="flex items-center justify-between">
@@ -649,9 +759,9 @@
 
     function showAuditLog(){ const modal = createEl('<div id="audit-modal" class="modal-overlay"></div>'); const card = createEl('<div class="card modal-card"></div>'); const head = createEl('<div class="flex-between"><div class="h-title">Audit Trail</div><button class="icon-btn" id="audit-close" aria-label="Close">✕</button></div>'); const list = createEl('<div class="mt-small" style="max-height:60vh;overflow:auto"></div>'); const logs = (app.data.audit||[]).slice().reverse(); list.innerHTML = logs.length ? `<table class="table"><thead><tr><th>When</th><th>Who</th><th>What</th></tr></thead><tbody>${logs.map(l=>`<tr><td>${new Date(l.ts).toLocaleString()}</td><td>${l.userRole||''}</td><td>${l.reason||''}</td></tr>`).join('')}</tbody></table>` : '<div class="small text-gray-600">No entries yet.</div>'; card.appendChild(head); card.appendChild(list); modal.appendChild(card); document.body.appendChild(modal); modal.addEventListener('click', (e)=>{ if(e.target.id==='audit-modal' || e.target.id==='audit-close'){ modal.remove(); }}); }
 
-    ensureStyle(); injectToolbarExtras(); if(window.app && window.disciplines && $('stepper-nav').children.length){ }
+    ensureStyle(); injectToolbarExtras();
+    patchApp();
   })();
-})();
 </script>
   <script src="../assets/data-store.js" defer></script>
   <script src="../assets/app-shell.js" defer></script>

@@ -92,6 +92,10 @@
             <span class="ds-badge peer-checked:bg-primary-100 peer-checked:text-primary-700 peer-checked:font-semibold">Champion</span>
           </label>
           <label class="cursor-pointer">
+            <input type="radio" class="sr-only peer member-role" name="member-role-__" value="Team Lead"/>
+            <span class="ds-badge peer-checked:bg-primary-100 peer-checked:text-primary-700 peer-checked:font-semibold">Team Lead</span>
+          </label>
+          <label class="cursor-pointer">
             <input type="radio" class="sr-only peer member-role" name="member-role-__" value="Team Member" checked/>
             <span class="ds-badge peer-checked:bg-primary-100 peer-checked:text-primary-700 peer-checked:font-semibold">Team Member</span>
           </label>
@@ -143,13 +147,12 @@
 
             window.app.data.d1.fields.members = members;
             window.app._dirty = true;
-            window.app.updateSaveFab(true);
+            if(window.app.updateSaveFab) window.app.updateSaveFab(true);
             if (window.app.saveData) {
                 // Debounce saving
                 clearTimeout(window.d1SaveTimer);
                 window.d1SaveTimer = setTimeout(() => window.app.saveData('d1-team-update'), 600);
             }
-            if (window.__init8D) window.__init8D(document); // Redraw visuals
         }
 
         // --- DOM Manipulation ---
@@ -187,25 +190,31 @@
         }
 
         // --- Event Listeners ---
-        // Using a single delegation pattern for the whole D1 container
         const container = tableBody.closest('.space-y-6');
         if (!container.dataset.d1ListenersAttached) {
             container.addEventListener('click', (e) => {
                 const addManualBtn = e.target.closest('.add-row-btn');
                 const addPersonBtn = e.target.closest('#d1-add-person');
+                const addMeBtn = e.target.closest('#d1-add-me');
                 const removeBtn = e.target.closest('.remove-row-btn');
 
                 if (addManualBtn) {
+                    e.stopImmediatePropagation(); // Stop the global handler
                     addRow();
                     updateAppData();
                 }
                 if (addPersonBtn) {
                     const searchInput = qs('#d1-person-search');
-                    if(searchInput) {
-                      addRow({ name: searchInput.value.trim() });
-                      searchInput.value = '';
-                      updateAppData();
+                    if (searchInput && searchInput.value.trim()) {
+                        addRow({ name: searchInput.value.trim() });
+                        searchInput.value = '';
+                        updateAppData();
                     }
+                }
+                if (addMeBtn) {
+                    const currentUser = window.app && window.app.user ? window.app.user : { name: 'Current User', title: 'My Title', email: 'user@example.com' };
+                    addRow(currentUser);
+                    updateAppData();
                 }
                 if (removeBtn) {
                     removeBtn.closest('tr').remove();
