@@ -1,25 +1,40 @@
 <!-- D4 — Root Cause Analysis -->
-<div class="space-y-6" x-data="{ activeTab: 'fishbone' }">
+<div class="space-y-6">
 
   <!-- Root Cause Tools Card -->
   <div class="ds-card">
     <div class="ds-card__header ds-card__header--sticky">
       <h3 class="ds-h3">4A. Root Cause Analysis Tools</h3>
+      <p class="ds-caption">Use the 5 Whys and Fishbone diagram to explore and identify potential root causes.</p>
     </div>
-    <!-- Tabs -->
-    <div class="border-b border-slate-200 px-6">
-        <nav class="flex -mb-px space-x-6">
-            <button @click="activeTab = 'fishbone'" :class="{'border-primary-500 text-primary-600 font-semibold': activeTab === 'fishbone'}" class="px-1 py-3 text-sm border-b-2 transition-colors">Fishbone Diagram</button>
-            <button @click="activeTab = 'whys'" :class="{'border-primary-500 text-primary-600 font-semibold': activeTab === 'whys'}" class="px-1 py-3 text-sm border-b-2 transition-colors">5 Whys</button>
-            <button @click="activeTab = 'causes'" :class="{'border-primary-500 text-primary-600 font-semibold': activeTab === 'causes'}" class="px-1 py-3 text-sm border-b-2 transition-colors">Potential Causes</button>
-        </nav>
-    </div>
-    <div class="ds-card__body">
-      <!-- Fishbone Panel -->
-      <div x-show="activeTab === 'fishbone'">
-        <p class="ds-caption mb-4">Click a bone on the diagram to add a potential cause, or add it directly to the table below.</p>
-        <div id="d4-fishbone-canvas" class="p-4 bg-slate-50 rounded-lg min-h-[200px]">
+    <div class="ds-card__body grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Left Panel: 5 Whys -->
+      <div class="space-y-4">
+        <div class="flex justify-between items-center">
+            <h4 class="font-semibold text-slate-700">5 Whys Analysis</h4>
+            <button id="d4-export-whys" class="ds-btn ds-btn--sm ds-btn--tertiary"><i data-lucide="download-cloud"></i> Export</button>
+        </div>
+        <div class="flex items-end gap-2">
+            <div class="flex-grow">
+                <label for="d4-why-target" class="ds-caption">Start with a potential cause</label>
+                <input id="d4-why-target" class="ds-input" placeholder="e.g., Operator fatigue"/>
+            </div>
+            <button id="d4-start-whys" class="ds-btn ds-btn--secondary"><i data-lucide="play"></i> Start</button>
+        </div>
+        <div id="d4-fivewhys" class="space-y-3 p-3 bg-slate-50 rounded-lg min-h-[200px]">
+          <!-- 5 Whys analysis will be injected here by JS -->
+        </div>
+      </div>
+
+      <!-- Right Panel: Fishbone -->
+      <div class="space-y-4">
+        <div class="flex justify-between items-center">
+            <h4 class="font-semibold text-slate-700">Fishbone Diagram</h4>
+            <button id="d4-export-fishbone" class="ds-btn ds-btn--sm ds-btn--tertiary"><i data-lucide="download-cloud"></i> Export</button>
+        </div>
+        <div id="d4-fishbone-canvas" class="p-4 bg-slate-50 rounded-lg min-h-[200px] border">
           <!-- Fishbone diagram will be rendered here by JS -->
+          <p class="ds-caption text-center">Sample fishbone diagram will be rendered here.</p>
         </div>
         <div class="overflow-x-auto mt-4">
           <table id="d4-fishbone-table" class="ds-table w-full">
@@ -29,33 +44,13 @@
             <template>
               <tr>
                 <td><select class="ds-select"><option>Man</option><option>Machine</option><option>Method</option><option>Material</option><option>Measurement</option><option>Environment</option></select></td>
-                <td><input class="ds-input d4-cause-text"/></td>
-                <td><input class="ds-input"/></td>
+                <td><input class="ds-input d4-cause-text" placeholder="Potential cause..."/></td>
+                <td><input class="ds-input d4-cause-notes" placeholder="Evidence or notes..."/></td>
                 <td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
               </tr>
             </template>
           </table>
         </div>
-      </div>
-      <!-- 5 Whys Panel -->
-      <div x-show="activeTab === 'whys'">
-        <div class="flex items-end gap-2 mb-4">
-            <div class="flex-grow">
-                <label for="d4-why-target" class="ds-caption">Link to a potential cause from the Fishbone analysis</label>
-                <input id="d4-why-target" class="ds-input" placeholder="e.g., Operator fatigue"/>
-            </div>
-            <button id="d4-start-whys" class="ds-btn ds-btn--secondary"><i data-lucide="play"></i> Start 5 Whys</button>
-        </div>
-        <div id="d4-fivewhys" class="space-y-3">
-          <!-- 5 Whys analysis will be injected here by JS -->
-        </div>
-      </div>
-      <!-- Potential Causes Panel -->
-      <div x-show="activeTab === 'causes'">
-         <p class="ds-caption mb-2">This is a collection of all potential causes identified in the tools above.</p>
-         <div id="d4-cause-list" class="space-y-2">
-           <!-- Potential causes list will be injected here by JS -->
-         </div>
       </div>
     </div>
   </div>
@@ -148,98 +143,205 @@
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 <script>
-  if (window.__init8D) {
-    window.__init8D(document);
-  }
-
   (function() {
-    // Function to calculate RPN for a given row in the D4 root cause table
-    function calculateD4Rpn(row) {
-      const likelihoodEl = row.querySelector('.rc-like');
-      const severityEl = row.querySelector('.rc-sev');
-      const scoreEl = row.querySelector('.rc-score');
+    if (window.d4Initialized) return;
+    window.d4Initialized = true;
 
-      if (!likelihoodEl || !severityEl || !scoreEl) return;
+    function qs(selector, context = document) { return context.querySelector(selector); }
+    function qsa(selector, context = document) { return Array.from(context.querySelectorAll(selector)); }
 
-      const likelihood = parseInt(likelihoodEl.value, 10) || 0;
-      const severity = parseInt(severityEl.value, 10) || 0;
+    function renderFishboneDiagram(causes) {
+        const container = qs('#d4-fishbone-canvas');
+        if (!container) return;
 
-      scoreEl.value = likelihood * severity;
+        const categories = {
+            'Man': [], 'Machine': [], 'Method': [], 'Material': [], 'Measurement': [], 'Environment': []
+        };
+        causes.forEach(c => {
+            if (categories[c.category]) {
+                categories[c.category].push(c);
+            }
+        });
+
+        let svg = `<svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+            <defs><marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/></marker></defs>
+            <line x1="50" y1="225" x2="750" y2="225" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+            <text x="760" y="225" dominant-baseline="middle" class="font-bold text-sm">Problem</text>`;
+
+        const drawBone = (x1, y1, x2, y2, label, items, isTop) => {
+            svg += `<g class="fishbone-category cursor-pointer" data-category="${label}">
+                <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#64748b" stroke-width="1.5"/>
+                <text x="${x2 + (isTop ? -10 : -10)}" y="${y2 + (isTop ? -10 : 18)}" class="font-semibold text-xs fill-slate-700">${label}</text>
+                <g class="fishbone-causes" style="display: block;">`;
+            items.forEach((item, i) => {
+                const causeY = y2 + (isTop ? -20 * (i + 1) : 20 * (i + 1));
+                svg += `<line x1="${x2}" y1="${y2}" x2="${x2 + 40}" y2="${causeY}" stroke="#94a3b8" stroke-width="1"/>
+                        <text x="${x2 + 45}" y="${causeY}" dominant-baseline="middle" class="text-xs fill-slate-600 fishbone-cause-text" data-cause-index="${causes.indexOf(item)}">${item.cause}</text>`;
+            });
+            svg += `</g></g>`;
+        };
+
+        drawBone(150, 225, 250, 150, 'Man', categories['Man'], true);
+        drawBone(350, 225, 450, 150, 'Machine', categories['Machine'], true);
+        drawBone(550, 225, 650, 150, 'Method', categories['Method'], true);
+        drawBone(150, 225, 250, 300, 'Material', categories['Material'], false);
+        drawBone(350, 225, 450, 300, 'Measurement', categories['Measurement'], false);
+        drawBone(550, 225, 650, 300, 'Environment', categories['Environment'], false);
+
+        svg += `</svg>`;
+        container.innerHTML = svg;
     }
 
-    // Use event delegation to handle changes on the root causes table
-    document.addEventListener('input', function(event) {
-      const target = event.target;
-      if (target.matches('#d4-root-causes .rc-like') || target.matches('#d4-root-causes .rc-sev')) {
-        const row = target.closest('tr');
-        if (row) {
-          calculateD4Rpn(row);
+    function renderFiveWhys(whys) {
+        const container = qs('#d4-fivewhys');
+        if (!container) return;
+        container.innerHTML = '';
+        if (!whys || whys.length === 0) {
+            container.innerHTML = `<p class="ds-caption">No 5 Whys analysis started. Enter a cause and click "Start".</p>`;
+            return;
         }
-      }
-    });
-
-    // Ensure that when new rows are added, the initial score is calculated.
-    // This relies on a generic add-row-btn handler existing elsewhere.
-    // We can also trigger the calculation for all rows on init.
-    function initializeScores() {
-        const rootCauseTable = document.getElementById('d4-root-causes');
-        if (rootCauseTable) {
-            const rows = rootCauseTable.querySelectorAll('tbody tr');
-            rows.forEach(calculateD4Rpn);
-        }
+        whys.forEach((item, index) => {
+            const el = document.createElement('div');
+            el.innerHTML = `
+                <label class="ds-caption font-semibold">Why #${index + 1}?</label>
+                <input class="ds-input mt-1" value="${item.why}" readonly />
+                <label class="ds-caption mt-2">Because...</label>
+                <input class="ds-input mt-1" value="${item.because}" readonly />`;
+            container.appendChild(el);
+        });
     }
 
-    // Run initialization after the main app logic has had a chance to populate the table
-    setTimeout(initializeScores, 100);
+    function populateD4Data() {
+        const data = window.app?.data?.d4?.fields;
+        if (!data) return;
 
-    // --- Sample Data Population ---
-    function populateSampleData() {
-        if (!window.app || !window.app.data.d4 || !window.app.data.d4.fields) return;
-
-        // Populate Fishbone Table
-        const fishboneTable = document.getElementById('d4-fishbone-table');
-        const fishboneTbody = fishboneTable?.querySelector('tbody');
-        const fishboneTemplate = fishboneTable?.querySelector('template');
-        if (fishboneTbody && fishboneTemplate && window.app.data.d4.fields.fishbone) {
-            fishboneTbody.innerHTML = ''; // Clear existing
-            window.app.data.d4.fields.fishbone.forEach(item => {
+        // Populate Fishbone table
+        const fishboneTbody = qs('#d4-fishbone-table tbody');
+        const fishboneTemplate = qs('#d4-fishbone-table template');
+        if (fishboneTbody && fishboneTemplate && data.fishbone) {
+            fishboneTbody.innerHTML = '';
+            data.fishbone.forEach(item => {
                 const newRow = fishboneTemplate.content.cloneNode(true);
-                newRow.querySelector('select').value = item.category;
-                newRow.querySelector('.d4-cause-text').value = item.cause;
-                newRow.querySelector('input:not([class])').value = item.notes;
+                qs('select', newRow).value = item.category;
+                qs('.d4-cause-text', newRow).value = item.cause;
+                qs('.d4-cause-notes', newRow).value = item.notes;
                 fishboneTbody.appendChild(newRow);
             });
         }
 
-        // Populate 5 Whys
-        const fiveWhysContainer = document.getElementById('d4-fivewhys');
-        if (fiveWhysContainer && window.app.data.d4.fields.fiveWhys) {
-            fiveWhysContainer.innerHTML = ''; // Clear existing
-            window.app.data.d4.fields.fiveWhys.forEach((item, index) => {
-                const whyElement = document.createElement('div');
-                whyElement.innerHTML = `
-                    <label class="ds-caption font-semibold">Why ${index + 1}?</label>
-                    <input class="ds-input mt-1" value="${item.why}" readonly />
-                    <label class="ds-caption mt-2">Because...</label>
-                    <input class="ds-input mt-1" value="${item.because}" readonly/>
-                `;
-                fiveWhysContainer.appendChild(whyElement);
+        renderFishboneDiagram(data.fishbone || []);
+        renderFiveWhys(data.fiveWhys || []);
+    }
+
+    function handleFishboneEditing(e) {
+        const textEl = e.target.closest('.fishbone-cause-text');
+        if (!textEl) return;
+
+        const originalText = textEl.textContent;
+        const index = parseInt(textEl.dataset.causeIndex, 10);
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = originalText;
+        input.className = 'absolute-input-editor'; // You would need to style this class
+
+        const foreignObject = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
+        foreignObject.setAttribute('x', textEl.getAttribute('x'));
+        foreignObject.setAttribute('y', parseInt(textEl.getAttribute('y')) - 12);
+        foreignObject.setAttribute('width', '150');
+        foreignObject.setAttribute('height', '24');
+        foreignObject.appendChild(input);
+
+        textEl.replaceWith(foreignObject);
+        input.focus();
+
+        const finishEditing = () => {
+            const newText = input.value;
+            foreignObject.replaceWith(textEl);
+            textEl.textContent = newText;
+
+            // Update data model
+            const cause = window.app.data.d4.fields.fishbone[index];
+            if (cause) {
+                cause.cause = newText;
+                // Also update the table
+                const tableRow = qs(`#d4-fishbone-table tbody tr:nth-child(${index + 1}) .d4-cause-text`);
+                if(tableRow) tableRow.value = newText;
+
+                window.app.saveData('d4-fishbone-edit');
+            }
+        };
+
+        input.addEventListener('blur', finishEditing);
+        input.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Enter') {
+                input.blur();
+            }
+        });
+    }
+
+    function handleExport(type) {
+        if (type === 'fishbone') {
+            const svg = qs('#d4-fishbone-canvas svg');
+            if (!svg) return;
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'fishbone_diagram.svg';
+            a.click();
+            URL.revokeObjectURL(url);
+        } else if (type === '5whys') {
+            const whys = window.app?.data?.d4?.fields?.fiveWhys || [];
+            if (whys.length === 0) return;
+            let textContent = "5 Whys Analysis\n\n";
+            whys.forEach((item, i) => {
+                textContent += `Why #${i+1}: ${item.why}\n`;
+                textContent += `Because: ${item.because}\n\n`;
             });
+            const blob = new Blob([textContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '5_whys_analysis.txt';
+            a.click();
+            URL.revokeObjectURL(url);
         }
     }
 
-    // Hook into the main initializer to populate data when D4 is loaded
-    const originalInitD4 = window.__init8D;
+    function initD4() {
+        populateD4Data();
+
+        qs('#d4-export-fishbone')?.addEventListener('click', () => handleExport('fishbone'));
+        qs('#d4-export-whys')?.addEventListener('click', () => handleExport('5whys'));
+
+        const fishboneCanvas = qs('#d4-fishbone-canvas');
+        fishboneCanvas?.addEventListener('click', handleFishboneEditing);
+
+        fishboneCanvas?.addEventListener('click', (e) => {
+            const categoryGroup = e.target.closest('.fishbone-category');
+            if(categoryGroup) {
+                const causesGroup = categoryGroup.querySelector('.fishbone-causes');
+                if(causesGroup) {
+                    causesGroup.style.display = causesGroup.style.display === 'none' ? 'block' : 'none';
+                }
+            }
+        });
+    }
+
+    // Hook into the main initializer
+    const originalInit = window.__init8D;
     window.__init8D = function(context) {
-        if (originalInitD4) originalInitD4(context);
-        if (context.querySelector('#d4-fishbone-table')) {
-            populateSampleData();
+        if (originalInit) originalInit(context);
+        if (qs('#d4-fishbone-table', context)) {
+            initD4();
         }
     };
 
-    // Also run on initial load if the content is already there
-    if(document.getElementById('d4-fishbone-table')) {
-        populateSampleData();
+    // If content is already on the page
+    if (qs('#d4-fishbone-table')) {
+        initD4();
     }
   })();
 </script>

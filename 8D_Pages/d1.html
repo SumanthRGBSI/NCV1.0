@@ -153,6 +153,73 @@
                 clearTimeout(window.d1SaveTimer);
                 window.d1SaveTimer = setTimeout(() => window.app.saveData('d1-team-update'), 600);
             }
+            renderVisuals();
+        }
+
+        // --- Visuals Rendering ---
+        function renderVisuals() {
+            const members = (window.app && window.app.data && window.app.data.d1 && window.app.data.d1.fields.members) || [];
+            const cardsContainer = qs('#d1-team-cards', context);
+            const orgChartContainer = qs('#d1-org-chart', context);
+
+            if (cardsContainer) {
+                cardsContainer.innerHTML = ''; // Clear existing cards
+                if (members.length > 0 && members.some(m => m.name)) {
+                    members.forEach(member => {
+                        if (!member.name) return; // Don't render empty cards
+                        const cardHTML = `
+                            <div class="p-3 bg-white rounded-lg border shadow-sm">
+                                <p class="font-bold text-slate-800">${member.name}</p>
+                                <p class="text-sm text-slate-600">${member.role || 'N/A'}</p>
+                                <p class="text-xs text-slate-500 mt-1">${member.title || 'N/A'}</p>
+                            </div>
+                        `;
+                        cardsContainer.insertAdjacentHTML('beforeend', cardHTML);
+                    });
+                } else {
+                    cardsContainer.innerHTML = '<p class="ds-caption">No team members added yet.</p>';
+                }
+            }
+
+            if (orgChartContainer) {
+                orgChartContainer.innerHTML = ''; // Clear existing chart
+                if (members.length > 0 && members.some(m => m.name)) {
+                    const champion = members.find(m => m.role === 'Champion');
+                    const lead = members.find(m => m.role === 'Team Lead' || m.role === 'KPOC');
+                    const teamMembers = members.filter(m => m.role !== 'Champion' && m.role !== 'Team Lead' && m.role !== 'KPOC');
+
+                    let chartHTML = '<ul class="space-y-2 text-sm">';
+                    if (champion) {
+                        chartHTML += `<li><strong>${champion.name}</strong> (Champion)</li>`;
+                    }
+                    if (lead) {
+                        chartHTML += `<ul class="ml-4 space-y-1"><li><strong>${lead.name}</strong> (${lead.role})</li>`;
+                        if (teamMembers.length > 0) {
+                            chartHTML += '<ul class="ml-4 space-y-1 border-l pl-4">';
+                            teamMembers.forEach(member => {
+                                if (member.name) {
+                                   chartHTML += `<li>${member.name} (Team Member)</li>`;
+                                }
+                            });
+                            chartHTML += '</ul>';
+                        }
+                        chartHTML += '</ul>';
+                    } else if (teamMembers.length > 0) {
+                         chartHTML += '<ul class="ml-4 space-y-1 border-l pl-4">';
+                         teamMembers.forEach(member => {
+                            if (member.name) {
+                                chartHTML += `<li>${member.name} (Team Member)</li>`;
+                            }
+                         });
+                         chartHTML += '</ul>';
+                    }
+                    chartHTML += '</ul>';
+                    orgChartContainer.innerHTML = chartHTML;
+
+                } else {
+                    orgChartContainer.innerHTML = '<p class="ds-caption text-center mt-4">Org chart will be generated here.</p>';
+                }
+            }
         }
 
         // --- DOM Manipulation ---
