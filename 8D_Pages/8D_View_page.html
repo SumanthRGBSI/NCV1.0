@@ -87,15 +87,11 @@
         #stepper-progress { position: absolute; left: 1.25rem; top: 1.25rem; width: 2px; height: 0; background-color: #10b981; z-index: 2; transition: height 0.4s ease; }
         .step-abbr{ display:inline; }
         .step-icon-circle{ display:none; }
-        #app-container.sidebar-collapsed .step-abbr{ display:none; }
-        #app-container.sidebar-collapsed .step-icon-circle{ display:inline-flex; }
+        /* No special behavior needed for collapsed view; abbreviation will remain visible. */
         a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.45); border-color: #93c5fd; }
         .skeleton{ position:relative; overflow:hidden; background:#f3f4f6; }
         .skeleton::after{ content:''; position:absolute; inset:0; background: linear-gradient(90deg, rgba(243,244,246,0) 0%, rgba(209,213,219,.7) 50%, rgba(243,244,246,0) 100%); transform:translateX(-100%); animation: sk 1.2s infinite; }
         @keyframes sk{ to { transform: translateX(100%); } }
-        /* Collapsed badge overlay */
-        .step-badge { position: absolute; bottom: -6px; right: -6px; display: none; background: #111827; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 9999px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
-        #app-container.sidebar-collapsed .step-badge { display: inline-flex; }
         /* Context bar */
         #context-bar { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; padding: 0.5rem; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 6px 18px rgba(2,6,23,0.06); }
         /* Floating save bar */
@@ -263,15 +259,24 @@
         };
 
         data.d7 = {
-            status: 'pending',
+            status: 'in-progress',
             lastUpdated: d(1).toISOString(),
-            fields: {}
+            fields: {
+                preventiveActions: '1. Update SOP-QC-11B to include mandatory Rockwell hardness testing for all incoming lots of Part #45-113B.\n2. Add Supplier-B oven controller to the quarterly calibration schedule (Calibration Procedure CP-04).\n3. Implement annual refresher training for all QA inspectors on material specification verification.',
+                responsiblePerson: 'QA Manager, Susan Davis',
+                targetDate: new Date(today.getTime() + 14 * 24*60*60*1000).toLocaleDateString(),
+                validationPlan: 'Audit of SOPs and calibration logs will be performed in 3 months. Next scheduled QA training will include the new module.'
+            }
         };
 
         data.d8 = {
             status: 'pending',
-            lastUpdated: null,
-            fields: {}
+            lastUpdated: d(1).toISOString(),
+            fields: {
+                recognitionSummary: 'The cross-functional team successfully identified and resolved a critical material failure, preventing potential field issues and strengthening our supplier quality process. Their diligent work is a model for future problem-solving initiatives.',
+                lessonsLearned: '1. Incoming material validation for new suppliers must be more rigorous.\n2. Critical equipment, even at supplier sites, should be considered for our own calibration and process audits.\n3. The 5 Whys analysis was instrumental in drilling down past the immediate cause to the systemic process failure.',
+                teamCelebration: 'A team lunch has been scheduled for next Friday to celebrate the successful resolution of this issue.'
+            }
         };
 
         return data;
@@ -322,15 +327,12 @@
             const stepsHtml = disciplines.map(d => {
                 const status = (this.data[d.id]?.status) || 'pending';
                 const badge = this.renderStatusBadge(status);
-                const icon = (typeof stepIcons !== 'undefined' && stepIcons[d.id]) ? stepIcons[d.id] : 'fa-circle-dot';
                 return `
                 <div id="step-container-${d.id}" class="step-container">
-                    <a href="#${d.id}" id="nav-${d.id}" data-id="${d.id}" class="step-link block focus-ring" data-tooltip="${d.shortDesc}">
+                    <a href="#${d.id}" id="nav-${d.id}" data-id="${d.id}" class="step-link block focus-ring" data-tooltip="${d.title} - ${d.shortDesc}">
                         <div class="step flex items-center mb-1">
                             <div class="step-circle z-10">
                                 <span class="step-abbr">${d.id.toUpperCase()}</span>
-                                <i data-lucide="${icon}" class="step-icon-circle"></i>
-                                <span class="step-badge">${d.id.toUpperCase()}</span>
                             </div>
                             <div class="ml-4 p-3 rounded-lg w-full step-content font-semibold text-gray-600 flex justify-between items-center">
                                 <span class="flex items-center gap-2">${d.title} <span class="inline-flex items-center gap-1 text-xs font-medium" id="badge-${d.id}">${badge}</span></span>
@@ -494,7 +496,6 @@
             const statusSelect = document.getElementById(`${id}-status-select`); if(statusSelect) statusSelect.value = disciplineData.status;
             const timestamp = document.getElementById(`${id}-timestamp`); if(timestamp) timestamp.textContent = disciplineData.lastUpdated ? new Date(disciplineData.lastUpdated).toLocaleString() : "Never";
             for (const key in disciplineData.fields) { const element = document.getElementById(`${id}-${key}`); if (element) element.value = disciplineData.fields[key] || ''; }
-            if (id === 'd1') this.renderTeamMembers();
             if (id === 'd8') this.populateD8Summaries();
             for (const key in disciplineData.checklist) { const element = document.getElementById(`${id}-check-${key}`); if (element) element.checked = disciplineData.checklist[key]; }
         },
@@ -558,17 +559,6 @@
         },
         exportAllToJSON(){ const blob = new Blob([JSON.stringify(this.data, null, 2)], {type:'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = '8d-data.json'; a.click(); URL.revokeObjectURL(url); },
         printCurrent(){ const w = window.open('', '_blank'); const title = document.title; const html = document.getElementById('content-container').innerHTML; w.document.write(`<!doctype html><html><head><title>${title}</title><link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css\"></head><body><main class=\"container\">${html}</main><script>setTimeout(()=>window.print(), 200);<\\/script></body></html>`); w.document.close(); },
-        renderTeamMembers() {
-            const list = document.getElementById('d1-members-list'); if (!list) return;
-            list.innerHTML = (this.data.d1.fields.members||[]).map((member, index) => `
-                <div class="flex items-center justify-between bg-gray-100 p-2 rounded">
-                    <span class="text-gray-800 break-all">${member}</span>
-                    <button type="button" class="remove-member-btn text-red-500 hover:text-red-700 ml-2" data-index="${index}"><i data-lucide="x-circle"></i></button>
-                </div>
-            `).join('');
-        },
-        addTeamMember() { const input = document.getElementById('d1-new-member'); if (input && input.value.trim() !== '') { this.data.d1.fields.members.push(input.value.trim()); input.value = ''; this.renderTeamMembers(); } },
-        removeTeamMember(index) { this.data.d1.fields.members.splice(index, 1); this.renderTeamMembers(); },
         toggleSidebar() {
             const container = document.getElementById('app-container');
             const isCollapsed = container.classList.toggle('sidebar-collapsed');

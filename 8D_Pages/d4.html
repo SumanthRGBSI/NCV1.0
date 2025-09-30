@@ -1,4 +1,66 @@
 <!-- D4 — Root Cause Analysis -->
+<style>
+  .five-whys-tree { line-height: 1.4; }
+  .five-whys-tree ul {
+    position: relative;
+    padding-left: 24px;
+    list-style: none;
+    margin: 0;
+  }
+  .five-whys-tree ul ul {
+    margin-left: 1rem;
+  }
+  .five-whys-tree li {
+    position: relative;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .five-whys-tree li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 21px;
+    width: 24px;
+    height: 1px;
+    background-color: #94a3b8;
+  }
+   .five-whys-tree > ul > li::before {
+    display: none;
+  }
+  .five-whys-tree ul::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background-color: #94a3b8;
+  }
+  .five-whys-tree li:last-child::before {
+    height: 21px;
+  }
+  .why-node, .because-node {
+    padding: 6px 10px;
+    border-radius: 8px;
+    display: inline-block;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    position: relative;
+    z-index: 1;
+    max-width: 100%;
+  }
+  .why-node {
+    background-color: #eff6ff;
+    border: 1px solid #dbeafe;
+    color: #1e3a8a;
+    font-weight: 500;
+  }
+  .because-node {
+    background-color: #f0fdf4;
+    border: 1px solid #dcfce7;
+    color: #15803d;
+  }
+</style>
 <div class="space-y-6">
 
   <!-- Root Cause Tools Card -->
@@ -78,13 +140,31 @@
         </div>
         <div>
             <h4 class="font-bold text-sm text-slate-700">Sample 5 Whys</h4>
-            <ol class="list-decimal list-inside text-sm text-slate-600 space-y-1 mt-2">
-              <li><strong>Why 1:</strong> Process output failed spec due to excess variation.</li>
-              <li><strong>Why 2:</strong> Variation increased because fixture alignment drifts.</li>
-              <li><strong>Why 3:</strong> Alignment drifts because set screws loosen.</li>
-              <li><strong>Why 4:</strong> Set screws loosen because torque was below spec.</li>
-              <li><strong>Why 5:</strong> Torque below spec because SOP lacks torque verification step.</li>
-            </ol>
+            <div class="five-whys-tree text-sm text-slate-600 mt-2">
+              <ul>
+                <li>
+                  <div class="why-node">Why did the process output fail spec?</div>
+                  <ul>
+                    <li>
+                      <div class="because-node">Because of excess variation.</div>
+                      <ul>
+                        <li>
+                          <div class="why-node">Why was there excess variation?</div>
+                          <ul>
+                            <li>
+                              <div class="because-node">Because fixture alignment drifts.</div>
+                               <ul>
+                                <li><div class="why-node">...</div></li>
+                              </ul>
+                            </li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
         </div>
     </div>
   </details>
@@ -200,15 +280,25 @@
             container.innerHTML = `<p class="ds-caption">No 5 Whys analysis started. Enter a cause and click "Start".</p>`;
             return;
         }
-        whys.forEach((item, index) => {
-            const el = document.createElement('div');
-            el.innerHTML = `
-                <label class="ds-caption font-semibold">Why #${index + 1}?</label>
-                <input class="ds-input mt-1" value="${item.why}" readonly />
-                <label class="ds-caption mt-2">Because...</label>
-                <input class="ds-input mt-1" value="${item.because}" readonly />`;
-            container.appendChild(el);
-        });
+
+        function buildTreeHtml(index) {
+            if (index >= whys.length) return '';
+            const item = whys[index];
+            const childrenHtml = (index + 1 < whys.length) ? `<ul>${buildTreeHtml(index + 1)}</ul>` : '';
+            return `
+                <li>
+                    <div class="why-node">${item.why}</div>
+                    <ul>
+                        <li>
+                            <div class="because-node">${item.because}</div>
+                            ${childrenHtml}
+                        </li>
+                    </ul>
+                </li>
+            `;
+        }
+
+        container.innerHTML = `<div class="five-whys-tree"><ul>${buildTreeHtml(0)}</ul></div>`;
     }
 
     function populateD4Data() {
