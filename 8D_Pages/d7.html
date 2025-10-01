@@ -84,6 +84,23 @@
   </div>
 </div>
 
+<!-- Confirm Delete Modal -->
+<div id="confirm-delete-modal" class="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 hidden">
+  <div class="ds-card w-full max-w-md">
+    <div class="ds-card__header">
+      <h3 class="ds-h3">Confirm Deletion</h3>
+    </div>
+    <div class="ds-card__body">
+      <p>Are you sure you want to delete this item? This action cannot be undone.</p>
+    </div>
+    <div class="ds-card__body border-t flex justify-end gap-2">
+      <button id="cancel-delete-btn" class="ds-btn ds-btn--secondary">Cancel</button>
+      <button id="confirm-delete-btn" class="ds-btn ds-btn--danger">Delete</button>
+    </div>
+  </div>
+</div>
+
+
 <!-- Acknowledgement Modal -->
 <div id="d7-ack-modal" class="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 hidden">
   <div class="ds-card w-full max-w-lg">
@@ -131,8 +148,9 @@
             if (!tbody || !template) return;
             tbody.innerHTML = '';
 
-            actions.forEach(item => {
+            actions.forEach((item, index) => {
                 const row = template.content.cloneNode(true);
+                row.firstElementChild.dataset.index = index;
                 qs('.pa-action', row).value = item.action || '';
                 qs('.pa-type', row).value = item.type || 'Corrective';
                 qs('.pa-available', row).checked = !!item.available;
@@ -141,6 +159,43 @@
                 qs('.pa-status', row).value = item.status || 'Open';
                 qs('.pa-rpn', row).value = item.rpn || '';
                 tbody.appendChild(row);
+            });
+        }
+
+        function setupDeleteConfirmation() {
+            const container = qs('#d7-preventive-actions', context);
+            const modal = qs('#confirm-delete-modal');
+            const confirmBtn = qs('#confirm-delete-btn', modal);
+            const cancelBtn = qs('#cancel-delete-btn', modal);
+            let rowToDelete = null;
+
+            if (!container || !modal) return;
+
+            container.addEventListener('click', e => {
+                const removeBtn = e.target.closest('.remove-row-btn');
+                if (removeBtn) {
+                    rowToDelete = removeBtn.closest('tr');
+                    modal.classList.remove('hidden');
+                }
+            });
+
+            cancelBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                rowToDelete = null;
+            });
+
+            confirmBtn.addEventListener('click', () => {
+                if (rowToDelete) {
+                    const index = rowToDelete.dataset.index;
+                    const actions = window.app.data.d7.fields.preventiveActions;
+                    if (actions && actions[index]) {
+                        actions.splice(index, 1);
+                        window.app.saveData('d7-preventive-actions-delete');
+                        renderPreventiveActions();
+                    }
+                }
+                modal.classList.add('hidden');
+                rowToDelete = null;
             });
         }
 
@@ -212,6 +267,8 @@
         if (window.app && window.app.data) {
             renderAll();
         }
+
+        setupDeleteConfirmation();
     }
 
     const originalInit = window.__init8D;

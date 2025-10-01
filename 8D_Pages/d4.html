@@ -1,43 +1,20 @@
 <!-- D4 — Root Cause Analysis -->
 <style>
   .five-whys-tree { line-height: 1.4; }
-  .five-whys-tree ul {
+  .five-whys-tree .why-level {
     position: relative;
     padding-left: 24px;
     list-style: none;
-    margin: 0;
+    margin-top: 8px;
   }
-  .five-whys-tree ul ul {
-    margin-left: 1rem;
-  }
-  .five-whys-tree li {
-    position: relative;
-    padding-top: 8px;
-    padding-bottom: 8px;
-  }
-  .five-whys-tree li::before {
+  .five-whys-tree .why-level::before {
     content: '';
     position: absolute;
-    left: 0;
-    top: 21px;
-    width: 24px;
-    height: 1px;
-    background-color: #94a3b8;
-  }
-   .five-whys-tree > ul > li::before {
-    display: none;
-  }
-  .five-whys-tree ul::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
+    left: 8px;
+    top: 18px;
     bottom: 0;
     width: 1px;
-    background-color: #94a3b8;
-  }
-  .five-whys-tree li:last-child::before {
-    height: 21px;
+    background-color: #cbd5e1;
   }
   .why-node, .because-node {
     padding: 6px 10px;
@@ -178,11 +155,19 @@
       <div>
         <h4 class="font-semibold text-slate-700">Verification Actions</h4>
         <div class="overflow-x-auto mt-2">
-            <table class="ds-table w-full">
+          <table id="d4-verification-actions" class="ds-table w-full">
               <thead><tr><th>Action</th><th>Responsibility</th><th>Target Date</th><th>Status</th><th class="w-12"></th></tr></thead>
               <tbody></tbody>
               <tfoot><tr><td colspan="5"><button class="add-row-btn ds-btn ds-btn--tertiary w-full"><i data-lucide="plus"></i> Add Verification Action</button></td></tr></tfoot>
-              <template><tr><td><input class="ds-input"/></td><td><input class="ds-input"/></td><td><input class="ds-input" type="date"/></td><td><input class="ds-input"/></td><td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td></tr></template>
+              <template>
+                <tr>
+                  <td><input class="ds-input va-action" placeholder="Verification action..."/></td>
+                  <td><input class="ds-input va-owner" placeholder="Owner..."/></td>
+                  <td><input class="ds-input va-date" type="date"/></td>
+                  <td><select class="ds-select va-status"><option>Pending</option><option>In Progress</option><option>Completed</option></select></td>
+                  <td><button class="remove-row-btn ds-btn-icon ds-btn-icon--danger"><i data-lucide="trash-2"></i></button></td>
+                </tr>
+              </template>
             </table>
         </div>
       </div>
@@ -230,6 +215,44 @@
     function qs(selector, context = document) { return context.querySelector(selector); }
     function qsa(selector, context = document) { return Array.from(context.querySelectorAll(selector)); }
 
+    function updateAppData() {
+        if (!window.app || !window.app.data || !window.app.data.d4) return;
+        const fields = window.app.data.d4.fields;
+
+        fields.fishbone = qsa('#d4-fishbone-table tbody tr').map(tr => ({
+            category: qs('select', tr).value,
+            cause: qs('.d4-cause-text', tr).value,
+            notes: qs('.d4-cause-notes', tr).value
+        }));
+
+        fields.verificationActions = qsa('#d4-verification-actions tbody tr').map(tr => ({
+            action: qs('.va-action', tr).value,
+            owner: qs('.va-owner', tr).value,
+            date: qs('.va-date', tr).value,
+            status: qs('.va-status', tr).value
+        }));
+
+        fields.finalRootCauses = qsa('#d4-root-causes tbody tr').map(tr => {
+            const likelihood = parseInt(qs('.rc-like', tr).value, 10) || 0;
+            const severity = parseInt(qs('.rc-sev', tr).value, 10) || 0;
+            return {
+                cause: qs('.rc-text', tr).value,
+                category: qs('select:nth-of-type(1)', tr).value,
+                likelihood: likelihood,
+                severity: severity
+            };
+        });
+
+        window.app._dirty = true;
+        if (window.app.updateSaveFab) window.app.updateSaveFab(true);
+        if (window.app.saveData) {
+            clearTimeout(window.d4SaveTimer);
+            window.d4SaveTimer = setTimeout(() => window.app.saveData('d4-update'), 600);
+        }
+
+        renderFishboneDiagram(fields.fishbone || []);
+    }
+
     function renderFishboneDiagram(causes) {
         const container = qs('#d4-fishbone-canvas');
         if (!container) return;
@@ -237,7 +260,7 @@
         const categories = {
             'Man': [], 'Machine': [], 'Method': [], 'Material': [], 'Measurement': [], 'Environment': []
         };
-        causes.forEach(c => {
+        (causes || []).forEach(c => {
             if (categories[c.category]) {
                 categories[c.category].push(c);
             }
@@ -253,10 +276,10 @@
                 <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#64748b" stroke-width="1.5"/>
                 <text x="${x2 + (isTop ? -10 : -10)}" y="${y2 + (isTop ? -10 : 18)}" class="font-semibold text-xs fill-slate-700">${label}</text>
                 <g class="fishbone-causes" style="display: block;">`;
-            items.forEach((item, i) => {
+            (items || []).forEach((item, i) => {
                 const causeY = y2 + (isTop ? -20 * (i + 1) : 20 * (i + 1));
                 svg += `<line x1="${x2}" y1="${y2}" x2="${x2 + 40}" y2="${causeY}" stroke="#94a3b8" stroke-width="1"/>
-                        <text x="${x2 + 45}" y="${causeY}" dominant-baseline="middle" class="text-xs fill-slate-600 fishbone-cause-text" data-cause-index="${causes.indexOf(item)}">${item.cause}</text>`;
+                        <text x="${x2 + 45}" y="${causeY}" dominant-baseline="middle" class="text-xs fill-slate-600 fishbone-cause-text" data-cause-index="${(causes || []).indexOf(item)}">${item.cause}</text>`;
             });
             svg += `</g></g>`;
         };
@@ -284,172 +307,131 @@
         function buildTreeHtml(index) {
             if (index >= whys.length) return '';
             const item = whys[index];
-            const childrenHtml = (index + 1 < whys.length) ? `<ul>${buildTreeHtml(index + 1)}</ul>` : '';
+            const childrenHtml = (index + 1 < whys.length) ? buildTreeHtml(index + 1) : '';
+
             return `
-                <li>
-                    <div class="why-node">${item.why}</div>
-                    <ul>
-                        <li>
-                            <div class="because-node">${item.because}</div>
-                            ${childrenHtml}
-                        </li>
-                    </ul>
-                </li>
+                <div class="why-level pl-4 border-l-2 border-slate-200">
+                    <div class="flex items-center gap-2">
+                        <div class="why-node flex-grow">${item.why}</div>
+                        <button class="remove-why-btn ds-btn-icon ds-btn-icon--danger" data-index="${index}"><i data-lucide="x"></i></button>
+                    </div>
+                    <div class="because-node mt-1 ml-4">${item.because}</div>
+                </div>
+                ${childrenHtml}
             `;
         }
 
-        container.innerHTML = `<div class="five-whys-tree"><ul>${buildTreeHtml(0)}</ul></div>`;
+        container.innerHTML = `<div class="five-whys-tree">${buildTreeHtml(0)}</div>`;
     }
 
     function populateD4Data() {
         const data = window.app?.data?.d4?.fields;
         if (!data) return;
 
-        // Populate Fishbone table
-        const fishboneTbody = qs('#d4-fishbone-table tbody');
-        const fishboneTemplate = qs('#d4-fishbone-table template');
-        if (fishboneTbody && fishboneTemplate && data.fishbone) {
-            fishboneTbody.innerHTML = '';
-            data.fishbone.forEach(item => {
-                const newRow = fishboneTemplate.content.cloneNode(true);
-                qs('select', newRow).value = item.category;
-                qs('.d4-cause-text', newRow).value = item.cause;
-                qs('.d4-cause-notes', newRow).value = item.notes;
-                fishboneTbody.appendChild(newRow);
-            });
-        }
+        const tables = [
+            { selector: '#d4-fishbone-table', data: data.fishbone, map: (row, item) => {
+                qs('select', row).value = item.category;
+                qs('.d4-cause-text', row).value = item.cause;
+                qs('.d4-cause-notes', row).value = item.notes;
+            }},
+            { selector: '#d4-verification-actions', data: data.verificationActions, map: (row, item) => {
+                qs('.va-action', row).value = item.action;
+                qs('.va-owner', row).value = item.owner;
+                qs('.va-date', row).value = item.date;
+                qs('.va-status', row).value = item.status;
+            }},
+            { selector: '#d4-root-causes', data: data.finalRootCauses, map: (row, item) => {
+                qs('.rc-text', row).value = item.cause;
+                qs('select:nth-of-type(1)', row).value = item.category;
+                const like = qs('.rc-like', row);
+                const sev = qs('.rc-sev', row);
+                const score = qs('.rc-score', row);
+                like.value = item.likelihood;
+                sev.value = item.severity;
+                score.value = (item.likelihood || 0) * (item.severity || 0);
+            }}
+        ];
 
-        // Populate Verification Actions table
-        const verificationTbody = qs('#d4-verification-actions tbody');
-        const verificationTemplate = qs('#d4-verification-actions template');
-        if (verificationTbody && verificationTemplate && data.verificationActions) {
-            verificationTbody.innerHTML = '';
-            data.verificationActions.forEach(item => {
-                const newRow = verificationTemplate.content.cloneNode(true);
-                qs('input:nth-of-type(1)', newRow).value = item.action;
-                qs('input:nth-of-type(2)', newRow).value = item.owner;
-                qs('input:nth-of-type(3)', newRow).value = item.date;
-                qs('input:nth-of-type(4)', newRow).value = item.status;
-                verificationTbody.appendChild(newRow);
-            });
-        }
-
-        // Populate Final Root Causes table
-        const rootCauseTbody = qs('#d4-root-causes tbody');
-        const rootCauseTemplate = qs('#d4-root-causes template');
-        if (rootCauseTbody && rootCauseTemplate && data.finalRootCauses) {
-            rootCauseTbody.innerHTML = '';
-            data.finalRootCauses.forEach(item => {
-                const newRow = rootCauseTemplate.content.cloneNode(true);
-                qs('.rc-text', newRow).value = item.cause;
-                qs('select:nth-of-type(1)', newRow).value = item.category;
-                qs('.rc-like', newRow).value = item.likelihood;
-                qs('.rc-sev', newRow).value = item.severity;
-                qs('.rc-score', newRow).value = item.likelihood * item.severity;
-                rootCauseTbody.appendChild(newRow);
-            });
-        }
-
+        tables.forEach(t => {
+            const tbody = qs(`${t.selector} tbody`);
+            const template = qs(`${t.selector} template`);
+            if (tbody && template && t.data) {
+                tbody.innerHTML = '';
+                t.data.forEach(item => {
+                    const newRow = template.content.cloneNode(true);
+                    t.map(newRow, item);
+                    tbody.appendChild(newRow);
+                });
+            }
+        });
 
         renderFishboneDiagram(data.fishbone || []);
         renderFiveWhys(data.fiveWhys || []);
     }
 
-    function handleFishboneEditing(e) {
-        const textEl = e.target.closest('.fishbone-cause-text');
-        if (!textEl) return;
+    function attachListeners(context) {
+        const container = qs('.space-y-6', context);
+        if (!container || container.dataset.d4ListenersAttached) return;
 
-        const originalText = textEl.textContent;
-        const index = parseInt(textEl.dataset.causeIndex, 10);
+        container.addEventListener('click', e => {
+            const addBtn = e.target.closest('.add-row-btn');
+            const removeBtn = e.target.closest('.remove-row-btn');
+            const removeWhyBtn = e.target.closest('.remove-why-btn');
 
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.value = originalText;
-        input.className = 'absolute-input-editor'; // You would need to style this class
-
-        const foreignObject = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
-        foreignObject.setAttribute('x', textEl.getAttribute('x'));
-        foreignObject.setAttribute('y', parseInt(textEl.getAttribute('y')) - 12);
-        foreignObject.setAttribute('width', '150');
-        foreignObject.setAttribute('height', '24');
-        foreignObject.appendChild(input);
-
-        textEl.replaceWith(foreignObject);
-        input.focus();
-
-        const finishEditing = () => {
-            const newText = input.value;
-            foreignObject.replaceWith(textEl);
-            textEl.textContent = newText;
-
-            // Update data model
-            const cause = window.app.data.d4.fields.fishbone[index];
-            if (cause) {
-                cause.cause = newText;
-                // Also update the table
-                const tableRow = qs(`#d4-fishbone-table tbody tr:nth-child(${index + 1}) .d4-cause-text`);
-                if(tableRow) tableRow.value = newText;
-
-                window.app.saveData('d4-fishbone-edit');
+            if (addBtn) {
+                const table = addBtn.closest('table');
+                const template = qs('template', table);
+                if (template) {
+                    const newRow = template.content.cloneNode(true);
+                    qs('tbody', table).appendChild(newRow);
+                    updateAppData();
+                }
             }
-        };
 
-        input.addEventListener('blur', finishEditing);
-        input.addEventListener('keydown', (ev) => {
-            if (ev.key === 'Enter') {
-                input.blur();
+            if (removeBtn) {
+                if (confirm('Are you sure you want to remove this item?')) {
+                    removeBtn.closest('tr').remove();
+                    updateAppData();
+                }
+            }
+
+            if (removeWhyBtn) {
+                if (confirm('Are you sure you want to remove this "Why" and all subsequent steps?')) {
+                    const index = parseInt(removeWhyBtn.dataset.index, 10);
+                    const whys = window.app.data.d4.fields.fiveWhys;
+                    if (whys && whys.length > index) {
+                        whys.splice(index, whys.length - index);
+                        renderFiveWhys(whys);
+                        updateAppData();
+                    }
+                }
             }
         });
-    }
 
-    function handleExport(type) {
-        if (type === 'fishbone') {
-            const svg = qs('#d4-fishbone-canvas svg');
-            if (!svg) return;
-            const svgData = new XMLSerializer().serializeToString(svg);
-            const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'fishbone_diagram.svg';
-            a.click();
-            URL.revokeObjectURL(url);
-        } else if (type === '5whys') {
-            const whys = window.app?.data?.d4?.fields?.fiveWhys || [];
-            if (whys.length === 0) return;
-            let textContent = "5 Whys Analysis\n\n";
-            whys.forEach((item, i) => {
-                textContent += `Why #${i+1}: ${item.why}\n`;
-                textContent += `Because: ${item.because}\n\n`;
-            });
-            const blob = new Blob([textContent], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = '5_whys_analysis.txt';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
+        container.addEventListener('input', e => {
+            if (e.target.closest('#d4-fishbone-table, #d4-verification-actions, #d4-root-causes')) {
+                updateAppData();
+            }
+        });
+
+        qs('#d4-start-whys')?.addEventListener('click', () => {
+            const input = qs('#d4-why-target');
+            if (!input || !input.value.trim()) return;
+            const whys = window.app.data.d4.fields.fiveWhys || [];
+            const nextWhy = whys.length > 0 ? `Why does "${whys[whys.length - 1].because}" happen?` : `Why is/does "${input.value.trim()}" happen?`;
+
+            whys.push({ why: nextWhy, because: '' });
+            window.app.data.d4.fields.fiveWhys = whys;
+            renderFiveWhys(whys);
+            input.value = '';
+        });
+
+        container.dataset.d4ListenersAttached = 'true';
     }
 
     function initD4() {
         populateD4Data();
-
-        qs('#d4-export-fishbone')?.addEventListener('click', () => handleExport('fishbone'));
-        qs('#d4-export-whys')?.addEventListener('click', () => handleExport('5whys'));
-
-        const fishboneCanvas = qs('#d4-fishbone-canvas');
-        fishboneCanvas?.addEventListener('click', handleFishboneEditing);
-
-        fishboneCanvas?.addEventListener('click', (e) => {
-            const categoryGroup = e.target.closest('.fishbone-category');
-            if(categoryGroup) {
-                const causesGroup = categoryGroup.querySelector('.fishbone-causes');
-                if(causesGroup) {
-                    causesGroup.style.display = causesGroup.style.display === 'none' ? 'block' : 'none';
-                }
-            }
-        });
+        attachListeners(document);
     }
 
     // Hook into the main initializer

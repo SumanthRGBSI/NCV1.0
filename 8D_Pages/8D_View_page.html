@@ -190,14 +190,16 @@
                     { name: 'Tom Wilson', role: 'Champion', title: 'Production Manager', email: 't.wilson@example.com', phone: '555-987-6543' },
                     { name: 'Maria Garcia', role: 'Team Lead', title: 'Materials Scientist', email: 'm.garcia@example.com', phone: '555-234-5678' },
                     { name: 'David Chen', role: 'Team Member', title: 'Supplier Quality Eng.', email: 'd.chen@example.com', phone: '555-876-5432' },
-                    { name: 'Frank Miller', role: 'Team Member', title: 'Process Engineer', email: 'f.miller@example.com', phone: '555-456-1234' }
+                    { name: 'Frank Miller', role: 'Team Member', title: 'Process Engineer', email: 'f.miller@example.com', phone: '555-456-1234' },
+                    { name: 'Jessica White', role: 'Team Member', title: 'Design Engineer', email: 'j.white@example.com', phone: '555-321-7654' },
+                    { name: 'Robert Brown', role: 'Team Member', title: 'Logistics Coordinator', email: 'r.brown@example.com', phone: '555-654-1234' }
                 ]
             },
             checklist: {
                 0: true, // Do we have an effective team leader?
                 1: true, // Do we have the right people on the team?
                 2: true, // Does the team have a clear charter?
-                3: false // Is there a communication plan?
+                3: true // Is there a communication plan?
             }
         };
 
@@ -205,29 +207,30 @@
             status: 'completed',
             lastUpdated: d(27).toISOString(),
             fields: {
-                problemStatement: 'During routine quality checks, it was discovered that the Z-80 mounting brackets from our new supplier (Supplier-B, Lot #B-456) are fracturing under standard operational stress tests. This issue was not present with the previous supplier.',
+                problemStatement: 'During routine quality checks on ' + d(28).toLocaleDateString() + ', it was discovered that the Z-80 mounting brackets (Part #45-113B) from our new supplier (Supplier-B, Lot #B-456) are fracturing under the standard 50kg operational stress test. This issue was not present with the previous supplier (Supplier-A), whose brackets had a historical failure rate of 0.01%. The failure rate for Lot #B-456 is estimated at 15% based on initial testing of 157 units, posing a critical safety risk and threatening project deadlines.',
                 briefStatement: 'The new Z-80 mounting brackets are fracturing under standard operational stress.',
                 what: 'Z-80 mounting bracket (Part #45-113B) is fracturing.',
                 when: d(28).toLocaleDateString(),
                 where: 'In-house quality assurance lab, Station 3.',
-                who: 'QA Inspector, John Doe.',
-                how: 'Standard 50kg load stress test.',
-                why: 'Fracturing poses a critical safety risk and will lead to in-field failures.',
-                howMany: '157',
-                situationBefore: 'Brackets from the previous supplier (Supplier-A) had a 0.01% failure rate. New supplier brackets are failing at a rate of 15% in initial testing.',
+                who: 'QA Inspector, John Doe, during routine testing.',
+                how: 'Standard 50kg load stress test, as per SOP-QC-11B.',
+                why: 'Fracturing poses a critical safety risk, will lead to in-field failures, and violates quality standards.',
+                howMany: '157 units from Lot #B-456 failed out of 1050 tested so far.',
+                situationBefore: 'Brackets from the previous supplier (Supplier-A) had a 0.01% failure rate over the last 24 months. New supplier brackets are failing at a rate of 15% in initial testing.',
                 processAudit: [
-                    { step: 'Receiving', cause: 'Incorrect material certs', action: 'Yes' },
-                    { step: 'Stamping', cause: 'Tool wear', action: 'No' },
-                    { step: 'Heat Treatment (Supplier)', cause: 'Incorrect oven temperature/time', action: 'Yes' },
-                    { step: 'QA Inspection', cause: 'Hardness test not performed', action: 'Yes' }
+                    { step: 'Receiving', cause: 'Incorrect material certs provided', action: 'Yes' },
+                    { step: 'Stamping', cause: 'Tool wear leading to micro-fractures', action: 'No' },
+                    { step: 'Heat Treatment (Supplier)', cause: 'Incorrect oven temperature/time cycle', action: 'Yes' },
+                    { step: 'QA Inspection', cause: 'Hardness test not performed on incoming batch', action: 'Yes' }
                 ],
                 controlDocs: [
                     { document: 'PFMEA-Z-80', reviewed: 'Yes', rpn: 320 },
                     { document: 'Control Plan CP-112', reviewed: 'Yes', rpn: 280 },
-                    { document: 'SOP-QC-11B', reviewed: 'No', rpn: 0 }
+                    { document: 'SOP-QC-11B', reviewed: 'No', rpn: 0 },
+                    { document: 'Supplier Agreement SA-B-2023', reviewed: 'Yes', rpn: 150 }
                 ]
             },
-            checklist: { 0: true, 1: true, 2: true, 3: false }
+            checklist: { 0: true, 1: true, 2: true, 3: true }
         };
 
         data.d3 = {
@@ -235,76 +238,86 @@
             lastUpdated: d(25).toISOString(),
             fields: {
                 containmentActions: [
-                    { action: 'Quarantine all stock of Lot #B-456', owner: 'T. Wilson', date: d(27).toISOString().split('T')[0], status: 'Done' },
-                    { action: 'Notify downstream customers', owner: 'S. Jenkins', date: d(27).toISOString().split('T')[0], status: 'In Progress' },
-                    { action: 'Implement 100% stress test for incoming brackets', owner: 'S. Jenkins', date: d(26).toISOString().split('T')[0], status: 'To Do' }
+                    { action: 'Quarantine all stock of Lot #B-456 at main warehouse', owner: 'T. Wilson', date: d(27).toISOString().split('T')[0], status: 'Done' },
+                    { action: 'Issue stop-shipment order for all products containing Part #45-113B', owner: 'R. Brown', date: d(27).toISOString().split('T')[0], status: 'Done' },
+                    { action: 'Notify downstream customers (Tier 1 Assembly) of potential issue', owner: 'S. Jenkins', date: d(27).toISOString().split('T')[0], status: 'Done' },
+                    { action: 'Implement 100% stress test for all incoming brackets', owner: 'S. Jenkins', date: d(26).toISOString().split('T')[0], status: 'In Progress' }
                 ],
                 riskItems: [
                     { process: 'Assembly Line 1', risk: 'Yes', containment: 'Yes' },
+                    { process: 'Assembly Line 2', risk: 'Yes', containment: 'Yes' },
                     { process: 'Service Part Stock', risk: 'Yes', containment: 'Yes' },
                     { process: 'Finished Goods Warehouse', risk: 'No', containment: 'No' },
+                    { process: 'In-Transit to Customer', risk: 'Yes', containment: 'No' },
                 ],
                 labels: [
-                    { cutoff: 'Lot #B-455', datetime: d(28).toISOString().substring(0, 16), comments: 'Last known good lot' },
-                    { cutoff: 'Work Order #9871', datetime: d(27).toISOString().substring(0, 16), comments: 'First known bad lot' }
+                    { cutoff: 'Lot #B-455', datetime: d(28).toISOString().substring(0, 16), comments: 'Last known good lot from Supplier-A' },
+                    { cutoff: 'Work Order #9871', datetime: d(27).toISOString().substring(0, 16), comments: 'First known work order using suspect lot' }
                 ],
                 sorting: [
-                   { task: 'Warehouse Stock Sort', responsibility: 'QA Team A', toCheck: 2500, ok: 2480, notOk: 20, checked: 2500, date: d(26).toISOString().split('T')[0], comments: '20 failures found' },
-                   { task: 'WIP on Line 1 Sort', responsibility: 'QA Team B', toCheck: 500, ok: 491, notOk: 9, checked: 500, date: d(25).toISOString().split('T')[0], comments: '9 failures found' }
+                   { task: 'Warehouse Stock Sort', responsibility: 'QA Team A', toCheck: 2500, ok: 2480, notOk: 20, checked: 2500, date: d(26).toISOString().split('T')[0], comments: '20 failures found, quarantined.' },
+                   { task: 'WIP on Line 1 Sort', responsibility: 'QA Team B', toCheck: 500, ok: 491, notOk: 9, checked: 500, date: d(25).toISOString().split('T')[0], comments: '9 failures found, quarantined.' },
+                   { task: 'WIP on Line 2 Sort', responsibility: 'QA Team C', toCheck: 450, ok: 442, notOk: 8, checked: 450, date: d(25).toISOString().split('T')[0], comments: '8 failures found, quarantined.' }
                 ],
-                supplierDescription: 'All inventory from Lot #B-456 has been quarantined and tagged as non-conforming. A 100% inspection and stress test process has been implemented for all incoming Z-80 brackets until the root cause is identified and resolved.',
-                actionNotes: 'Contacted Supplier-B and informed them of the issue. They have started an internal investigation. All outbound shipments containing this lot have been stopped.'
+                supplierDescription: 'All inventory from Lot #B-456 has been quarantined and tagged as non-conforming. A 100% inspection and stress test process has been implemented for all incoming Z-80 brackets until the root cause is identified and resolved. Communication with Supplier-B is ongoing.',
+                actionNotes: 'Contacted Supplier-B and informed them of the issue. They have started an internal investigation. All outbound shipments containing this lot have been stopped. Recall notice issued for parts shipped to Tier 1 Assembly.'
             },
-            checklist: { 0: true, 1: true, 2: false }
+            checklist: { 0: true, 1: true, 2: true }
         };
 
         data.d4 = {
             status: 'in-progress',
             lastUpdated: d(14).toISOString(),
             fields: {
-                rootCause: 'Improper heat treatment during the manufacturing process by Supplier-B resulted in reduced material tensile strength, making the brackets brittle.',
-                verificationMethod: 'Metallurgical analysis (Rockwell hardness test) of failed parts compared to the engineering specification.',
-                verificationSummary: 'Lab analysis confirmed the material hardness of failed brackets is 20% below the required HRC 45 specification. Brackets from a good lot tested within spec.',
+                rootCause: 'Improper heat treatment (under-tempering) during the manufacturing process by Supplier-B resulted in reduced material tensile strength, making the brackets brittle and unable to withstand standard operational loads.',
+                verificationMethod: 'Metallurgical analysis (Rockwell hardness test) of failed parts compared to the engineering specification (DWG-45-113B-REV2). Re-running stress tests on parts that pass hardness test.',
+                verificationSummary: 'Lab analysis confirmed the material hardness of failed brackets is 20% below the required HRC 45 specification. Brackets from a good lot (A-123) tested within spec. Re-tempered brackets from Lot #B-456 pass both hardness and stress tests.',
                 fishbone: [
-                    { category: 'Material', cause: 'Incorrect alloy specification', notes: 'Supplier used 6061-T4 instead of 6061-T6 aluminum.' },
-                    { category: 'Method', cause: 'Improper heat treatment', notes: 'Oven temperature was not properly calibrated.' },
-                    { category: 'Machine', cause: 'Old stamping die', notes: 'Die is showing signs of wear, causing micro-fractures.' }
+                    { category: 'Material', cause: 'Incorrect alloy specification', notes: 'Supplier used 6061-T4 instead of 6061-T6 aluminum. VERIFIED NO.' },
+                    { category: 'Method (Process)', cause: 'Improper heat treatment', notes: 'Oven temperature was not properly calibrated. VERIFIED YES.' },
+                    { category: 'Machine', cause: 'Old stamping die', notes: 'Die is showing signs of wear, causing micro-fractures. VERIFIED NO.' },
+                    { category: 'Manpower', cause: 'New operator not fully trained', notes: 'Operator on shift was new but records show certification. VERIFIED NO.' },
+                    { category: 'Measurement', cause: 'Incorrect hardness tester', notes: 'Tester was calibrated last month. VERIFIED NO.' }
                 ],
                 fiveWhys: [
                     { why: 'Why did the bracket fail?', because: 'The material was too brittle and fractured under load.' },
-                    { why: 'Why was the material brittle?', because: 'The heat treatment process was not performed to specification.' },
-                    { why: 'Why was the process not to spec?', because: 'The oven temperature was too low.' },
-                    { why: 'Why was the temperature too low?', because: 'The oven controller is faulty and reads incorrectly.' },
-                    { why: 'Why was the controller faulty?', because: 'It was not included in the regular calibration schedule.' }
+                    { why: 'Why was the material brittle?', because: 'The heat treatment process was not performed to specification, leaving it under-tempered.' },
+                    { why: 'Why was the process not to spec?', because: 'The heat treatment oven temperature was too low.' },
+                    { why: 'Why was the temperature too low?', because: 'The oven\'s temperature controller is faulty and reads 15% lower than actual temperature.' },
+                    { why: 'Why was the faulty controller not detected?', because: 'It was not included in the supplier\'s regular calibration and maintenance schedule.' }
                 ],
                 verificationActions: [
-                    { action: 'Test hardness of 10 samples from Lot #B-456', owner: 'M. Garcia', date: d(12).toISOString().split('T')[0], status: 'Completed' },
-                    { action: 'Review supplier oven calibration logs', owner: 'D. Chen', date: d(11).toISOString().split('T')[0], status: 'Completed' },
-                    { action: 'Test hardness of 5 samples from old Lot #A-123', owner: 'M. Garcia', date: d(10).toISOString().split('T')[0], status: 'Completed' }
+                    { action: 'Test hardness of 20 samples from Lot #B-456', owner: 'M. Garcia', date: d(12).toISOString().split('T')[0], status: 'Completed' },
+                    { action: 'Review supplier oven calibration logs for past 12 months', owner: 'D. Chen', date: d(11).toISOString().split('T')[0], status: 'Completed' },
+                    { action: 'Test hardness of 10 samples from old Lot #A-123', owner: 'M. Garcia', date: d(10).toISOString().split('T')[0], status: 'Completed' },
+                    { action: 'Re-temper 5 samples from Lot #B-456 in lab oven and re-test', owner: 'M. Garcia', date: d(9).toISOString().split('T')[0], status: 'Completed' }
                 ],
                 finalRootCauses: [
-                    { cause: 'Supplier oven controller not on calibration schedule', category: 'Process', likelihood: 5, severity: 5 },
-                    { cause: 'Incoming material hardness not verified', category: 'Process', likelihood: 4, severity: 4 }
+                    { cause: 'Supplier oven controller not on calibration schedule', category: 'Process Control', likelihood: 5, severity: 5 },
+                    { cause: 'Incoming material hardness not verified at our facility', category: 'Process Control', likelihood: 4, severity: 4 },
+                    { cause: 'Supplier onboarding process did not audit critical equipment calibration', category: 'Systemic', likelihood: 3, severity: 5 }
                 ]
             },
-            checklist: { 0: true, 1: true, 2: true, 3: false }
+            checklist: { 0: true, 1: true, 2: true, 3: true }
         };
 
         data.d5 = {
             status: 'in-progress',
             lastUpdated: d(7).toISOString(),
             fields: {
-                selectedPCA: '1. Mandate supplier provides certs for heat treatment per batch. 2. Implement mandatory incoming batch testing for material hardness.',
+                selectedPCA: '1. Mandate supplier provides certs for heat treatment per batch. 2. Implement mandatory incoming batch testing for material hardness. 3. Update supplier onboarding audit to include critical equipment calibration verification.',
                 correctiveActions: [
-                    { action: 'Add supplier oven to calibration audit', rootCause: 'It was not included in the regular calibration schedule.', targetDate: d(0).toISOString().split('T')[0], responsibility: 'F. Miller', mistakeProof: false, status: 'In Progress', risk: 150 },
-                    { action: 'Update supplier quality manual (QM-S-01) to require heat treatment certification for every batch of part #45-113B.', rootCause: 'It was not included in the regular calibration schedule.', targetDate: d(5).toISOString().split('T')[0], responsibility: 'D. Chen', mistakeProof: true, status: 'Completed', risk: 120 },
-                    { action: 'Implement incoming Rockwell hardness test for all lots of part #45-113B.', rootCause: 'The oven controller is faulty and reads incorrectly.', targetDate: d(3).toISOString().split('T')[0], responsibility: 'S. Jenkins', mistakeProof: true, status: 'Verified', risk: 80 }
+                    { action: 'Add supplier oven to quarterly calibration audit schedule.', rootCause: 'Supplier oven controller not on calibration schedule', targetDate: d(0).toISOString().split('T')[0], responsibility: 'F. Miller', mistakeProof: false, status: 'In Progress', risk: 150 },
+                    { action: 'Update supplier quality manual (QM-S-01) to require heat treatment certification for every batch of part #45-113B.', rootCause: 'Supplier oven controller not on calibration schedule', targetDate: d(5).toISOString().split('T')[0], responsibility: 'D. Chen', mistakeProof: true, status: 'Completed', risk: 120 },
+                    { action: 'Implement incoming Rockwell hardness test (SOP-QC-12C) for all lots of part #45-113B.', rootCause: 'Incoming material hardness not verified at our facility', targetDate: d(3).toISOString().split('T')[0], responsibility: 'S. Jenkins', mistakeProof: true, status: 'Verified', risk: 80 },
+                    { action: 'Update New Supplier Onboarding checklist (F-QA-02) to include audit of critical equipment calibration records.', rootCause: 'Supplier onboarding process did not audit critical equipment calibration', targetDate: future(30).toISOString().split('T')[0], responsibility: 'S. Jenkins', mistakeProof: true, status: 'Open', risk: 45 }
                 ],
                 verificationChecklist: [
                     { item: 'Is the supplier oven in the calibration system?', done: false },
                     { item: 'Has the supplier quality manual been updated and approved?', done: true },
-                    { item: 'Is the incoming hardness test procedure documented and are inspectors trained?', done: true },
-                    { item: 'Has the new test been performed on a new batch?', done: true }
+                    { item: 'Is the incoming hardness test procedure (SOP-QC-12C) documented and are inspectors trained?', done: true },
+                    { item: 'Has the new test been performed on a new batch with passing results?', done: true },
+                    { item: 'Has the New Supplier Onboarding checklist been updated and released?', done: false }
                 ]
             }
         };
@@ -313,13 +326,15 @@
             status: 'in-progress',
             lastUpdated: d(2).toISOString(),
             fields: {
-                proof: 'First batch from Supplier-B with new process controls arrived. 10/10 samples passed hardness testing. Failure rate is 0% on this batch.',
-                situationAfter: 'The new process controls appear to be effective. The brackets from the new batch meet all performance and safety standards.',
+                proof: 'First batch (Lot #B-512) from Supplier-B with new process controls arrived on ' + d(5).toLocaleDateString() + '. 25/25 samples passed incoming hardness testing (HRC 45-47). Failure rate is 0% on this batch under full stress testing.',
+                situationAfter: 'The new process controls appear to be effective. The brackets from the new batch meet all performance and safety standards. The quarantine on existing stock can be lifted after 100% inspection.',
                 implementationPlan: [
-                    { action: 'Hardness Test Station Setup', 'start_date': d(10).toISOString().split('T')[0], 'end_date': d(8).toISOString().split('T')[0], 'responsibility': 'S. Jenkins', 'status': 'Completed' },
-                    { action: 'Receive New Batch from Supplier', 'start_date': d(8).toISOString().split('T')[0], 'end_date': d(5).toISOString().split('T')[0], 'responsibility': 'D. Chen', 'status': 'Completed' },
-                    { action: 'Validate New Batch', 'start_date': d(5).toISOString().split('T')[0], 'end_date': d(2).toISOString().split('T')[0], 'responsibility': 'S. Jenkins', 'status': 'Completed' },
-                    { action: 'Full Production Ramp-up', 'start_date': d(1).toISOString().split('T')[0], 'end_date': future(5).toISOString().split('T')[0], 'responsibility': 'T. Wilson', 'status': 'In Progress' }
+                    { action: 'Hardness Test Station Setup & Training', 'start_date': d(10).toISOString().split('T')[0], 'end_date': d(8).toISOString().split('T')[0], 'responsibility': 'S. Jenkins', 'status': 'Completed' },
+                    { action: 'Receive New Batch from Supplier (Lot #B-512)', 'start_date': d(8).toISOString().split('T')[0], 'end_date': d(5).toISOString().split('T')[0], 'responsibility': 'D. Chen', 'status': 'Completed' },
+                    { action: 'Validate New Batch (Hardness & Stress)', 'start_date': d(5).toISOString().split('T')[0], 'end_date': d(2).toISOString().split('T')[0], 'responsibility': 'S. Jenkins', 'status': 'Completed' },
+                    { action: 'Release updated Supplier Quality Manual', 'start_date': d(4).toISOString().split('T')[0], 'end_date': d(3).toISOString().split('T')[0], 'responsibility': 'D. Chen', 'status': 'Completed' },
+                    { action: 'Full Production Ramp-up with new parts', 'start_date': d(1).toISOString().split('T')[0], 'end_date': future(5).toISOString().split('T')[0], 'responsibility': 'T. Wilson', 'status': 'In Progress' },
+                    { action: 'Dispose of failed parts from old lots', 'start_date': d(1).toISOString().split('T')[0], 'end_date': future(10).toISOString().split('T')[0], 'responsibility': 'T. Wilson', 'status': 'Open' }
                 ]
             },
             checklist: { 0: true, 1: true, 2: false }
@@ -330,28 +345,28 @@
             lastUpdated: d(1).toISOString(),
             fields: {
                 preventiveActions: [
-                    { action: 'Update SOP-QC-11B for mandatory hardness testing', type: 'Corrective', available: true, responsible: 'S. Jenkins', targetDate: future(10).toISOString().split('T')[0], status: 'In Progress', rpn: 80 },
-                    { action: 'Add supplier oven to quarterly calibration schedule CP-04', type: 'Preventive', available: true, responsible: 'F. Miller', targetDate: future(20).toISOString().split('T')[0], status: 'Open', rpn: 60 },
-                    { action: 'Update New Supplier Onboarding process to include equipment calibration audit', type: 'Preventive', available: false, responsible: 'S. Davis', targetDate: future(45).toISOString().split('T')[0], status: 'Open', rpn: 45 }
+                    { action: 'Update corporate SOP-QC-GLOBAL-01 for mandatory hardness testing on all critical metal components from new suppliers.', type: 'Preventive', available: true, responsible: 'S. Jenkins', targetDate: future(30).toISOString().split('T')[0], status: 'In Progress', rpn: 80 },
+                    { action: 'Require all new supplier onboarding audits (F-QA-02) to include verification of critical equipment calibration schedules.', type: 'Preventive', available: true, responsible: 'D. Chen', targetDate: future(45).toISOString().split('T')[0], status: 'Open', rpn: 60 },
+                    { action: 'Update PFMEA for all stamped metal parts to include "Improper Heat Treatment" as a potential failure mode.', type: 'Detective', available: false, responsible: 'J. White', targetDate: future(60).toISOString().split('T')[0], status: 'Open', rpn: 45 }
                 ],
-                validationPlan: 'Audit of SOPs and calibration logs will be performed in 3 months. Next scheduled QA training will include the new module.',
-                acknowledgements: ['s.jenkins@example.com', 't.wilson@example.com']
+                validationPlan: 'Effectiveness of these actions will be validated in 6 months by auditing three new supplier onboarding processes and their resulting quality data. A 10% reduction in new supplier quality incidents is the target.',
+                acknowledgements: ['s.jenkins@example.com', 't.wilson@example.com', 'm.garcia@example.com', 'd.chen@example.com', 'f.miller@example.com', 'j.white@example.com']
             },
-            checklist: { 0: true, 1: false, 2: false }
+            checklist: { 0: true, 1: true, 2: false }
         };
 
         data.d8 = {
             status: 'pending',
             lastUpdated: null,
             fields: {
-                recognitionSummary: 'The cross-functional team successfully identified and resolved a critical material failure, preventing potential field issues and strengthening our supplier quality process. Their diligent work is a model for future problem-solving initiatives.',
-                lessonsLearned: '1. Incoming material validation for new suppliers must be more rigorous.\n2. Critical equipment, even at supplier sites, should be considered for our own calibration and process audits.\n3. The 5 Whys analysis was instrumental in drilling down past the immediate cause to the systemic process failure.',
-                teamCelebration: 'A team lunch has been scheduled for next Friday to celebrate the successful resolution of this issue.',
+                recognitionSummary: 'The cross-functional team successfully identified and resolved a critical material failure, preventing potential field issues and strengthening our supplier quality process. Their diligent work, systematic approach, and rapid response are a model for future problem-solving initiatives across the organization. The implementation of new systemic safeguards will have a lasting positive impact on our quality standards.',
+                lessonsLearned: '1. Incoming material validation for new suppliers must be more rigorous and cannot be solely reliant on supplier-provided certs.\n2. Critical equipment, even at supplier sites, must be included in our own process and calibration audits.\n3. The 5 Whys analysis was instrumental in drilling down past the immediate cause (improper heat treatment) to the systemic process failure (calibration schedule oversight).\n4. Cross-functional collaboration between QA, Engineering, and Logistics was key to rapid containment.',
+                teamCelebration: 'A team lunch has been scheduled for ' + future(10).toLocaleDateString() + ' at The Oak Room. The plant manager will be attending to personally thank the team.',
                 acknowledgements: [
-                    { 'team_member': 'Maria Garcia', 'achievements': 'Pinpointed the exact failure mode', 'recognition_type': 'Spot Award' },
-                    { 'team_member': 'David Chen', 'achievements': 'Excellent supplier communication and coordination', 'recognition_type': 'Certificate of Appreciation' },
-                    { 'team_member': 'Frank Miller', 'achievements': 'Quickly identified the process control gap (calibration schedule)', 'recognition_type': 'Verbal Praise' },
-                    { 'team_member': 'Entire Team', 'achievements': 'Collaborative effort to protect the customer and resolve the issue quickly', 'recognition_type': 'Team Lunch' }
+                    { 'team_member': 'Maria Garcia', 'achievements': 'Pinpointed the exact failure mode with rapid, precise metallurgical analysis.', 'recognition_type': 'Spot Award ($100)' },
+                    { 'team_member': 'David Chen', 'achievements': 'Excellent supplier communication and coordination under pressure.', 'recognition_type': 'Certificate of Appreciation' },
+                    { 'team_member': 'Frank Miller', 'achievements': 'Quickly identified the process control gap (calibration schedule).', 'recognition_type': 'Verbal Praise in Dept. Meeting' },
+                    { 'team_member': 'Entire Team', 'achievements': 'Collaborative effort to protect the customer and resolve the issue quickly, preventing a major recall.', 'recognition_type': 'Team Lunch & Company-wide email' }
                 ]
             },
             checklist: { 0: false, 1: false, 2: false }

@@ -169,32 +169,146 @@
     window.d6Initialized = true;
 
     function qs(selector, context = document) { return context.querySelector(selector); }
+    function qsa(selector, context = document) { return Array.from(context.querySelectorAll(selector)); }
+
+    function updateAppData() {
+        if (!window.app || !window.app.data || !window.app.data.d6) return;
+        const fields = window.app.data.d6.fields;
+
+        fields.implementationTracking = qsa('#d6-impl tbody tr').map(tr => ({
+            action: qs('.impl-action', tr)?.value || '',
+            targetDate: qs('input[type="date"]', tr)?.value || '',
+            proofingType: qs('select:nth-of-type(1)', tr)?.value || 'Detection',
+            proofingLevel: qs('input[type="number"]:nth-of-type(1)', tr)?.value || '',
+            proofingImpact: qs('input[type="number"]:nth-of-type(2)', tr)?.value || '',
+            appliedToSimilar: qs('select:nth-of-type(2)', tr)?.value || 'No',
+            qtyParts: qs('input[type="number"]:nth-of-type(3)', tr)?.value || '',
+            qtyPlaces: qs('input[type="number"]:nth-of-type(4)', tr)?.value || '',
+            responsibility: qs('td:nth-of-type(10) input', tr)?.value || '',
+            effectiveness: qs('td:nth-of-type(11) input', tr)?.value || '',
+            status: qs('td:nth-of-type(12) select', tr)?.value || 'Open'
+        }));
+
+        fields.verificationItems = qsa('#d6-verify tbody tr').map(tr => ({
+            element: qs('input:nth-of-type(1)', tr)?.value || '',
+            verified: qs('select', tr)?.value || 'No',
+            comments: qs('input:nth-of-type(2)', tr)?.value || ''
+        }));
+
+        fields.proof = qs('#d6-proof')?.value || '';
+        fields.situationAfter = qs('#d6-situationAfter')?.value || '';
+
+        window.app._dirty = true;
+        if (window.app.updateSaveFab) window.app.updateSaveFab(true);
+        if (window.app.saveData) {
+            clearTimeout(window.d6SaveTimer);
+            window.d6SaveTimer = setTimeout(() => window.app.saveData('d6-update'), 600);
+        }
+    }
 
     function initializeD6Logic(context) {
-        const implTbody = qs('#d6-impl tbody', context);
-        if (!implTbody) return;
-
         function render() {
             if (!window.app || !window.app.data || !window.app.data.d6) return;
+            const fields = window.app.data.d6.fields;
 
-            const plan = window.app.data.d6.fields.implementationPlan || [];
-            const template = qs('#d6-impl template', context);
-            implTbody.innerHTML = '';
+            if (!fields.implementationTracking) {
+                 fields.implementationTracking = (window.app.data.d5?.fields?.correctiveActions || [])
+                    .filter(a => a.status === 'Verified' || a.status === 'Completed')
+                    .map(a => ({
+                        action: a.action,
+                        targetDate: a.targetDate,
+                        proofingType: 'Control',
+                        proofingLevel: 4,
+                        proofingImpact: 4,
+                        appliedToSimilar: 'Yes',
+                        qtyParts: 1,
+                        qtyPlaces: 1,
+                        responsibility: a.responsibility,
+                        effectiveness: '',
+                        status: 'In Progress'
+                    }));
+            }
+            if (!fields.verificationItems) {
+                fields.verificationItems = [
+                    { element: 'Control Plan Updated', verified: 'Yes', comments: 'CP-112 Rev B issued.'},
+                    { element: 'PFMEA Updated', verified: 'Yes', comments: 'PFMEA-Z-80 RPN reduced from 320 to 80.'},
+                    { element: 'No failures in 1000-part validation run', verified: 'Yes', comments: 'Validation report VAL-2024-08-15 attached.'}
+                ];
+            }
 
-            plan.forEach(item => {
-                const newRow = template.content.cloneNode(true);
-                // This is a simplified mapping. The test only checks the first column.
-                qs('input', newRow).value = item.action || '';
-                // In a real scenario, you'd populate all the other fields from the data item.
-                implTbody.appendChild(newRow);
+            const implTbody = qs('#d6-impl tbody', context);
+            const implTemplate = qs('#d6-impl template', context);
+            if (implTbody && implTemplate && fields.implementationTracking) {
+                implTbody.innerHTML = '';
+                fields.implementationTracking.forEach(item => {
+                    const row = implTemplate.content.cloneNode(true);
+                    qs('.impl-action', row).value = item.action || '';
+                    qs('input[type="date"]', row).value = item.targetDate || '';
+                    qs('select:nth-of-type(1)', row).value = item.proofingType || 'Detection';
+                    qs('input[type="number"]:nth-of-type(1)', row).value = item.proofingLevel || '';
+                    qs('input[type="number"]:nth-of-type(2)', row).value = item.proofingImpact || '';
+                    qs('select:nth-of-type(2)', row).value = item.appliedToSimilar || 'No';
+                    qs('input[type="number"]:nth-of-type(3)', row).value = item.qtyParts || '';
+                    qs('input[type="number"]:nth-of-type(4)', row).value = item.qtyPlaces || '';
+                    qs('td:nth-of-type(10) input', row).value = item.responsibility || '';
+                    qs('td:nth-of-type(11) input', row).value = item.effectiveness || '';
+                    qs('td:nth-of-type(12) select', row).value = item.status || 'Open';
+                    implTbody.appendChild(row);
+                });
+            }
+
+            const verifyTbody = qs('#d6-verify tbody', context);
+            const verifyTemplate = qs('#d6-verify template', context);
+            if (verifyTbody && verifyTemplate && fields.verificationItems) {
+                verifyTbody.innerHTML = '';
+                fields.verificationItems.forEach(item => {
+                    const row = verifyTemplate.content.cloneNode(true);
+                    qs('input:nth-of-type(1)', row).value = item.element || '';
+                    qs('select', row).value = item.verified || 'No';
+                    qs('input:nth-of-type(2)', row).value = item.comments || '';
+                    verifyTbody.appendChild(row);
+                });
+            }
+
+            qs('#d6-proof').value = fields.proof || '';
+            qs('#d6-situationAfter').value = fields.situationAfter || '';
+        }
+
+        function attachListeners(context) {
+            const container = qs('.space-y-6', context);
+            if (!container || container.dataset.d6ListenersAttached) return;
+
+            container.addEventListener('click', e => {
+                const addBtn = e.target.closest('.add-row-btn');
+                const removeBtn = e.target.closest('.remove-row-btn');
+
+                if (addBtn) {
+                    const table = addBtn.closest('table');
+                    const template = qs('template', table);
+                    if (template) {
+                        const newRow = template.content.cloneNode(true);
+                        qs('tbody', table).appendChild(newRow);
+                        updateAppData();
+                    }
+                }
+
+                if (removeBtn) {
+                    if (confirm('Are you sure you want to remove this item?')) {
+                        removeBtn.closest('tr').remove();
+                        updateAppData();
+                    }
+                }
             });
-            if(window.lucide) window.lucide.createIcons();
+
+            container.addEventListener('input', e => {
+                updateAppData();
+            });
+
+            container.dataset.d6ListenersAttached = 'true';
         }
 
-        document.addEventListener('appDataReady', render, { once: true });
-        if (window.app && window.app.data) {
-            render();
-        }
+        render();
+        attachListeners(context);
     }
 
     const originalInit = window.__init8D;
