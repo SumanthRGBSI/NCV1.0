@@ -161,6 +161,52 @@
     window.d3Initialized = true;
 
     function qs(selector, context = document) { return context.querySelector(selector); }
+    function qsa(selector, context = document) { return Array.from(context.querySelectorAll(selector)); }
+
+    function updateAppData() {
+        if (!window.app || !window.app.data || !window.app.data.d3) return;
+        const fields = window.app.data.d3.fields;
+
+        fields.containmentActions = qsa('#d3-actions tbody tr').map(tr => ({
+            action: qs('.action-desc', tr)?.value || '',
+            owner: qs('.action-owner', tr)?.value || '',
+            date: qs('.action-date', tr)?.value || '',
+            status: qs('.action-status', tr)?.value || 'To Do'
+        }));
+
+        fields.riskItems = qsa('#d3-risk tbody tr').map(tr => ({
+            process: qs('.risk-process', tr)?.value || '',
+            risk: qs('.risk-is-risk', tr)?.value || 'No',
+            containment: qs('.risk-in-containment', tr)?.value || 'No'
+        }));
+
+        fields.labels = qsa('#d3-labels tbody tr').map(tr => ({
+            cutoff: qs('.label-cutoff', tr)?.value || '',
+            datetime: qs('.label-datetime', tr)?.value || '',
+            comments: qs('.label-comments', tr)?.value || ''
+        }));
+
+        fields.sorting = qsa('#d3-sort tbody tr').map(tr => ({
+            task: qs('.sort-task', tr)?.value || '',
+            responsibility: qs('.sort-resp', tr)?.value || '',
+            toCheck: qs('.sort-total', tr)?.value || '',
+            ok: qs('.sort-ok', tr)?.value || '',
+            notOk: qs('.sort-nok', tr)?.value || '',
+            checked: qs('.sort-checked', tr)?.value || '',
+            date: qs('.sort-date', tr)?.value || '',
+            comments: qs('.sort-comments', tr)?.value || ''
+        }));
+
+        fields.supplierDescription = qs('#d3-supplierDescription')?.value || '';
+        fields.actionNotes = qs('#d3-actionNotes')?.value || '';
+
+        window.app._dirty = true;
+        if (window.app.updateSaveFab) window.app.updateSaveFab(true);
+        if (window.app.saveData) {
+            clearTimeout(window.d3SaveTimer);
+            window.d3SaveTimer = setTimeout(() => window.app.saveData('d3-update'), 600);
+        }
+    }
 
     function initializeD3Logic(context) {
         function render() {
@@ -208,7 +254,41 @@
                 }
             });
 
-            if(window.lucide) window.lucide.createIcons();
+            qs('#d3-supplierDescription').value = fields.supplierDescription || '';
+            qs('#d3-actionNotes').value = fields.actionNotes || '';
+        }
+
+        function attachListeners(context) {
+            const container = qs('.space-y-6', context);
+            if (!container || container.dataset.d3ListenersAttached) return;
+
+            container.addEventListener('click', e => {
+                const addBtn = e.target.closest('.add-row-btn');
+                const removeBtn = e.target.closest('.remove-row-btn');
+
+                if (addBtn) {
+                    const table = addBtn.closest('table');
+                    const template = qs('template', table);
+                    if (template) {
+                        const newRow = template.content.cloneNode(true);
+                        qs('tbody', table).appendChild(newRow);
+                        updateAppData();
+                    }
+                }
+
+                if (removeBtn) {
+                    if (confirm('Are you sure you want to remove this item?')) {
+                        removeBtn.closest('tr').remove();
+                        updateAppData();
+                    }
+                }
+            });
+
+            container.addEventListener('input', (e) => {
+                updateAppData();
+            });
+
+            container.dataset.d3ListenersAttached = 'true';
         }
 
         function initKanban() {
@@ -284,6 +364,7 @@
 
         function main() {
             render();
+            attachListeners(context);
             initKanban();
         }
 

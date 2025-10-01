@@ -80,13 +80,25 @@
       <td>
         <input class="ds-input contact-name" list="contact-directory" placeholder="Full name" />
       </td>
-      <td>
-        <select class="ds-select member-role">
-          <option>Team Member</option>
-          <option>Team Lead</option>
-          <option>Champion</option>
-          <option>KPOC</option>
-        </select>
+      <td class="member-role-group">
+        <div class="flex items-center gap-x-4 gap-y-2 flex-wrap">
+          <label class="flex items-center text-sm cursor-pointer">
+            <input type="radio" name="member-role-placeholder" value="Team Member" class="ds-radio member-role">
+            <span class="ml-1.5">Member</span>
+          </label>
+          <label class="flex items-center text-sm cursor-pointer">
+            <input type="radio" name="member-role-placeholder" value="Team Lead" class="ds-radio member-role">
+            <span class="ml-1.5">Lead</span>
+          </label>
+          <label class="flex items-center text-sm cursor-pointer">
+            <input type="radio" name="member-role-placeholder" value="Champion" class="ds-radio member-role">
+            <span class="ml-1.5">Champion</span>
+          </label>
+          <label class="flex items-center text-sm cursor-pointer">
+            <input type="radio" name="member-role-placeholder" value="KPOC" class="ds-radio member-role">
+            <span class="ml-1.5">KPOC</span>
+          </label>
+        </div>
       </td>
       <td>
         <input class="ds-input contact-title" placeholder="Job title" />
@@ -126,7 +138,7 @@
 
             const members = qsa('tr', tableBody).map(tr => ({
                 name: qs('.contact-name', tr)?.value || '',
-                role: qs('.member-role', tr)?.value || 'Team Member',
+                role: qs('.member-role:checked', tr)?.value || 'Team Member',
                 title: qs('.contact-title', tr)?.value || '',
                 email: qs('.contact-email', tr)?.value || '',
                 phone: qs('.contact-phone', tr)?.value || ''
@@ -210,18 +222,32 @@
         }
 
         // --- DOM Manipulation ---
-        function addRow(memberData = null) {
+        function addRow(memberData = null, rowIndex) {
             const template = qs('#d1-row-template');
             if (!template) return;
 
             const newRow = template.content.firstElementChild.cloneNode(true);
+            // Use the passed rowIndex to ensure a unique name for radio buttons
+            const uniqueId = `member-role-${rowIndex}`;
+            qsa('.member-role', newRow).forEach(radio => {
+                radio.name = uniqueId;
+            });
 
             if (memberData) {
                 qs('.contact-name', newRow).value = memberData.name || '';
                 qs('.contact-title', newRow).value = memberData.title || '';
                 qs('.contact-email', newRow).value = memberData.email || '';
                 qs('.contact-phone', newRow).value = memberData.phone || '';
-                qs('.member-role', newRow).value = memberData.role || 'Team Member';
+                const role = memberData.role || 'Team Member';
+                const radioToSelect = qs(`input.member-role[value="${role}"]`, newRow);
+                if (radioToSelect) {
+                    radioToSelect.checked = true;
+                } else {
+                    // Default to Team Member if role is not found
+                    qs('input.member-role[value="Team Member"]', newRow).checked = true;
+                }
+            } else {
+                 qs('input.member-role[value="Team Member"]', newRow).checked = true;
             }
 
             tableBody.appendChild(newRow);
@@ -233,9 +259,9 @@
             tableBody.innerHTML = ''; // Clear before populating
 
             if (members.length > 0) {
-                members.forEach(member => addRow(member));
+                members.forEach((member, index) => addRow(member, index));
             } else {
-                addRow(); // Start with one empty row
+                addRow(null, 0); // Start with one empty row
             }
         }
 
@@ -250,25 +276,27 @@
 
                 if (addManualBtn) {
                     e.stopImmediatePropagation(); // Stop the global handler
-                    addRow();
+                    addRow(null, tableBody.children.length);
                     updateAppData();
                 }
                 if (addPersonBtn) {
                     const searchInput = qs('#d1-person-search');
                     if (searchInput && searchInput.value.trim()) {
-                        addRow({ name: searchInput.value.trim() });
+                        addRow({ name: searchInput.value.trim() }, tableBody.children.length);
                         searchInput.value = '';
                         updateAppData();
                     }
                 }
                 if (addMeBtn) {
                     const currentUser = window.app && window.app.user ? window.app.user : { name: 'Current User', title: 'My Title', email: 'user@example.com' };
-                    addRow(currentUser);
+                    addRow(currentUser, tableBody.children.length);
                     updateAppData();
                 }
                 if (removeBtn) {
-                    removeBtn.closest('tr').remove();
-                    updateAppData();
+                    if (confirm('Are you sure you want to remove this team member?')) {
+                        removeBtn.closest('tr').remove();
+                        updateAppData();
+                    }
                 }
             });
 
