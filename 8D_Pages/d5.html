@@ -113,17 +113,13 @@
             responsibility: qs('.pca-responsibility', tr).value,
             mistakeProof: qs('.mp-check', tr).checked,
             status: qs('.pca-status', tr).value,
-            risk: qs('.pca-risk', tr).value,
-            completionDate: qs('.pca-completion-date', tr)?.value || '',
-            evidence: qs('.pca-evidence', tr)?.value || ''
+            risk: qs('.pca-risk', tr).value
         }));
 
         fields.verificationChecklist = qsa('#d5-checklist .ds-checkbox-label').map(label => ({
-            item: label.textContent,
-            done: label.control.checked
+            item: qs('span', label).textContent,
+            done: qs('input', label).checked
         }));
-
-        fields.selectedPCA = qs('#d5-selectedPCA').value;
 
         window.app._dirty = true;
         if (window.app.updateSaveFab) window.app.updateSaveFab(true);
@@ -133,130 +129,122 @@
         }
     }
 
-    function initializeD5Logic(context) {
+    function render() {
+        if (!window.app || !window.app.data || !window.app.data.d5) return;
+        const fields = window.app.data.d5.fields;
+        const context = document;
+
+        // Ensure data arrays exist
+        if (!Array.isArray(fields.correctiveActions)) fields.correctiveActions = [];
+        if (!Array.isArray(fields.verificationChecklist)) fields.verificationChecklist = [];
+
+        // Render Corrective Actions Table
         const actionsTable = qs('#d5-actions', context);
+        const actionsTbody = actionsTable.querySelector('tbody');
+        const actionsTemplate = actionsTable.querySelector('template');
+        const rootCauses = (window.app.data.d4?.fields?.finalRootCauses || []).map(item => item.cause).filter(Boolean);
+
+        actionsTbody.innerHTML = '';
+        fields.correctiveActions.forEach((action, index) => {
+            const newRow = actionsTemplate.content.cloneNode(true);
+            qs('.pca-action', newRow).value = action.action || '';
+            qs('.pca-target-date', newRow).value = action.targetDate || '';
+            qs('.pca-responsibility', newRow).value = action.responsibility || '';
+            qs('.mp-check', newRow).checked = !!action.mistakeProof;
+            qs('.pca-status', newRow).value = action.status || 'Pending';
+            qs('.pca-risk', newRow).value = action.risk || '';
+            qs('.remove-row-btn', newRow).dataset.index = index;
+
+            const rootCauseSelect = qs('.pca-root', newRow);
+            rootCauseSelect.innerHTML = '<option value="">Select Root Cause</option>';
+            rootCauses.forEach(rc => {
+                const option = document.createElement('option');
+                option.value = rc;
+                option.textContent = rc.length > 50 ? rc.substring(0, 47) + '...' : rc;
+                rootCauseSelect.appendChild(option);
+            });
+            rootCauseSelect.value = action.rootCause || '';
+            actionsTbody.appendChild(newRow);
+        });
+
+        // Render Verification Checklist
         const checklistContainer = qs('#d5-checklist', context);
+        checklistContainer.innerHTML = '';
+        fields.verificationChecklist.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'flex items-center justify-between ds-checkbox p-2 rounded-md hover:bg-slate-50';
+            div.innerHTML = `
+                <label for="d5-check-${index}" class="ds-checkbox-label flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="d5-check-${index}" data-index="${index}" ${item.done ? 'checked' : ''} class="ds-checkbox-input">
+                    <span>${item.item}</span>
+                </label>
+                <button class="ds-btn-icon ds-btn-icon--danger remove-check-btn" data-index="${index}"><i data-lucide="trash-2"></i></button>
+            `;
+            checklistContainer.appendChild(div);
+        });
 
-        if (!actionsTable || !checklistContainer) return;
+        if (window.lucide) window.lucide.createIcons();
+    }
 
-        function render() {
-            if (!window.app || !window.app.data || !window.app.data.d5) return;
-            const fields = window.app.data.d5.fields;
-            const actions = fields.correctiveActions || [];
-            const rootCauses = (window.app.data.d4?.fields?.finalRootCauses || []).map(item => item.cause);
-            const actionsTbody = actionsTable.querySelector('tbody');
-            const actionsTemplate = actionsTable.querySelector('template');
+    function initializeD5Logic(context) {
+        const container = qs('.space-y-6', context);
+        if (!container || container.dataset.d5ListenersAttached) return;
 
-            actionsTbody.innerHTML = '';
-            actions.forEach(action => {
-                const newRow = actionsTemplate.content.cloneNode(true);
-                qs('.pca-action', newRow).value = action.action || '';
-                qs('.pca-target-date', newRow).value = action.targetDate || '';
-                qs('.pca-responsibility', newRow).value = action.responsibility || '';
-                qs('.mp-check', newRow).checked = !!action.mistakeProof;
-                qs('.pca-status', newRow).value = action.status || 'Pending';
-                qs('.pca-risk', newRow).value = action.risk || '';
+        container.addEventListener('click', e => {
+            const addBtn = e.target.closest('.add-row-btn');
+            const removeBtn = e.target.closest('.remove-row-btn');
+            const addCheckBtn = e.target.closest('#d5-add-check');
+            const removeCheckBtn = e.target.closest('.remove-check-btn');
+            let modelChanged = false;
 
-                const rootCauseSelect = qs('.pca-root', newRow);
-                rootCauses.forEach(rc => {
-                    if(!rc) return;
-                    const option = document.createElement('option');
-                    option.value = rc;
-                    option.textContent = rc.length > 50 ? rc.substring(0, 47) + '...' : rc;
-                    rootCauseSelect.appendChild(option);
-                });
-                rootCauseSelect.value = action.rootCause || '';
-                actionsTbody.appendChild(newRow);
-            });
-
-            const checklist = fields.verificationChecklist || [];
-            checklistContainer.innerHTML = '';
-            checklist.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = 'flex items-center justify-between ds-checkbox p-2 rounded-md hover:bg-slate-50';
-                div.innerHTML = `
-                    <label for="d5-check-${index}" class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" id="d5-check-${index}" data-index="${index}" ${item.done ? 'checked' : ''} class="ds-checkbox-input">
-                        <span class="ds-checkbox-label">${item.item}</span>
-                    </label>
-                    <button class="ds-btn-icon ds-btn-icon--danger remove-check-btn" data-index="${index}"><i data-lucide="trash-2"></i></button>
-                `;
-                checklistContainer.appendChild(div);
-            });
-
-            qs('#d5-selectedPCA').value = fields.selectedPCA || '';
-        }
-
-        function attachListeners(context) {
-            const container = qs('.space-y-6', context);
-            if (!container || container.dataset.d5ListenersAttached) return;
-
-            container.addEventListener('click', e => {
-                const addBtn = e.target.closest('.add-row-btn');
-                const removeBtn = e.target.closest('.remove-row-btn');
-                const addCheckBtn = e.target.closest('#d5-add-check');
-                const removeCheckBtn = e.target.closest('.remove-check-btn');
-
-                if (addBtn) {
-                    const table = addBtn.closest('table');
-                    const template = qs('template', table);
-                    if (template) {
-                        const newRow = template.content.cloneNode(true);
-                        qs('tbody', table).appendChild(newRow);
-                        updateAppData();
-                    }
+            if (addBtn) {
+                window.app.data.d5.fields.correctiveActions.push({ action: '', rootCause: '', targetDate: '', responsibility: '', mistakeProof: false, status: 'Pending', risk: '' });
+                modelChanged = true;
+            } else if (removeBtn) {
+                if (confirm('Are you sure you want to remove this corrective action?')) {
+                    const index = parseInt(removeBtn.dataset.index, 10);
+                    window.app.data.d5.fields.correctiveActions.splice(index, 1);
+                    modelChanged = true;
                 }
-
-                if (removeBtn) {
-                    if (confirm('Are you sure you want to remove this corrective action?')) {
-                        removeBtn.closest('tr').remove();
-                        updateAppData();
-                    }
+            } else if (addCheckBtn) {
+                const input = qs('#d5-new-check');
+                if (input && input.value.trim()) {
+                    window.app.data.d5.fields.verificationChecklist.push({ item: input.value.trim(), done: false });
+                    input.value = '';
+                    modelChanged = true;
                 }
-
-                if (addCheckBtn) {
-                    const input = qs('#d5-new-check');
-                    if (input && input.value.trim()) {
-                        const checklist = window.app.data.d5.fields.verificationChecklist || [];
-                        checklist.push({ item: input.value.trim(), done: false });
-                        input.value = '';
-                        render();
-                        updateAppData();
-                    }
+            } else if (removeCheckBtn) {
+                if (confirm('Are you sure you want to remove this checklist item?')) {
+                    const index = parseInt(removeCheckBtn.dataset.index, 10);
+                    window.app.data.d5.fields.verificationChecklist.splice(index, 1);
+                    modelChanged = true;
                 }
+            }
 
-                if (removeCheckBtn) {
-                    if (confirm('Are you sure you want to remove this checklist item?')) {
-                        const index = parseInt(removeCheckBtn.dataset.index, 10);
-                        const checklist = window.app.data.d5.fields.verificationChecklist || [];
-                        checklist.splice(index, 1);
-                        render();
-                        updateAppData();
-                    }
-                }
-            });
-
-            container.addEventListener('input', e => {
+            if (modelChanged) {
+                render();
                 updateAppData();
-            });
+            }
+        });
 
-            container.dataset.d5ListenersAttached = 'true';
-        }
+        container.addEventListener('input', e => {
+            if (e.target.closest('table, #d5-checklist')) {
+                updateAppData();
+            }
+        });
 
-        render();
-        attachListeners(context);
+        container.dataset.d5ListenersAttached = 'true';
+
+        document.addEventListener('appDataReady', render, { once: true });
+        if (window.app && window.app.data) render();
     }
 
     const originalInit = window.__init8D;
     window.__init8D = function(context) {
         if (originalInit) originalInit(context);
-        if (qs('#d5-actions', context)) {
-            initializeD5Logic(context);
-        }
+        if (qs('#d5-actions', context)) initializeD5Logic(context);
     };
 
-    if (qs('#d5-actions')) {
-        initializeD5Logic(document);
-    }
+    if (qs('#d5-actions')) initializeD5Logic(document);
   })();
 </script>

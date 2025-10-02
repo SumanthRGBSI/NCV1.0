@@ -197,9 +197,6 @@
             comments: qs('.sort-comments', tr)?.value || ''
         }));
 
-        fields.supplierDescription = qs('#d3-supplierDescription')?.value || '';
-        fields.actionNotes = qs('#d3-actionNotes')?.value || '';
-
         window.app._dirty = true;
         if (window.app.updateSaveFab) window.app.updateSaveFab(true);
         if (window.app.saveData) {
@@ -208,169 +205,100 @@
         }
     }
 
+    function renderTables() {
+        if (!window.app || !window.app.data || !window.app.data.d3) return;
+        const fields = window.app.data.d3.fields;
+        const context = document;
+
+        const tableConfigs = [
+            { id: '#d3-actions', data: fields.containmentActions, template: qs('#d3-actions template', context), map: (row, item) => {
+                qs('.action-desc', row).value = item.action || '';
+                qs('.action-owner', row).value = item.owner || '';
+                qs('.action-date', row).value = item.date || '';
+                qs('.action-status', row).value = item.status || 'To Do';
+            }},
+            { id: '#d3-risk', data: fields.riskItems, template: qs('#d3-risk template', context), map: (row, item) => {
+                qs('.risk-process', row).value = item.process || '';
+                qs('.risk-is-risk', row).value = item.risk || 'No';
+                qs('.risk-in-containment', row).value = item.containment || 'No';
+            }},
+            { id: '#d3-labels', data: fields.labels, template: qs('#d3-labels template', context), map: (row, item) => {
+                qs('.label-cutoff', row).value = item.cutoff || '';
+                qs('.label-datetime', row).value = item.datetime || '';
+                qs('.label-comments', row).value = item.comments || '';
+            }},
+            { id: '#d3-sort', data: fields.sorting, template: qs('#d3-sort template', context), map: (row, item) => {
+                qs('.sort-task', row).value = item.task || '';
+                qs('.sort-resp', row).value = item.responsibility || '';
+                qs('.sort-total', row).value = item.toCheck || '';
+                qs('.sort-ok', row).value = item.ok || '';
+                qs('.sort-nok', row).value = item.notOk || '';
+                qs('.sort-checked', row).value = item.checked || '';
+                qs('.sort-date', row).value = item.date || '';
+                qs('.sort-comments', row).value = item.comments || '';
+            }}
+        ];
+
+        tableConfigs.forEach(config => {
+            const tbody = qs(`${config.id} tbody`, context);
+            if (tbody && config.template && config.data) {
+                tbody.innerHTML = '';
+                config.data.forEach((item, index) => {
+                    const row = config.template.content.cloneNode(true);
+                    config.map(row, item);
+                    qs('.remove-row-btn', row).dataset.index = index;
+                    tbody.appendChild(row);
+                });
+            }
+        });
+        if (window.lucide) window.lucide.createIcons();
+    }
+
     function initializeD3Logic(context) {
-        function render() {
-            if (!window.app || !window.app.data || !window.app.data.d3) return;
+        const container = qs('.space-y-6', context);
+        if (!container || container.dataset.d3ListenersAttached) return;
+
+        container.addEventListener('click', e => {
+            const addBtn = e.target.closest('.add-row-btn');
+            const removeBtn = e.target.closest('.remove-row-btn');
+            if (!addBtn && !removeBtn) return;
+
             const fields = window.app.data.d3.fields;
 
-            const tableConfigs = [
-                { id: '#d3-actions', data: fields.containmentActions, template: qs('#d3-actions template', context), map: (row, item) => {
-                    qs('.action-desc', row).value = item.action || '';
-                    qs('.action-owner', row).value = item.owner || '';
-                    qs('.action-date', row).value = item.date || '';
-                    qs('.action-status', row).value = item.status || 'To Do';
-                }},
-                { id: '#d3-risk', data: fields.riskItems, template: qs('#d3-risk template', context), map: (row, item) => {
-                    qs('.risk-process', row).value = item.process || '';
-                    qs('.risk-is-risk', row).value = item.risk || 'No';
-                    qs('.risk-in-containment', row).value = item.containment || 'No';
-                }},
-                { id: '#d3-labels', data: fields.labels, template: qs('#d3-labels template', context), map: (row, item) => {
-                    qs('.label-cutoff', row).value = item.cutoff || '';
-                    qs('.label-datetime', row).value = item.datetime || '';
-                    qs('.label-comments', row).value = item.comments || '';
-                }},
-                { id: '#d3-sort', data: fields.sorting, template: qs('#d3-sort template', context), map: (row, item) => {
-                    qs('.sort-task', row).value = item.task || '';
-                    qs('.sort-resp', row).value = item.responsibility || '';
-                    qs('.sort-total', row).value = item.toCheck || '';
-                    qs('.sort-ok', row).value = item.ok || '';
-                    qs('.sort-nok', row).value = item.notOk || '';
-                    qs('.sort-checked', row).value = item.checked || '';
-                    qs('.sort-date', row).value = item.date || '';
-                    qs('.sort-comments', row).value = item.comments || '';
-                }}
-            ];
+            if (addBtn) {
+                const tableId = addBtn.closest('table').id;
+                if (tableId === 'd3-actions') fields.containmentActions.push({ action: '', owner: '', date: '', status: 'To Do' });
+                else if (tableId === 'd3-risk') fields.riskItems.push({ process: '', risk: 'No', containment: 'No' });
+                else if (tableId === 'd3-labels') fields.labels.push({ cutoff: '', datetime: '', comments: '' });
+                else if (tableId === 'd3-sort') fields.sorting.push({ task: '', responsibility: '', toCheck: '', ok: '', notOk: '', checked: '', date: '', comments: '' });
+            }
 
-            tableConfigs.forEach(config => {
-                const tbody = qs(`${config.id} tbody`, context);
-                if (tbody && config.template && config.data) {
-                    tbody.innerHTML = '';
-                    config.data.forEach(item => {
-                        const row = config.template.content.cloneNode(true);
-                        config.map(row, item);
-                        tbody.appendChild(row);
-                    });
+            if (removeBtn) {
+                if (confirm('Are you sure you want to remove this item?')) {
+                    const tableId = removeBtn.closest('table').id;
+                    const index = parseInt(removeBtn.dataset.index, 10);
+                    if (tableId === 'd3-actions') fields.containmentActions.splice(index, 1);
+                    else if (tableId === 'd3-risk') fields.riskItems.splice(index, 1);
+                    else if (tableId === 'd3-labels') fields.labels.splice(index, 1);
+                    else if (tableId === 'd3-sort') fields.sorting.splice(index, 1);
                 }
-            });
+            }
 
-            qs('#d3-supplierDescription').value = fields.supplierDescription || '';
-            qs('#d3-actionNotes').value = fields.actionNotes || '';
-        }
+            renderTables();
+            updateAppData();
+        });
 
-        function attachListeners(context) {
-            const container = qs('.space-y-6', context);
-            if (!container || container.dataset.d3ListenersAttached) return;
-
-            container.addEventListener('click', e => {
-                const addBtn = e.target.closest('.add-row-btn');
-                const removeBtn = e.target.closest('.remove-row-btn');
-
-                if (addBtn) {
-                    const table = addBtn.closest('table');
-                    const template = qs('template', table);
-                    if (template) {
-                        const newRow = template.content.cloneNode(true);
-                        qs('tbody', table).appendChild(newRow);
-                        updateAppData();
-                    }
-                }
-
-                if (removeBtn) {
-                    if (confirm('Are you sure you want to remove this item?')) {
-                        removeBtn.closest('tr').remove();
-                        updateAppData();
-                    }
-                }
-            });
-
-            container.addEventListener('input', (e) => {
+        container.addEventListener('input', e => {
+            if (e.target.closest('table')) {
                 updateAppData();
-            });
+            }
+        });
 
-            container.dataset.d3ListenersAttached = 'true';
-        }
+        container.dataset.d3ListenersAttached = 'true';
 
-        function initKanban() {
-            const todoCol = qs('#d3-col-todo', context);
-            const actionsTableBody = qs('#d3-actions tbody', context);
-            const kanbanContainer = qs('#d3-kanban', context);
-            if (!todoCol || !actionsTableBody || !kanbanContainer) return;
-
-            let draggedCard = null;
-            kanbanContainer.addEventListener('dragstart', e => { if (e.target.classList.contains('kanban-card')) { draggedCard = e.target; setTimeout(() => e.target.classList.add('dragging'), 0); } });
-            kanbanContainer.addEventListener('dragend', () => { if (draggedCard) { draggedCard.classList.remove('dragging'); draggedCard = null; } });
-            kanbanContainer.addEventListener('dragover', e => { e.preventDefault(); const col = e.target.closest('.kanban-col'); if (col) col.classList.add('drag-over'); });
-            kanbanContainer.addEventListener('dragleave', e => { const col = e.target.closest('.kanban-col'); if (col) col.classList.remove('drag-over'); });
-            kanbanContainer.addEventListener('drop', e => {
-                e.preventDefault();
-                const column = e.target.closest('.kanban-col');
-                if (column && draggedCard) {
-                    column.classList.remove('drag-over');
-                    column.appendChild(draggedCard);
-                    const cardId = draggedCard.id;
-                    const actionInput = qs(`[data-controls-card="${cardId}"]`, context);
-                    const tableRow = actionInput?.closest('tr');
-                    const statusSelect = tableRow?.querySelector('.action-status');
-                    if (statusSelect) {
-                        let newStatus = 'To Do';
-                        if (column.id === 'd3-col-inprogress') newStatus = 'In Progress';
-                        if (column.id === 'd3-col-done') newStatus = 'Done';
-                        statusSelect.value = newStatus;
-                        statusSelect.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
-                }
-            });
-
-            const observer = new MutationObserver(mutations => {
-                mutations.forEach(mutation => {
-                    mutation.addedNodes.forEach(node => {
-                        if (node.nodeType !== 1 || node.tagName !== 'TR') return;
-                        const actionInput = qs('.action-desc', node);
-                        const statusSelect = qs('.action-status', node);
-                        if (!actionInput || !statusSelect) return;
-
-                        const card = document.createElement('div');
-                        card.className = 'kanban-card p-3 bg-white rounded-lg border shadow-sm cursor-grab';
-                        card.draggable = true;
-                        card.innerHTML = `<p class="text-sm font-semibold text-slate-800">${actionInput.value || 'New Action'}</p>`;
-                        const uniqueId = 'd3-kanban-card-' + Date.now() + Math.random();
-                        card.id = uniqueId;
-                        actionInput.setAttribute('data-controls-card', uniqueId);
-
-                        const syncCardStatus = () => {
-                            const controlledCard = qs(`#${uniqueId}`, context);
-                            if (!controlledCard) return;
-                            let targetColId = 'd3-col-todo';
-                            if (statusSelect.value === 'In Progress') targetColId = 'd3-col-inprogress';
-                            if (statusSelect.value === 'Done') targetColId = 'd3-col-done';
-                            const targetCol = qs(`#${targetColId}`, context);
-                            if (targetCol) targetCol.appendChild(controlledCard);
-                        };
-
-                        actionInput.addEventListener('input', () => {
-                            const controlledCard = qs(`#${uniqueId}`, context);
-                            if (controlledCard) controlledCard.querySelector('p').textContent = actionInput.value;
-                        });
-
-                        statusSelect.addEventListener('change', syncCardStatus);
-                        syncCardStatus();
-                    });
-                });
-            });
-            observer.observe(actionsTableBody, { childList: true });
-            kanbanContainer.querySelectorAll('div[id^="d3-col-"]').forEach(col => col.classList.add('kanban-col'));
-        }
-
-        function main() {
-            render();
-            attachListeners(context);
-            initKanban();
-        }
-
-        document.addEventListener('appDataReady', main, { once: true });
+        document.addEventListener('appDataReady', renderTables, { once: true });
         if (window.app && window.app.data) {
-            main();
+            renderTables();
         }
     }
 
