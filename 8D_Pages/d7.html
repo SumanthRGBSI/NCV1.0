@@ -130,145 +130,97 @@
     window.d7Initialized = true;
 
     function qs(selector, context = document) { return context.querySelector(selector); }
+    function qsa(selector, context = document) { return Array.from(context.querySelectorAll(selector)); }
+
+    function updateAppData() {
+        if (!window.app || !window.app.data || !window.app.data.d7) return;
+        const fields = window.app.data.d7.fields;
+
+        fields.preventiveActions = qsa('#d7-preventive-actions tbody tr').map(tr => ({
+            action: qs('.pa-action', tr).value,
+            type: qs('.pa-type', tr).value,
+            available: qs('.pa-available', tr).checked,
+            responsible: qs('.pa-responsible', tr).value,
+            targetDate: qs('.pa-target-date', tr).value,
+            status: qs('.pa-status', tr).value,
+            rpn: qs('.pa-rpn', tr).value
+        }));
+
+        window.app._dirty = true;
+        if (window.app.updateSaveFab) window.app.updateSaveFab(true);
+        if (window.app.saveData) {
+            clearTimeout(window.d7SaveTimer);
+            window.d7SaveTimer = setTimeout(() => window.app.saveData('d7-update'), 600);
+        }
+    }
+
+    function render() {
+        if (!window.app || !window.app.data || !window.app.data.d7) return;
+        const fields = window.app.data.d7.fields;
+        const context = document;
+
+        if (!Array.isArray(fields.preventiveActions)) fields.preventiveActions = [];
+
+        const tbody = qs('#d7-preventive-actions tbody', context);
+        const template = qs('#d7-preventive-actions template', context);
+
+        tbody.innerHTML = '';
+        fields.preventiveActions.forEach((item, index) => {
+            const row = template.content.cloneNode(true);
+            qs('.pa-action', row).value = item.action || '';
+            qs('.pa-type', row).value = item.type || 'Corrective';
+            qs('.pa-available', row).checked = !!item.available;
+            qs('.pa-responsible', row).value = item.responsible || '';
+            qs('.pa-target-date', row).value = item.targetDate || '';
+            qs('.pa-status', row).value = item.status || 'Open';
+            qs('.pa-rpn', row).value = item.rpn || '';
+            qs('.remove-row-btn', row).dataset.index = index;
+            tbody.appendChild(row);
+        });
+
+        if (window.lucide) window.lucide.createIcons();
+    }
 
     function initializeD7Logic(context) {
-        const ackModal = qs('#d7-ack-modal', context);
-        const viewBtn = qs('#d7-view-acks', context);
-        const closeBtn = qs('#d7-modal-close', context);
-        const ackMeBtn = qs('#d7-ack-me', context);
-        const ackList = qs('#d7-ack-list', context);
-        const ackBar = qs('#d7-ack-bar', context);
-        const avatarStack = qs('#d7-avatar-stack', context);
+        const container = qs('.space-y-6', context);
+        if (!container || container.dataset.d7ListenersAttached) return;
 
-        function renderPreventiveActions() {
-            const tbody = qs('#d7-preventive-actions tbody', context);
-            const template = qs('#d7-preventive-actions template', context);
-            const actions = window.app?.data?.d7?.fields?.preventiveActions || [];
+        container.addEventListener('click', e => {
+            const addBtn = e.target.closest('.add-row-btn');
+            const removeBtn = e.target.closest('.remove-row-btn');
+            let modelChanged = false;
 
-            if (!tbody || !template) return;
-            tbody.innerHTML = '';
+            if (addBtn && addBtn.closest('#d7-preventive-actions')) {
+                window.app.data.d7.fields.preventiveActions.push({
+                    action: '', type: 'Preventive', available: false, responsible: '', targetDate: '', status: 'Open', rpn: ''
+                });
+                modelChanged = true;
+            }
 
-            actions.forEach((item, index) => {
-                const row = template.content.cloneNode(true);
-                row.firstElementChild.dataset.index = index;
-                qs('.pa-action', row).value = item.action || '';
-                qs('.pa-type', row).value = item.type || 'Corrective';
-                qs('.pa-available', row).checked = !!item.available;
-                qs('.pa-responsible', row).value = item.responsible || '';
-                qs('.pa-target-date', row).value = item.targetDate || '';
-                qs('.pa-status', row).value = item.status || 'Open';
-                qs('.pa-rpn', row).value = item.rpn || '';
-                tbody.appendChild(row);
-            });
-        }
-
-        function setupDeleteConfirmation() {
-            const container = qs('#d7-preventive-actions', context);
-            const modal = qs('#confirm-delete-modal');
-            const confirmBtn = qs('#confirm-delete-btn', modal);
-            const cancelBtn = qs('#cancel-delete-btn', modal);
-            let rowToDelete = null;
-
-            if (!container || !modal) return;
-
-            container.addEventListener('click', e => {
-                const removeBtn = e.target.closest('.remove-row-btn');
-                if (removeBtn) {
-                    rowToDelete = removeBtn.closest('tr');
-                    modal.classList.remove('hidden');
+            if (removeBtn) {
+                if (confirm('Are you sure you want to remove this preventive action?')) {
+                    const index = parseInt(removeBtn.dataset.index, 10);
+                    window.app.data.d7.fields.preventiveActions.splice(index, 1);
+                    modelChanged = true;
                 }
-            });
+            }
 
-            cancelBtn.addEventListener('click', () => {
-                modal.classList.add('hidden');
-                rowToDelete = null;
-            });
+            if (modelChanged) {
+                render();
+                updateAppData();
+            }
+        });
 
-            confirmBtn.addEventListener('click', () => {
-                if (rowToDelete) {
-                    const index = rowToDelete.dataset.index;
-                    const actions = window.app.data.d7.fields.preventiveActions;
-                    if (actions && actions[index]) {
-                        actions.splice(index, 1);
-                        window.app.saveData('d7-preventive-actions-delete');
-                        renderPreventiveActions();
-                    }
-                }
-                modal.classList.add('hidden');
-                rowToDelete = null;
-            });
-        }
+        container.addEventListener('input', e => {
+            if (e.target.closest('#d7-preventive-actions')) {
+                updateAppData();
+            }
+        });
 
-        function renderAckStatus() {
-            if (!ackModal) return;
+        container.dataset.d7ListenersAttached = 'true';
 
-            const teamMembers = window.app?.data?.d1?.fields?.members || [];
-            const acknowledgedEmails = new Set(window.app?.data?.d7?.fields?.acknowledgements || []);
-            const currentUserEmail = window.app?.data?.meta?.userEmail || 's.jenkins@example.com'; // Fallback for demo
-
-            // Render modal list
-            ackList.innerHTML = '';
-            teamMembers.forEach(member => {
-                const isAcked = acknowledgedEmails.has(member.email);
-                const li = document.createElement('li');
-                li.className = 'flex items-center justify-between p-2 rounded-md';
-                li.innerHTML = `<span class="font-semibold text-slate-700">${member.name}</span>
-                    ${isAcked ? '<span class="flex items-center gap-1 text-emerald-600"><i data-lucide="check-circle-2" class="w-4 h-4"></i>Acknowledged</span>' : '<span class="text-xs text-slate-500">Pending</span>'}`;
-                ackList.appendChild(li);
-            });
-
-            // Render summary bar
-            ackBar.textContent = `${acknowledgedEmails.size} of ${teamMembers.length} acknowledged`;
-
-            // Render avatar stack
-            avatarStack.innerHTML = '';
-            teamMembers.filter(m => acknowledgedEmails.has(m.email)).slice(0, 5).forEach(m => {
-                const initials = m.name.split(' ').map(n => n[0]).join('');
-                const span = document.createElement('span');
-                span.className = 'inline-flex items-center justify-center h-8 w-8 rounded-full bg-emerald-200 text-emerald-700 font-bold text-xs ring-2 ring-white';
-                span.textContent = initials;
-                span.title = m.name;
-                avatarStack.appendChild(span);
-            });
-
-            // Update button state
-            ackMeBtn.disabled = acknowledgedEmails.has(currentUserEmail);
-            ackMeBtn.textContent = acknowledgedEmails.has(currentUserEmail) ? 'Acknowledged' : 'Acknowledge Now';
-
-            if (window.lucide) window.lucide.createIcons();
-        }
-
-        function renderAll() {
-            renderPreventiveActions();
-            renderAckStatus();
-        }
-
-        if (viewBtn && !viewBtn.dataset.listenerAttached) {
-            viewBtn.addEventListener('click', () => {
-                renderAckStatus();
-                ackModal.classList.remove('hidden');
-            });
-            closeBtn.addEventListener('click', () => ackModal.classList.add('hidden'));
-            ackModal.addEventListener('click', e => { if (e.target === ackModal) ackModal.classList.add('hidden'); });
-
-            ackMeBtn.addEventListener('click', () => {
-                const currentUserEmail = window.app?.data?.meta?.userEmail || 's.jenkins@example.com';
-                const acks = window.app.data.d7.fields.acknowledgements;
-                if (acks && !acks.includes(currentUserEmail)) {
-                    acks.push(currentUserEmail);
-                    window.app.saveData('d7-ack');
-                    renderAckStatus();
-                }
-            });
-            viewBtn.dataset.listenerAttached = 'true';
-        }
-
-        document.addEventListener('appDataReady', renderAll, { once: true });
-        if (window.app && window.app.data) {
-            renderAll();
-        }
-
-        setupDeleteConfirmation();
+        document.addEventListener('appDataReady', render, { once: true });
+        if (window.app && window.app.data) render();
     }
 
     const originalInit = window.__init8D;

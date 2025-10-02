@@ -393,8 +393,31 @@
             this.applyStepState();
         },
         loadData() {
-            const savedData = localStorage.getItem('8d-data-v2');
-            if (savedData) { this.data = JSON.parse(savedData); } else { this.data = getInitialData(); }
+            const savedDataString = localStorage.getItem('8d-data-v2');
+            let useInitialData = true;
+
+            if (savedDataString) {
+                try {
+                    const parsedData = JSON.parse(savedDataString);
+                    // A simple but effective check: does the data have the D1 members array?
+                    // This is a good indicator of valid, populated data.
+                    if (parsedData && parsedData.d1 && parsedData.d1.fields && Array.isArray(parsedData.d1.fields.members)) {
+                        this.data = parsedData;
+                        useInitialData = false;
+                    }
+                } catch (e) {
+                    console.error("Failed to parse local storage data. It might be corrupted.", e);
+                    // If parsing fails, we'll proceed to load initial data.
+                }
+            }
+
+            if (useInitialData) {
+                console.log("No valid saved data found, loading initial demo data.");
+                this.data = getInitialData();
+                // Immediately save the fresh demo data to local storage for subsequent loads.
+                localStorage.setItem('8d-data-v2', JSON.stringify(this.data));
+            }
+
             try{
               if(window.DataStore && typeof window.DataStore.get==='function'){
                 window.DataStore.get('8d-data-v2').then((cloud)=>{
@@ -404,6 +427,7 @@
                 }).catch(()=>{});
               }
             }catch(_){ }
+
             if(!this.data.meta) this.data.meta = { overallStatus:'Open', assignee:'', team:'', role: localStorage.getItem('8d-role')||'Admin' };
             if(!this.data.audit) this.data.audit = [];
 

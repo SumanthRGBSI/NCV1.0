@@ -195,9 +195,6 @@
             comments: qs('input:nth-of-type(2)', tr)?.value || ''
         }));
 
-        fields.proof = qs('#d6-proof')?.value || '';
-        fields.situationAfter = qs('#d6-situationAfter')?.value || '';
-
         window.app._dirty = true;
         if (window.app.updateSaveFab) window.app.updateSaveFab(true);
         if (window.app.saveData) {
@@ -206,121 +203,110 @@
         }
     }
 
+    function render() {
+        if (!window.app || !window.app.data || !window.app.data.d6) return;
+        const fields = window.app.data.d6.fields;
+        const context = document;
+
+        if (!Array.isArray(fields.implementationTracking)) fields.implementationTracking = [];
+        if (!Array.isArray(fields.verificationItems)) fields.verificationItems = [];
+
+        // Render Implementation Tracking Table
+        const implTbody = qs('#d6-impl tbody', context);
+        const implTemplate = qs('#d6-impl template', context);
+        if (implTbody && implTemplate) {
+            implTbody.innerHTML = '';
+            fields.implementationTracking.forEach((item, index) => {
+                const row = implTemplate.content.cloneNode(true);
+                qs('.impl-action', row).value = item.action || '';
+                qs('input[type="date"]', row).value = item.targetDate || '';
+                qs('select:nth-of-type(1)', row).value = item.proofingType || 'Detection';
+                qs('input[type="number"]:nth-of-type(1)', row).value = item.proofingLevel || '';
+                qs('input[type="number"]:nth-of-type(2)', row).value = item.proofingImpact || '';
+                qs('select:nth-of-type(2)', row).value = item.appliedToSimilar || 'No';
+                qs('input[type="number"]:nth-of-type(3)', row).value = item.qtyParts || '';
+                qs('input[type="number"]:nth-of-type(4)', row).value = item.qtyPlaces || '';
+                qs('td:nth-of-type(10) input', row).value = item.responsibility || '';
+                qs('td:nth-of-type(11) input', row).value = item.effectiveness || '';
+                qs('td:nth-of-type(12) select', row).value = item.status || 'Open';
+                qs('.remove-row-btn', row).dataset.index = index;
+                implTbody.appendChild(row);
+            });
+        }
+
+        // Render Verification Items Table
+        const verifyTbody = qs('#d6-verify tbody', context);
+        const verifyTemplate = qs('#d6-verify template', context);
+        if (verifyTbody && verifyTemplate) {
+            verifyTbody.innerHTML = '';
+            fields.verificationItems.forEach((item, index) => {
+                const row = verifyTemplate.content.cloneNode(true);
+                qs('input:nth-of-type(1)', row).value = item.element || '';
+                qs('select', row).value = item.verified || 'No';
+                qs('input:nth-of-type(2)', row).value = item.comments || '';
+                qs('.remove-row-btn', row).dataset.index = index;
+                verifyTbody.appendChild(row);
+            });
+        }
+        if(window.lucide) window.lucide.createIcons();
+    }
+
     function initializeD6Logic(context) {
-        function render() {
-            if (!window.app || !window.app.data || !window.app.data.d6) return;
-            const fields = window.app.data.d6.fields;
+        const container = qs('.space-y-6', context);
+        if (!container || container.dataset.d6ListenersAttached) return;
 
-            if (!fields.implementationTracking) {
-                 fields.implementationTracking = (window.app.data.d5?.fields?.correctiveActions || [])
-                    .filter(a => a.status === 'Verified' || a.status === 'Completed')
-                    .map(a => ({
-                        action: a.action,
-                        targetDate: a.targetDate,
-                        proofingType: 'Control',
-                        proofingLevel: 4,
-                        proofingImpact: 4,
-                        appliedToSimilar: 'Yes',
-                        qtyParts: 1,
-                        qtyPlaces: 1,
-                        responsibility: a.responsibility,
-                        effectiveness: '',
-                        status: 'In Progress'
-                    }));
-            }
-            if (!fields.verificationItems) {
-                fields.verificationItems = [
-                    { element: 'Control Plan Updated', verified: 'Yes', comments: 'CP-112 Rev B issued.'},
-                    { element: 'PFMEA Updated', verified: 'Yes', comments: 'PFMEA-Z-80 RPN reduced from 320 to 80.'},
-                    { element: 'No failures in 1000-part validation run', verified: 'Yes', comments: 'Validation report VAL-2024-08-15 attached.'}
-                ];
-            }
+        container.addEventListener('click', e => {
+            const addBtn = e.target.closest('.add-row-btn');
+            const removeBtn = e.target.closest('.remove-row-btn');
+            let modelChanged = false;
 
-            const implTbody = qs('#d6-impl tbody', context);
-            const implTemplate = qs('#d6-impl template', context);
-            if (implTbody && implTemplate && fields.implementationTracking) {
-                implTbody.innerHTML = '';
-                fields.implementationTracking.forEach(item => {
-                    const row = implTemplate.content.cloneNode(true);
-                    qs('.impl-action', row).value = item.action || '';
-                    qs('input[type="date"]', row).value = item.targetDate || '';
-                    qs('select:nth-of-type(1)', row).value = item.proofingType || 'Detection';
-                    qs('input[type="number"]:nth-of-type(1)', row).value = item.proofingLevel || '';
-                    qs('input[type="number"]:nth-of-type(2)', row).value = item.proofingImpact || '';
-                    qs('select:nth-of-type(2)', row).value = item.appliedToSimilar || 'No';
-                    qs('input[type="number"]:nth-of-type(3)', row).value = item.qtyParts || '';
-                    qs('input[type="number"]:nth-of-type(4)', row).value = item.qtyPlaces || '';
-                    qs('td:nth-of-type(10) input', row).value = item.responsibility || '';
-                    qs('td:nth-of-type(11) input', row).value = item.effectiveness || '';
-                    qs('td:nth-of-type(12) select', row).value = item.status || 'Open';
-                    implTbody.appendChild(row);
-                });
-            }
-
-            const verifyTbody = qs('#d6-verify tbody', context);
-            const verifyTemplate = qs('#d6-verify template', context);
-            if (verifyTbody && verifyTemplate && fields.verificationItems) {
-                verifyTbody.innerHTML = '';
-                fields.verificationItems.forEach(item => {
-                    const row = verifyTemplate.content.cloneNode(true);
-                    qs('input:nth-of-type(1)', row).value = item.element || '';
-                    qs('select', row).value = item.verified || 'No';
-                    qs('input:nth-of-type(2)', row).value = item.comments || '';
-                    verifyTbody.appendChild(row);
-                });
-            }
-
-            qs('#d6-proof').value = fields.proof || '';
-            qs('#d6-situationAfter').value = fields.situationAfter || '';
-        }
-
-        function attachListeners(context) {
-            const container = qs('.space-y-6', context);
-            if (!container || container.dataset.d6ListenersAttached) return;
-
-            container.addEventListener('click', e => {
-                const addBtn = e.target.closest('.add-row-btn');
-                const removeBtn = e.target.closest('.remove-row-btn');
-
-                if (addBtn) {
-                    const table = addBtn.closest('table');
-                    const template = qs('template', table);
-                    if (template) {
-                        const newRow = template.content.cloneNode(true);
-                        qs('tbody', table).appendChild(newRow);
-                        updateAppData();
-                    }
+            if (addBtn) {
+                const tableId = addBtn.closest('table').id;
+                if (tableId === 'd6-impl') {
+                    window.app.data.d6.fields.implementationTracking.push({ action: '', status: 'Open' });
+                } else if (tableId === 'd6-verify') {
+                    window.app.data.d6.fields.verificationItems.push({ element: '', verified: 'No', comments: '' });
                 }
+                modelChanged = true;
+            }
 
-                if (removeBtn) {
-                    if (confirm('Are you sure you want to remove this item?')) {
-                        removeBtn.closest('tr').remove();
-                        updateAppData();
+            if (removeBtn) {
+                if (confirm('Are you sure you want to remove this item?')) {
+                    const tableId = removeBtn.closest('table').id;
+                    const index = parseInt(removeBtn.dataset.index, 10);
+                    if (tableId === 'd6-impl') {
+                        window.app.data.d6.fields.implementationTracking.splice(index, 1);
+                    } else if (tableId === 'd6-verify') {
+                        window.app.data.d6.fields.verificationItems.splice(index, 1);
                     }
+                    modelChanged = true;
                 }
-            });
+            }
 
-            container.addEventListener('input', e => {
+            if (modelChanged) {
+                render();
                 updateAppData();
-            });
+            }
+        });
 
-            container.dataset.d6ListenersAttached = 'true';
-        }
+        container.addEventListener('input', e => {
+            if (e.target.closest('table')) {
+                updateAppData();
+            }
+        });
 
-        render();
-        attachListeners(context);
+        container.dataset.d6ListenersAttached = 'true';
+
+        document.addEventListener('appDataReady', render, { once: true });
+        if (window.app && window.app.data) render();
     }
 
     const originalInit = window.__init8D;
     window.__init8D = function(context) {
         if (originalInit) originalInit(context);
-        if (qs('#d6-impl', context)) {
-            initializeD6Logic(context);
-        }
+        if (qs('#d6-impl', context)) initializeD6Logic(context);
     };
 
-    if (qs('#d6-impl')) {
-        initializeD6Logic(document);
-    }
+    if (qs('#d6-impl')) initializeD6Logic(document);
 })();
 </script>

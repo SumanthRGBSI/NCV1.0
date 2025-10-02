@@ -224,23 +224,21 @@
             cause: qs('.d4-cause-text', tr).value,
             notes: qs('.d4-cause-notes', tr).value
         }));
-
         fields.verificationActions = qsa('#d4-verification-actions tbody tr').map(tr => ({
             action: qs('.va-action', tr).value,
             owner: qs('.va-owner', tr).value,
             date: qs('.va-date', tr).value,
             status: qs('.va-status', tr).value
         }));
-
-        fields.finalRootCauses = qsa('#d4-root-causes tbody tr').map(tr => {
-            const likelihood = parseInt(qs('.rc-like', tr).value, 10) || 0;
-            const severity = parseInt(qs('.rc-sev', tr).value, 10) || 0;
-            return {
-                cause: qs('.rc-text', tr).value,
-                category: qs('select:nth-of-type(1)', tr).value,
-                likelihood: likelihood,
-                severity: severity
-            };
+        fields.finalRootCauses = qsa('#d4-root-causes tbody tr').map(tr => ({
+            cause: qs('.rc-text', tr).value,
+            category: qs('select:nth-of-type(1)', tr).value,
+            likelihood: parseInt(qs('.rc-like', tr).value, 10) || 1,
+            severity: parseInt(qs('.rc-sev', tr).value, 10) || 1
+        }));
+        fields.fiveWhys = (fields.fiveWhys || []).map((item, index) => {
+            const becauseInput = qs(`#d4-because-${index}`);
+            return { ...item, because: becauseInput ? becauseInput.value : item.because };
         });
 
         window.app._dirty = true;
@@ -249,48 +247,40 @@
             clearTimeout(window.d4SaveTimer);
             window.d4SaveTimer = setTimeout(() => window.app.saveData('d4-update'), 600);
         }
-
         renderFishboneDiagram(fields.fishbone || []);
     }
 
     function renderFishboneDiagram(causes) {
         const container = qs('#d4-fishbone-canvas');
         if (!container) return;
-
-        const categories = {
-            'Man': [], 'Machine': [], 'Method': [], 'Material': [], 'Measurement': [], 'Environment': []
-        };
-        (causes || []).forEach(c => {
-            if (categories[c.category]) {
-                categories[c.category].push(c);
-            }
-        });
-
-        let svg = `<svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
-            <defs><marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/></marker></defs>
-            <line x1="50" y1="225" x2="750" y2="225" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
-            <text x="760" y="225" dominant-baseline="middle" class="font-bold text-sm">Problem</text>`;
-
-        const drawBone = (x1, y1, x2, y2, label, items, isTop) => {
-            svg += `<g class="fishbone-category cursor-pointer" data-category="${label}">
-                <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#64748b" stroke-width="1.5"/>
-                <text x="${x2 + (isTop ? -10 : -10)}" y="${y2 + (isTop ? -10 : 18)}" class="font-semibold text-xs fill-slate-700">${label}</text>
-                <g class="fishbone-causes" style="display: block;">`;
+        const categories = { 'Man': [], 'Machine': [], 'Method': [], 'Material': [], 'Measurement': [], 'Environment': [] };
+        (causes || []).forEach(c => { if (categories[c.category]) { categories[c.category].push(c.cause); }});
+        let svg = `<svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg" class="w-full h-full font-sans">
+            <defs><marker id="d4-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/></marker></defs>
+            <line x1="50" y1="225" x2="750" y2="225" stroke="#334155" stroke-width="2" marker-end="url(#d4-arrow)"/>
+            <text x="760" y="225" dominant-baseline="middle" class="font-bold text-lg fill-slate-800">Problem</text>`;
+        const drawBone = (x, y, angle, label, items) => {
+            const endX = x + 180 * Math.cos(angle);
+            const endY = y + 180 * Math.sin(angle);
+            svg += `<g><line x1="${x}" y1="${y}" x2="${endX}" y2="${endY}" stroke="#64748b" stroke-width="1.5"/>
+                <text x="${endX + (Math.cos(angle) * 10)}" y="${endY + (Math.sin(angle) * 10)}" dominant-baseline="middle" text-anchor="${Math.cos(angle) > 0 ? 'start' : 'end'}" class="font-semibold text-base fill-slate-700">${label}</text>`;
             (items || []).forEach((item, i) => {
-                const causeY = y2 + (isTop ? -20 * (i + 1) : 20 * (i + 1));
-                svg += `<line x1="${x2}" y1="${y2}" x2="${x2 + 40}" y2="${causeY}" stroke="#94a3b8" stroke-width="1"/>
-                        <text x="${x2 + 45}" y="${causeY}" dominant-baseline="middle" class="text-xs fill-slate-600 fishbone-cause-text" data-cause-index="${(causes || []).indexOf(item)}">${item.cause}</text>`;
+                const causeAngle = angle + (Math.PI / 12) * (i % 2 === 0 ? 1 : -1);
+                const causeX1 = x + (60 + (i * 30));
+                const causeY1 = y;
+                const causeX2 = causeX1 + 60 * Math.cos(causeAngle);
+                const causeY2 = causeY1 + 60 * Math.sin(causeAngle);
+                svg += `<line x1="${causeX1}" y1="${causeY1}" x2="${causeX2}" y2="${causeY2}" stroke="#94a3b8" stroke-width="1"/>
+                        <text x="${causeX2 + 5 * Math.cos(causeAngle)}" y="${causeY2 + 5 * Math.sin(causeAngle)}" dominant-baseline="middle" text-anchor="${Math.cos(causeAngle) >= 0 ? 'start' : 'end'}" class="text-sm fill-slate-600">${item}</text>`;
             });
-            svg += `</g></g>`;
+            svg += `</g>`;
         };
-
-        drawBone(150, 225, 250, 150, 'Man', categories['Man'], true);
-        drawBone(350, 225, 450, 150, 'Machine', categories['Machine'], true);
-        drawBone(550, 225, 650, 150, 'Method', categories['Method'], true);
-        drawBone(150, 225, 250, 300, 'Material', categories['Material'], false);
-        drawBone(350, 225, 450, 300, 'Measurement', categories['Measurement'], false);
-        drawBone(550, 225, 650, 300, 'Environment', categories['Environment'], false);
-
+        drawBone(200, 225, -Math.PI / 4, 'Man', categories['Man']);
+        drawBone(400, 225, -Math.PI / 4, 'Machine', categories['Machine']);
+        drawBone(600, 225, -Math.PI / 4, 'Method', categories['Method']);
+        drawBone(200, 225, Math.PI / 4, 'Material', categories['Material']);
+        drawBone(400, 225, Math.PI / 4, 'Measurement', categories['Measurement']);
+        drawBone(600, 225, Math.PI / 4, 'Environment', categories['Environment']);
         svg += `</svg>`;
         container.innerHTML = svg;
     }
@@ -303,113 +293,97 @@
             container.innerHTML = `<p class="ds-caption">No 5 Whys analysis started. Enter a cause and click "Start".</p>`;
             return;
         }
-
-        function buildTreeHtml(index) {
-            if (index >= whys.length) return '';
+        let html = '<div class="five-whys-tree">';
+        function buildTree(index) {
+            if (index >= whys.length) return;
             const item = whys[index];
-            const childrenHtml = (index + 1 < whys.length) ? buildTreeHtml(index + 1) : '';
-
-            return `
-                <div class="why-level pl-4 border-l-2 border-slate-200">
-                    <div class="flex items-center gap-2">
-                        <div class="why-node flex-grow">${item.why}</div>
-                        <button class="remove-why-btn ds-btn-icon ds-btn-icon--danger" data-index="${index}"><i data-lucide="x"></i></button>
-                    </div>
-                    <div class="because-node mt-1 ml-4">${item.because}</div>
-                </div>
-                ${childrenHtml}
-            `;
+            html += `<ul class="why-level"><li class="space-y-1">
+                <div class="why-node flex justify-between items-center"><span>${item.why}</span><button class="remove-why-btn ds-btn-icon ds-btn-icon--xs" data-index="${index}"><i data-lucide="x"></i></button></div>
+                <div class="because-node"><input id="d4-because-${index}" class="ds-input ds-input--ghost" value="${item.because || ''}" placeholder="Because..."/></div>`;
+            buildTree(index + 1);
+            html += `</li></ul>`;
         }
-
-        container.innerHTML = `<div class="five-whys-tree">${buildTreeHtml(0)}</div>`;
+        buildTree(0);
+        html += '</div>';
+        container.innerHTML = html;
+        if(window.lucide) window.lucide.createIcons();
     }
 
     function populateD4Data() {
         const data = window.app?.data?.d4?.fields;
         if (!data) return;
+        ['fishbone', 'verificationActions', 'finalRootCauses', 'fiveWhys'].forEach(key => { if (!Array.isArray(data[key])) data[key] = []; });
 
         const tables = [
-            { selector: '#d4-fishbone-table', data: data.fishbone, map: (row, item) => {
-                qs('select', row).value = item.category;
-                qs('.d4-cause-text', row).value = item.cause;
-                qs('.d4-cause-notes', row).value = item.notes;
-            }},
-            { selector: '#d4-verification-actions', data: data.verificationActions, map: (row, item) => {
-                qs('.va-action', row).value = item.action;
-                qs('.va-owner', row).value = item.owner;
-                qs('.va-date', row).value = item.date;
-                qs('.va-status', row).value = item.status;
-            }},
-            { selector: '#d4-root-causes', data: data.finalRootCauses, map: (row, item) => {
-                qs('.rc-text', row).value = item.cause;
-                qs('select:nth-of-type(1)', row).value = item.category;
-                const like = qs('.rc-like', row);
-                const sev = qs('.rc-sev', row);
-                const score = qs('.rc-score', row);
-                like.value = item.likelihood;
-                sev.value = item.severity;
-                score.value = (item.likelihood || 0) * (item.severity || 0);
-            }}
+            { selector: '#d4-fishbone-table', data: data.fishbone, map: (row, item) => { qs('select', row).value = item.category; qs('.d4-cause-text', row).value = item.cause; qs('.d4-cause-notes', row).value = item.notes; }},
+            { selector: '#d4-verification-actions', data: data.verificationActions, map: (row, item) => { qs('.va-action', row).value = item.action; qs('.va-owner', row).value = item.owner; qs('.va-date', row).value = item.date; qs('.va-status', row).value = item.status; }},
+            { selector: '#d4-root-causes', data: data.finalRootCauses, map: (row, item) => { qs('.rc-text', row).value = item.cause; qs('select:nth-of-type(1)', row).value = item.category; const like = qs('.rc-like', row); const sev = qs('.rc-sev', row); const score = qs('.rc-score', row); like.value = item.likelihood || 1; sev.value = item.severity || 1; score.value = (item.likelihood || 1) * (item.severity || 1); }}
         ];
-
         tables.forEach(t => {
             const tbody = qs(`${t.selector} tbody`);
             const template = qs(`${t.selector} template`);
             if (tbody && template && t.data) {
                 tbody.innerHTML = '';
-                t.data.forEach(item => {
+                t.data.forEach((item, index) => {
                     const newRow = template.content.cloneNode(true);
                     t.map(newRow, item);
+                    qs('.remove-row-btn', newRow).dataset.index = index;
                     tbody.appendChild(newRow);
                 });
             }
         });
-
-        renderFishboneDiagram(data.fishbone || []);
-        renderFiveWhys(data.fiveWhys || []);
+        renderFishboneDiagram(data.fishbone);
+        renderFiveWhys(data.fiveWhys);
+        if(window.lucide) window.lucide.createIcons();
     }
 
     function attachListeners(context) {
         const container = qs('.space-y-6', context);
         if (!container || container.dataset.d4ListenersAttached) return;
+        const fields = window.app.data.d4.fields;
 
         container.addEventListener('click', e => {
             const addBtn = e.target.closest('.add-row-btn');
             const removeBtn = e.target.closest('.remove-row-btn');
             const removeWhyBtn = e.target.closest('.remove-why-btn');
+            let modelChanged = false;
 
             if (addBtn) {
-                const table = addBtn.closest('table');
-                const template = qs('template', table);
-                if (template) {
-                    const newRow = template.content.cloneNode(true);
-                    qs('tbody', table).appendChild(newRow);
-                    updateAppData();
-                }
-            }
-
-            if (removeBtn) {
+                const tableId = addBtn.closest('table').id;
+                if (tableId === 'd4-fishbone-table') fields.fishbone.push({ category: 'Man', cause: '', notes: '' });
+                else if (tableId === 'd4-verification-actions') fields.verificationActions.push({ action: '', owner: '', date: '', status: 'Pending' });
+                else if (tableId === 'd4-root-causes') fields.finalRootCauses.push({ cause: '', category: 'Process', likelihood: 1, severity: 1 });
+                modelChanged = true;
+            } else if (removeBtn) {
                 if (confirm('Are you sure you want to remove this item?')) {
-                    removeBtn.closest('tr').remove();
-                    updateAppData();
+                    const tableId = removeBtn.closest('table').id;
+                    const index = parseInt(removeBtn.dataset.index, 10);
+                    if (tableId === 'd4-fishbone-table') fields.fishbone.splice(index, 1);
+                    else if (tableId === 'd4-verification-actions') fields.verificationActions.splice(index, 1);
+                    else if (tableId === 'd4-root-causes') fields.finalRootCauses.splice(index, 1);
+                    modelChanged = true;
                 }
-            }
-
-            if (removeWhyBtn) {
+            } else if (removeWhyBtn) {
                 if (confirm('Are you sure you want to remove this "Why" and all subsequent steps?')) {
                     const index = parseInt(removeWhyBtn.dataset.index, 10);
-                    const whys = window.app.data.d4.fields.fiveWhys;
-                    if (whys && whys.length > index) {
-                        whys.splice(index, whys.length - index);
-                        renderFiveWhys(whys);
-                        updateAppData();
-                    }
+                    fields.fiveWhys.splice(index, fields.fiveWhys.length - index);
+                    modelChanged = true;
                 }
+            }
+            if (modelChanged) {
+                populateD4Data();
+                updateAppData();
             }
         });
 
         container.addEventListener('input', e => {
-            if (e.target.closest('#d4-fishbone-table, #d4-verification-actions, #d4-root-causes')) {
+            if (e.target.matches('.rc-like, .rc-sev')) {
+                const row = e.target.closest('tr');
+                const like = parseInt(qs('.rc-like', row).value, 10) || 1;
+                const sev = parseInt(qs('.rc-sev', row).value, 10) || 1;
+                qs('.rc-score', row).value = like * sev;
+            }
+            if (e.target.closest('table, #d4-fivewhys')) {
                 updateAppData();
             }
         });
@@ -417,35 +391,31 @@
         qs('#d4-start-whys')?.addEventListener('click', () => {
             const input = qs('#d4-why-target');
             if (!input || !input.value.trim()) return;
-            const whys = window.app.data.d4.fields.fiveWhys || [];
-            const nextWhy = whys.length > 0 ? `Why does "${whys[whys.length - 1].because}" happen?` : `Why is/does "${input.value.trim()}" happen?`;
-
-            whys.push({ why: nextWhy, because: '' });
-            window.app.data.d4.fields.fiveWhys = whys;
-            renderFiveWhys(whys);
+            const because = fields.fiveWhys.length > 0 ? fields.fiveWhys[fields.fiveWhys.length - 1].because : input.value.trim();
+            if (!because) {
+                qs(`#d4-because-${fields.fiveWhys.length - 1}`)?.focus();
+                return;
+            }
+            fields.fiveWhys.push({ why: `Why does "${because}" happen?`, because: '' });
+            populateD4Data();
             input.value = '';
+            qs(`#d4-because-${fields.fiveWhys.length - 1}`)?.focus();
         });
-
         container.dataset.d4ListenersAttached = 'true';
     }
 
     function initD4() {
-        populateD4Data();
+        document.addEventListener('appDataReady', populateD4Data, { once: true });
+        if (window.app && window.app.data) populateD4Data();
         attachListeners(document);
     }
 
-    // Hook into the main initializer
     const originalInit = window.__init8D;
     window.__init8D = function(context) {
         if (originalInit) originalInit(context);
-        if (qs('#d4-fishbone-table', context)) {
-            initD4();
-        }
+        if (qs('#d4-fishbone-table', context)) initD4();
     };
 
-    // If content is already on the page
-    if (qs('#d4-fishbone-table')) {
-        initD4();
-    }
+    if (qs('#d4-fishbone-table')) initD4();
   })();
 </script>

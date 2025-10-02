@@ -222,38 +222,103 @@
             generateBtn.dataset.listenerAttached = 'true';
         }
 
-        // --- Table Rendering Logic ---
+        // --- Data & Table Synchronization ---
+        function updateAppData() {
+            if (!window.app || !window.app.data.d2) return;
+
+            const auditData = Array.from(context.querySelectorAll('#d2-process-audit tbody tr')).map(tr => ({
+                step: qs('.audit-step', tr).value,
+                cause: qs('.audit-cause', tr).value,
+                action: qs('.audit-action', tr).value
+            }));
+            const docsData = Array.from(context.querySelectorAll('#d2-docs tbody tr')).map(tr => ({
+                document: qs('.doc-name', tr).value,
+                reviewed: qs('.doc-reviewed', tr).value,
+                rpn: qs('.doc-rpn', tr).value
+            }));
+
+            window.app.data.d2.fields.processAudit = auditData;
+            window.app.data.d2.fields.controlDocs = docsData;
+
+            window.app._dirty = true;
+            if (window.app.updateSaveFab) window.app.updateSaveFab(true);
+            if (window.app.saveData) {
+                clearTimeout(window.d2SaveTimer);
+                window.d2SaveTimer = setTimeout(() => window.app.saveData('d2-table-update'), 600);
+            }
+        }
+
         function renderTables() {
             if (!window.app || !window.app.data || !window.app.data.d2) return;
 
+            const { processAudit = [], controlDocs = [] } = window.app.data.d2.fields;
+
             const auditTbody = qs('#d2-process-audit tbody', context);
-            const auditData = window.app.data.d2.fields.processAudit || [];
             const auditTemplate = qs('#d2-process-audit template', context);
             if (auditTbody && auditTemplate) {
                 auditTbody.innerHTML = '';
-                auditData.forEach(item => {
+                processAudit.forEach((item, index) => {
                     const newRow = auditTemplate.content.cloneNode(true);
                     qs('.audit-step', newRow).value = item.step || '';
                     qs('.audit-cause', newRow).value = item.cause || '';
                     qs('.audit-action', newRow).value = item.action || 'No';
+                    qs('.remove-row-btn', newRow).dataset.index = index;
                     auditTbody.appendChild(newRow);
                 });
             }
 
             const docsTbody = qs('#d2-docs tbody', context);
-            const docsData = window.app.data.d2.fields.controlDocs || [];
             const docsTemplate = qs('#d2-docs template', context);
             if (docsTbody && docsTemplate) {
                 docsTbody.innerHTML = '';
-                docsData.forEach(item => {
+                controlDocs.forEach((item, index) => {
                     const newRow = docsTemplate.content.cloneNode(true);
                     qs('.doc-name', newRow).value = item.document || '';
                     qs('.doc-reviewed', newRow).value = item.reviewed || 'No';
                     qs('.doc-rpn', newRow).value = item.rpn || '';
+                    qs('.remove-row-btn', newRow).dataset.index = index;
                     docsTbody.appendChild(newRow);
                 });
             }
             if (window.lucide) window.lucide.createIcons();
+        }
+
+        // --- Event Listeners for Tables ---
+        const d2Container = qs('.grid', context);
+        if (d2Container && !d2Container.dataset.d2ListenersAttached) {
+            d2Container.addEventListener('click', (e) => {
+                const addAuditBtn = e.target.closest('#d2-process-audit .add-row-btn');
+                const addDocBtn = e.target.closest('#d2-docs .add-row-btn');
+                const removeBtn = e.target.closest('.remove-row-btn');
+
+                if (addAuditBtn) {
+                    window.app.data.d2.fields.processAudit.push({ step: '', cause: '', action: 'No' });
+                    renderTables();
+                    updateAppData();
+                } else if (addDocBtn) {
+                    window.app.data.d2.fields.controlDocs.push({ document: '', reviewed: 'No', rpn: '' });
+                    renderTables();
+                    updateAppData();
+                } else if (removeBtn) {
+                    if (confirm('Are you sure you want to remove this row?')) {
+                        const index = parseInt(removeBtn.dataset.index, 10);
+                        if (removeBtn.closest('#d2-process-audit')) {
+                            window.app.data.d2.fields.processAudit.splice(index, 1);
+                        } else if (removeBtn.closest('#d2-docs')) {
+                            window.app.data.d2.fields.controlDocs.splice(index, 1);
+                        }
+                        renderTables();
+                        updateAppData();
+                    }
+                }
+            });
+
+            d2Container.addEventListener('input', (e) => {
+                if (e.target.matches('.audit-step, .audit-cause, .audit-action, .doc-name, .doc-reviewed, .doc-rpn')) {
+                    updateAppData();
+                }
+            });
+            d2Container.dataset.d2ListenersAttached = 'true';
         }
 
         document.addEventListener('appDataReady', renderTables, { once: true });

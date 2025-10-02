@@ -150,46 +150,114 @@
     window.d8Initialized = true;
 
     function qs(selector, context = document) { return context.querySelector(selector); }
+    function qsa(selector, context = document) { return Array.from(context.querySelectorAll(selector)); }
+
+    function updateAppData() {
+        if (!window.app || !window.app.data || !window.app.data.d8) return;
+        const fields = window.app.data.d8.fields;
+
+        fields.acknowledgements = qsa('#d8-ack tbody tr').map(tr => ({
+            team_member: qs('.ack-name', tr).value,
+            title: qs('.ack-title', tr).value,
+            responsibility: qs('td:nth-of-type(3) input', tr).value,
+            achievements: qs('.ack-achievements', tr).value,
+            recognition_type: qs('select', tr).value
+        }));
+
+        window.app._dirty = true;
+        if (window.app.updateSaveFab) window.app.updateSaveFab(true);
+        if (window.app.saveData) {
+            clearTimeout(window.d8SaveTimer);
+            window.d8SaveTimer = setTimeout(() => window.app.saveData('d8-update'), 600);
+        }
+    }
+
+    function render() {
+        if (!window.app || !window.app.data || !window.app.data.d8) return;
+        const fields = window.app.data.d8.fields;
+        if (!Array.isArray(fields.acknowledgements)) fields.acknowledgements = [];
+
+        const ackTbody = qs('#d8-ack tbody');
+        const template = qs('#d8-ack template');
+        if (!ackTbody || !template) return;
+
+        ackTbody.innerHTML = '';
+        fields.acknowledgements.forEach((item, index) => {
+            const newRow = template.content.cloneNode(true);
+            qs('.ack-name', newRow).value = item.team_member || '';
+            qs('.ack-title', newRow).value = item.title || '';
+            qs('td:nth-of-type(3) input', newRow).value = item.responsibility || '';
+            qs('.ack-achievements', newRow).value = item.achievements || '';
+            qs('select', newRow).value = item.recognition_type || '👍';
+            qs('.remove-row-btn', newRow).dataset.index = index;
+            ackTbody.appendChild(newRow);
+        });
+        if (window.lucide) window.lucide.createIcons();
+    }
 
     function initializeD8Logic(context) {
-        const ackTbody = qs('#d8-ack tbody', context);
-        if (!ackTbody) return;
+        const container = qs('.space-y-6', context);
+        if (!container || container.dataset.d8ListenersAttached) return;
 
-        function render() {
-            if (!window.app || !window.app.data || !window.app.data.d8) return;
+        container.addEventListener('click', e => {
+            const addBtn = e.target.closest('.add-row-btn');
+            const removeBtn = e.target.closest('.remove-row-btn');
+            const autofillBtn = e.target.closest('#d8-autofill-team');
+            let modelChanged = false;
 
-            const acks = window.app.data.d8.fields.acknowledgements || [];
-            const template = qs('#d8-ack template', context);
-            ackTbody.innerHTML = '';
+            if (addBtn) {
+                window.app.data.d8.fields.acknowledgements.push({ team_member: '', title: '', responsibility: '', achievements: '', recognition_type: '👍' });
+                modelChanged = true;
+            } else if (removeBtn) {
+                if (confirm('Are you sure you want to remove this recognition item?')) {
+                    const index = parseInt(removeBtn.dataset.index, 10);
+                    window.app.data.d8.fields.acknowledgements.splice(index, 1);
+                    modelChanged = true;
+                }
+            } else if (autofillBtn) {
+                const teamFromD1 = window.app.data.d1?.fields?.members || [];
+                const currentAcks = window.app.data.d8.fields.acknowledgements;
+                const existingNames = new Set(currentAcks.map(ack => ack.team_member));
 
-            acks.forEach(item => {
-                const newRow = template.content.cloneNode(true);
-                qs('.ack-name', newRow).value = item.team_member || '';
-                qs('.ack-achievements', newRow).value = item.achievements || '';
-                // In a real app, you'd map the other fields too.
-                ackTbody.appendChild(newRow);
-            });
-            if(window.lucide) window.lucide.createIcons();
-        }
+                teamFromD1.forEach(member => {
+                    if (!existingNames.has(member.name)) {
+                        currentAcks.push({
+                            team_member: member.name,
+                            title: member.title,
+                            responsibility: member.role,
+                            achievements: '',
+                            recognition_type: '👍'
+                        });
+                    }
+                });
+                modelChanged = true;
+            }
+
+            if (modelChanged) {
+                render();
+                updateAppData();
+            }
+        });
+
+        container.addEventListener('input', e => {
+            if (e.target.closest('#d8-ack')) {
+                updateAppData();
+            }
+        });
+
+        container.dataset.d8ListenersAttached = 'true';
 
         document.addEventListener('appDataReady', render, { once: true });
-        if (window.app && window.app.data) {
-            render();
-        }
+        if (window.app && window.app.data) render();
     }
 
     const originalInit = window.__init8D;
     window.__init8D = function(context) {
         if (originalInit) originalInit(context);
-        if (qs('#d8-ack', context)) {
-            initializeD8Logic(context);
-        }
+        if (qs('#d8-ack', context)) initializeD8Logic(context);
     };
 
-    // Initial call in case the script is loaded after the main app init
-    if (qs('#d8-ack')) {
-        initializeD8Logic(document);
-    }
+    if (qs('#d8-ack')) initializeD8Logic(document);
 })();
 </script>
 <script>
